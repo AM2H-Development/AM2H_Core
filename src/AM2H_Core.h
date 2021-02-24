@@ -6,7 +6,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ESP_EEPROM.h>
-#include "AM2H_Core_Constants.h"
+#include "include/AM2H_Core_Constants.h"
 
 class Plugin;
 
