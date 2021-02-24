@@ -19,7 +19,7 @@ void impulseISR()                                    // Interrupt service routin
 
 AM2H_Core* am2h_core{nullptr};
 
-AM2H_Core::AM2H_Core(Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server):plugins_(plugins),mqttClient_(mqttClient),server_(server){
+AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server):plugins_(plugins),mqttClient_(mqttClient),server_(server){
   status_=""; // status container for debugging messages
   updateRequired_ = NO_UPDATE_REQUIRED; // semaphore for system updates
   connStatus_ = CONN_UNKNOWN;

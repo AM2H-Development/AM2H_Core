@@ -29,7 +29,7 @@ ESP8266WebServer server(80);
 // TestPlugin t18b20;
 
 // Plugin* plugins[] {&flom, &t18b20, nullptr};
-Plugin* plugins[] {nullptr};
+AM2H_Plugin* plugins[] {nullptr};
 
 AM2H_Core core(plugins,mqttClient,server);
 

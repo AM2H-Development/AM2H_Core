@@ -7,8 +7,7 @@
 #include <PubSubClient.h>
 #include <ESP_EEPROM.h>
 #include "include/AM2H_Core_Constants.h"
-
-class Plugin;
+#include "AM2H_Plugin.h"
 
 void ICACHE_RAM_ATTR impulseISR();
 
@@ -32,13 +31,13 @@ struct Timers {
 
 class AM2H_Core {
 public:
-  AM2H_Core(Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
+  AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
   void setup();
   void loop();
   static void debugMessage(String message);
     
 private:
-  Plugin** plugins_;
+  AM2H_Plugin** plugins_;
 
   PubSubClient& mqttClient_;
   ESP8266WebServer& server_;
@@ -144,7 +143,7 @@ public:
   unsigned long getLastImpulseMillis();
 };
 
-class Plugin{
+class AM2H_Plugin{
   public:
     void activate() { active_ = true; }
     inline const AM2H_Core& getCore(){if (core_) return *core_;}
