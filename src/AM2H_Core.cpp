@@ -7,11 +7,12 @@
 
 unsigned long lastImpulseMillis_G{0};
 unsigned long impulsesTotal_G{0};
-bool intAvailable_G{false};
+bool intAvailable_G{false}; // Interupt available?
 
-Datastore ds[20];
+Datastore ds[20]{};
 
-void impulseISR()                                    // Interrupt service routine
+
+void impulseISR()                                    // Interupt service routine
 {
   if ( millis() - lastImpulseMillis_G >= 50 )            // 50ms Entprellzeit
   {
@@ -378,6 +379,7 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
     }
   } else {
+
     // send cfg message to Plugin
 
   }

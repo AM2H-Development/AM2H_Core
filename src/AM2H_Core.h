@@ -8,7 +8,7 @@
 #include <ESP_EEPROM.h>
 #include "include/AM2H_Core_Constants.h"
 #include "include/AM2H_MqttTopic.h"
-#include "AM2H_Plugin.h"
+#include "plugin/AM2H_Plugin.h"
 
 void ICACHE_RAM_ATTR impulseISR();
 

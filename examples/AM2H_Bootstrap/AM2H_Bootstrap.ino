@@ -1,5 +1,6 @@
 #include <AM2H_Core.h>
 #include <AM2H_Plugin.h>
+#include "AM2H_Ds18b20.h"
 
 // AM2H ICounter
 // Version 1.0.0 - 2020/11/26
@@ -28,8 +29,10 @@ ESP8266WebServer server(80);
 // TestPlugin flom;
 // TestPlugin t18b20;
 
+AM2H_Ds18b20 ds18b20;
+
 // Plugin* plugins[] {&flom, &t18b20, nullptr};
-AM2H_Plugin* plugins[] {nullptr};
+AM2H_Plugin* plugins[] {ds18b20};
 
 AM2H_Core core(plugins,mqttClient,server);
 
