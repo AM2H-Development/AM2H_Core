@@ -1,11 +1,15 @@
 #include "AM2H_Core.h"
 #include "include/AM2H_Core_Constants.h"
+#include "include/AM2H_MqttTopic.h"
+#include "include/AM2H_Datastore.h"
 
 #define _SERIALDEBUG_  // enable serial debugging
 
 unsigned long lastImpulseMillis_G{0};
 unsigned long impulsesTotal_G{0};
 bool intAvailable_G{false};
+
+Datastore ds[20];
 
 void impulseISR()                                    // Interrupt service routine
 {
@@ -39,6 +43,12 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   pinMode(CORE_ISR_PIN, INPUT_PULLUP);
   attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
   am2h_core= this;
+
+  
+  for (int i=0; i<20; ++i){
+    ds[i].ds18b20.addr=i;
+  }
+  
 }
 
 void AM2H_Core::setup(){
@@ -57,7 +67,6 @@ void AM2H_Core::setup(){
   setupServer();
   setupMqtt();
 }
-
 
 void AM2H_Core::loop(){
   loopServer();
@@ -350,9 +359,13 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
   debugMessage( "Message arrived [" );
   debugMessage( topic );
   debugMessage( "]\n" );
-  String topicString = String(topic);
 
-  if ( topicString == getConfigTopic() ) {
+  MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
+  // home / dev / esp01 / devCfg / id / sampleRate 
+  // home / dev / esp01 / envsens/ id / addr 
+  // ns_  /loc_ / dev_  / srv_   /id_ / meas_
+
+  if ( tp.srv_ == DEVICE_CFG_TOPIC  ){
     String s;
     debugMessage( "config: " );
     for (int i = 0; i < length; i++) {
@@ -360,8 +373,13 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
     }
     debugMessage( s );
     debugMessage( " #\n" );
-    
-    am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
+    if ( tp.meas_ == "sampleRate" ){
+      am2h_core->volatileSetupValues_.sampleRate = s.toInt();
+      am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
+    }
+  } else {
+    // send cfg message to Plugin
+
   }
 }
 
@@ -380,7 +398,7 @@ void AM2H_Core::mqttReconnect() {
         debugMessage("\nSubscribe Config: " );
         debugMessage( getConfigTopic() );
         debugMessage("\n" );
-        mqttClient_.subscribe(getConfigTopic().c_str());
+        mqttClient_.subscribe((getConfigTopic() + "#").c_str());
       }
       connStatus_ = MQTT_CLIENT_CONNECTED;
       // updateRequired ^= MQTT_RESET_REQUIRED;
@@ -399,7 +417,7 @@ String AM2H_Core::getStatusTopic() {
 }
 
 String AM2H_Core::getConfigTopic() {
-  return String(am2h_core->getNamespace()) + "/" + DEVICE_PROP_NAME + "/" + String(am2h_core->getDeviceId()) + "/" + String(CFG_PROP_NAME);
+  return String(am2h_core->getNamespace()) + "/" + DEVICE_PROP_NAME + "/" + String(am2h_core->getDeviceId()) + "/";
 }
 
   bool AM2H_Core::isIntAvailable(){
@@ -411,3 +429,22 @@ String AM2H_Core::getConfigTopic() {
   unsigned long AM2H_Core::getLastImpulseMillis(){
     return lastImpulseMillis_G;
   }
+
+MqttTopic AM2H_Core::parseMqttTopic(char* topic){
+  int i{0};
+  String part[6];
+  int p{0};
+  // home/dev/esp01/devCfg/id/sampleRate\0
+
+  while ( ( topic[i] != '\0' ) && ( p < 6 ))
+  {
+    if ( topic[i] != '/' ){
+      part[p]+=topic[i];
+    } else {
+      ++p;
+    }
+    ++i;
+  }
+
+  return MqttTopic(part[0],part[1],part[2],part[3],part[4],part[5]);
+}

@@ -52,6 +52,8 @@ byte constexpr SERVICE_LEN {8};
 byte constexpr LOC_LEN {32};
 
 // Properties
+
+String const DEVICE_CFG_TOPIC {"deviceCfg"};
 #define DEVICE_PROP_NAME "dev"
 #define   DEVICE_ID_PROP_VAL "deviceId"
 #define WLAN_PROP_NAME "wlan"

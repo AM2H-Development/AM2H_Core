@@ -7,6 +7,7 @@
 #include <PubSubClient.h>
 #include <ESP_EEPROM.h>
 #include "include/AM2H_Core_Constants.h"
+#include "include/AM2H_MqttTopic.h"
 #include "AM2H_Plugin.h"
 
 void ICACHE_RAM_ATTR impulseISR();
@@ -19,14 +20,16 @@ struct PersistentSetupContainer {
 };
 
 struct VolatileSetupContainer {
-  String ssid;
-  String pw;
+  String ssid;                // WLAN SSID
+  String pw;                  // WLAN password
+  int sampleRate;             // Sample rate in seconds
 };
 
 struct Timers {
   unsigned long wlanReconnect; // non-blocking timer for Wlan reconnect
   unsigned long mqttReconnect; // non-blocking timer for Mqtt reconnect
   unsigned long espRestart;    // non-blocking timer for ESP.restart();
+  unsigned long sendData;      // non-blocking timer for sending data by Mqtt;
 };
 
 class AM2H_Core {
@@ -35,6 +38,7 @@ public:
   void setup();
   void loop();
   static void debugMessage(String message);
+  static MqttTopic parseMqttTopic(char* topic);
     
 private:
   AM2H_Plugin** plugins_;
