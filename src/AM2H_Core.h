@@ -39,7 +39,7 @@ public:
   void loop();
   static void debugMessage(String message);
   static MqttTopic parseMqttTopic(char* topic);
-    
+
 private:
   AM2H_Plugin** plugins_;
 
@@ -56,7 +56,7 @@ private:
 
   void setupEEPROM();
   void writeEEPROM();
-  void setupWlan(); 
+  void setupWlan();
   void restartWlan(String ssid, String pw);
   void connectWlan(int timeout);
   void setupServer();
@@ -83,14 +83,14 @@ public:
   PubSubClient getMqttClient(){
     return mqttClient_;
   }
-  
+
   String getDeviceId(){
     return persistentSetupValues_.deviceId;
   }
 
   void setDeviceId(const String deviceId){
     deviceId.toCharArray(persistentSetupValues_.deviceId, DEVICE_ID_LEN);
-    updateRequired_ |= COMMIT_TO_EEPROM_REQUIRED | MQTT_UPDATE_REQUIRED | MQTT_RESET_REQUIRED;    
+    updateRequired_ |= COMMIT_TO_EEPROM_REQUIRED | MQTT_UPDATE_REQUIRED | MQTT_RESET_REQUIRED;
   }
 
   String getSSID(){
@@ -147,6 +147,7 @@ public:
   unsigned long getLastImpulseMillis();
 };
 
+/*
 class AM2H_Plugin{
   public:
     void activate() { active_ = true; }
@@ -156,7 +157,7 @@ class AM2H_Plugin{
     virtual void loop()=0;
 
     void call_setup(AM2H_Core& core){
-      if ( active_ && !setupDone_ ) { 
+      if ( active_ && !setupDone_ ) {
         core_ = &core;
         setup();
         setupDone_=true;
@@ -164,7 +165,7 @@ class AM2H_Plugin{
     }
     virtual void setup()=0;
 
-    void call_config(AM2H_Core& core, const char* key, const char* val){ 
+    void call_config(AM2H_Core& core, const char* key, const char* val){
       config( core, key, val );
     }
     virtual void config(AM2H_Core& core, const char* key, const char* val)=0;
@@ -179,6 +180,6 @@ class AM2H_Plugin{
     // bool interrupt_ = false;
     bool setupDone_ = false;
 };
-
+*/
 
 #endif

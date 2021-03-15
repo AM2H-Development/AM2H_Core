@@ -45,11 +45,6 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
   am2h_core= this;
 
-  
-  for (int i=0; i<20; ++i){
-    ds[i].ds18b20.addr=i;
-  }
-  
 }
 
 void AM2H_Core::setup(){
@@ -365,13 +360,13 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
   // home / dev / esp01 / devCfg / id / sampleRate 
   // home / dev / esp01 / envsens/ id / addr 
   // ns_  /loc_ / dev_  / srv_   /id_ / meas_
+  String s;
+  for (int i = 0; i < length; i++) {
+    s += (char) payload[i];
+  }
 
   if ( tp.srv_ == DEVICE_CFG_TOPIC  ){
-    String s;
     debugMessage( "config: " );
-    for (int i = 0; i < length; i++) {
-      s += (char) payload[i];
-    }
     debugMessage( s );
     debugMessage( " #\n" );
     if ( tp.meas_ == "sampleRate" ){
@@ -379,9 +374,15 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
     }
   } else {
-
-    // send cfg message to Plugin
-
+      // send cfg message to Plugin
+      int i=0;
+      while ( auto p = am2h_core->plugins_[i++] ){
+        if (p->getSrv() == tp.srv_ ){
+          if ( tp.id_<20 ) {
+            p->config(ds[tp.id_],tp,s);
+          }
+        }
+      }
   }
 }
 
