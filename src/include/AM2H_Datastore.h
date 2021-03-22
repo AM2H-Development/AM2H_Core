@@ -2,12 +2,7 @@
 #define AM2H_Datastore_h
 #include "Arduino.h"
 
-union AM2H_Datastore {
-    bool active;
-    sint16 config{0};
-    char loc[32];
-    String plugin;
-
+union Datastore {
     struct Ds18b20 {
         uint32_t addr;
         sint16 offsetTemp;
@@ -21,4 +16,14 @@ union AM2H_Datastore {
 
 };
 
+class AM2H_Datastore {
+public:
+    bool active;
+    sint16 config{0};
+    char loc[32];
+    String plugin;
+    Datastore sensor;
+
+};
+ 
 #endif

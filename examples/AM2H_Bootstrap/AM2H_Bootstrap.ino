@@ -14,6 +14,8 @@
                                 "mqttPort":1883,
                                 "ns":"ns345678"
                              }
+
+192.168.4.1
     GET: api/v1/set?deviceId=myDevice9.123456789.123456789.12&ssid=ssid56789.123456789.123456789.12&pw=pw3456789.123456789.123456789.12&mqttServer=server-mh.fritz.box.123456789.123456789.123456789.&mqttPort=1883&ns=ns345678
 
     GET:  api/v1/status   -> {"statuslog":"[...logger content...]"}

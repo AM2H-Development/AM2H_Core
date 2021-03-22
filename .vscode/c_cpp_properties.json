@@ -5,12 +5,18 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\**",
+                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\**",                
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
+                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",                
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
+                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",                
                 "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**",
                 "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\**",
                 "C:\\Program Files (x86)\\Arduino\\libraries\\**",
-                "C:\\Users\\mh\\Documents\\Arduino\\libraries\\**"
+                "C:\\Users\\mh\\Documents\\Arduino\\libraries\\**",
+                "D:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\**"
+                
+                
             ],
             "defines": [
                 "_DEBUG",
@@ -22,7 +28,8 @@
             "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64",
             "forcedInclude": [
-                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266\\Esp.h"
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266\\Esp.h",
+                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266\\Esp.h"
             ]
         }
     ],

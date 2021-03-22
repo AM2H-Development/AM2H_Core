@@ -4,9 +4,10 @@ void AM2H_Ds18b20::setup(){}
 
 void AM2H_Ds18b20::loop(){}
 
-void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic t, const String p){
+void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
+    constexpr int setupComplete=7;
     if (t.meas_ == "addr") {
-        d.ds18b20.addr=p.toInt();
+        d.sensor.ds18b20.addr=p.toInt();
         d.config |=1;
     }
     if (t.meas_ == "loc") {
@@ -17,12 +18,12 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic t, const String p){
         d.config |=2;
     }
     if (t.meas_ == "offsetTemp") {
-        d.ds18b20.offsetTemp=p.toInt();
+        d.sensor.ds18b20.offsetTemp=p.toInt();
         d.config |=4;
     }
-    if ( d.config == 7 ){
+    if ( d.config == setupComplete ){
         d.active = true;
-        d.plugin =
+        d.plugin = plugin_;
     } else {
         d.active = false;
     }

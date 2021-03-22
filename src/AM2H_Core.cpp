@@ -9,7 +9,7 @@ unsigned long lastImpulseMillis_G{0};
 unsigned long impulsesTotal_G{0};
 bool intAvailable_G{false}; // Interupt available?
 
-Datastore ds[20]{};
+AM2H_Datastore ds[20];
 
 
 void impulseISR()                                    // Interupt service routine
@@ -29,11 +29,11 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   updateRequired_ = NO_UPDATE_REQUIRED; // semaphore for system updates
   connStatus_ = CONN_UNKNOWN;
 
-  String("192.168.178.100").toCharArray(persistentSetupValues_.mqttServer,MQTT_SERVER_LEN);
+  String("192.168.178.10").toCharArray(persistentSetupValues_.mqttServer,MQTT_SERVER_LEN);
   persistentSetupValues_.mqttPort = 1883;
-  String("myDevice").toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
+  String("myDevice12").toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
   String("myHome").toCharArray(persistentSetupValues_.ns,NS_LEN);
-  volatileSetupValues_.ssid="myDevice"; 
+  volatileSetupValues_.ssid=""; 
   volatileSetupValues_.pw="";
   
   timer_.espRestart=0;
@@ -85,15 +85,16 @@ void AM2H_Core::checkUpdateRequired() {
     if (updateRequired_ & MQTT_RESET_REQUIRED && (connStatus_ >= WLAN_CONNECTED) ) {
       debugMessage("MQTT_RESET_REQUIRED\n");
       mqttClient_.disconnect();
-      mqttClient_.setServer(getMQTTServer().c_str(), getMQTTPort());
+      mqttClient_.setServer(getMQTTServer(), getMQTTPort());
       connStatus_ = WLAN_CONNECTED;
       updateRequired_ ^= MQTT_RESET_REQUIRED;
     }
     if (updateRequired_ & ESP_RESET_REQUIRED) {
       debugMessage("ESP_RESET_REQUIRED\n");
-      timer_.espRestart = millis() + 10000;
+      timer_.espRestart = millis() + 2000;
       updateRequired_ ^= ESP_RESET_REQUIRED;
       connStatus_ = DEV_RESTART_PENDING;
+      pinMode(CORE_STATUS_LED, INPUT_PULLUP);
     }
   }
 
@@ -238,8 +239,8 @@ void AM2H_Core::handleRoot() {
 }
 
 void AM2H_Core::handleRestart() {
-  debugMessage("Restart-request receiced");
-  String content = "{\"message\":\"restart in 10 s!\"}";
+  debugMessage("Restart-request received\n");
+  String content = "{\"message\":\"restart in 2 s!\"}";
   am2h_core->updateRequired_ |= ESP_RESET_REQUIRED;
   am2h_core->server_.send(200, ENCODING_JSON, content);
 }
@@ -263,7 +264,7 @@ void AM2H_Core::handleApiGetRequest() {
 */
   String content = "{\n\"deviceId\":\"" + am2h_core->getDeviceId() + "\",\n";
   content += "\"ssid\":\"" + am2h_core->getSSID() + "\",\n\"pw\":\"********\",\n";
-  content += "\"mqttServer\":\"" + am2h_core->getMQTTServer() + "\",\n";
+  content += "\"mqttServer\":\"" + String(am2h_core->getMQTTServer()) + "\",\n";
   content += "\"mqttPort\":\"" + String(am2h_core->getMQTTPort()) + "\",\n";
   content += "\"ns\":\"" + am2h_core->getNamespace() + "\"\n}";
   am2h_core->server_.send(200, ENCODING_JSON, content);
@@ -337,7 +338,13 @@ void AM2H_Core::handleNotFound() {
 // ---------- MQTT Utility Functions -----------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupMqtt() {
-  mqttClient_.setServer(getMQTTServer().c_str(), getMQTTPort());
+  debugMessage( "setupMqtt()::" );
+  debugMessage( getMQTTServer() );
+  debugMessage( ":" );
+  debugMessage( String(getMQTTPort()) );
+
+  // mqttClient_.setServer("server-akm.fritz.box", getMQTTPort());
+  mqttClient_.setServer(getMQTTServer(), getMQTTPort());
   mqttClient_.setCallback(AM2H_Core::mqttCallback);
 }
 

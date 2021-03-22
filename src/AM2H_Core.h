@@ -111,7 +111,7 @@ public:
     updateRequired_ |= WLAN_RESET_REQUIRED;
   }
 
-  String getMQTTServer(){
+  const char* getMQTTServer(){
     return persistentSetupValues_.mqttServer;
   }
 

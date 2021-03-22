@@ -8,6 +8,7 @@
 #include <ESP_EEPROM.h>
 #include "include/AM2H_Core_Constants.h"
 #include "include/AM2H_Datastore.h"
+#include "include/AM2H_MqttTopic.h"
 
 class AM2H_Plugin{
   public:
@@ -27,7 +28,7 @@ class AM2H_Plugin{
     }*/
     virtual void setup()=0;
 
-    virtual void config(AM2H_Datastore& d, const MqttTopic t, const String payload)=0;
+    virtual void config(AM2H_Datastore& d, const MqttTopic& t, const String payload)=0;
 
     /*void call_config(AM2H_Core& core, const char* key, const char* val){ 
       config( core, key, val );

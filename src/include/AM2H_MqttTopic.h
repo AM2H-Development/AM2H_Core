@@ -2,7 +2,8 @@
 #define AM2H_MqttTopic_h
 #include "Arduino.h"
 
-struct MqttTopic {
+class MqttTopic {
+public:
     String ns_;
     String loc_;
     String dev_;
