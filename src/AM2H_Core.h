@@ -79,6 +79,7 @@ public:
   // Getters/Setters:
   static String getStatusTopic();
   static String getConfigTopic();
+  static String getDataTopic(const String loc, const String srv, const String id);
 
   PubSubClient getMqttClient(){
     return mqttClient_;

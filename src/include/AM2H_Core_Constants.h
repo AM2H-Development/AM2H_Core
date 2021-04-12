@@ -54,7 +54,7 @@ byte constexpr LOC_LEN {32};
 // Properties
 
 String const DEVICE_CFG_TOPIC {"deviceCfg"};
-#define DEVICE_PROP_NAME "dev"
+String const DEVICE_PROP_NAME {"dev"};
 #define   DEVICE_ID_PROP_VAL "deviceId"
 #define WLAN_PROP_NAME "wlan"
 #define   SSID_PROP_VAL "ssid"
@@ -67,7 +67,7 @@ String const DEVICE_CFG_TOPIC {"deviceCfg"};
 #define   LOC_PROP_VAL "loc"
 #define   SERVICE_PROP_VAL "srv"
 #define DATA_PROP_NAME "data"
-#define STATUS_PROP_NAME "status"
+String const STATUS_PROP_NAME {"status"};
 #define   OFFLINE_PROP_VAL "offline"
 #define   CONFIG_PROP_VAL  "config"
 #define   ONLINE_PROP_VAL  "online"

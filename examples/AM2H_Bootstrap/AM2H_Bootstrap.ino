@@ -28,7 +28,7 @@ WiFiClient mqttWifiClient;
 PubSubClient mqttClient(mqttWifiClient);
 ESP8266WebServer server(80);
 
-AM2H_Ds18b20 ds18b20("Ds18b20");
+AM2H_Ds18b20 ds18b20("Ds18b20","envsense");
 
 
 AM2H_Plugin* plugins[] {&ds18b20, nullptr};

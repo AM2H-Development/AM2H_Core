@@ -35,10 +35,12 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   String("myHome").toCharArray(persistentSetupValues_.ns,NS_LEN);
   volatileSetupValues_.ssid=""; 
   volatileSetupValues_.pw="";
+  volatileSetupValues_.sampleRate=0;
   
   timer_.espRestart=0;
   timer_.mqttReconnect=0;
   timer_.wlanReconnect=0;
+  timer_.sendData=0;
   
   pinMode(CORE_STATUS_LED, OUTPUT);
   pinMode(CORE_ISR_PIN, INPUT_PULLUP);
@@ -62,12 +64,30 @@ void AM2H_Core::setup(){
   setupWlan();
   setupServer();
   setupMqtt();
+
+  int i=0;
+  while ( auto p = plugins_[i++] ){
+    p->setup();
+  }
+
 }
 
 void AM2H_Core::loop(){
   loopServer();
   loopMqtt();
   checkUpdateRequired();
+
+  if (volatileSetupValues_.sampleRate>0){
+    if ( millis() > timer_.sendData ){
+      timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
+        for (int i=0; i < 20; ++i){
+          if (auto p = ds[i].self){
+            p->timerPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
+          }
+        }
+    }
+  }
+
 }
 
 void AM2H_Core::checkUpdateRequired() {
@@ -364,9 +384,12 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
   debugMessage( "]\n" );
 
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
-  // home / dev / esp01 / devCfg / id / sampleRate 
-  // home / dev / esp01 / envsens/ id / addr 
-  // ns_  /loc_ / dev_  / srv_   /id_ / meas_
+  // Global:
+  // home / dev / esp01 / deviceCfg / - / sampleRate 
+  // Plugins:
+  // home / dev / esp01 / ds18b20 / id / addr 
+  // ns_  /loc_ / dev_  / srv_ or plugin_ / id_ / meas_
+
   String s;
   for (int i = 0; i < length; i++) {
     s += (char) payload[i];
@@ -384,7 +407,7 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
       // send cfg message to Plugin
       int i=0;
       while ( auto p = am2h_core->plugins_[i++] ){
-        if (p->getSrv() == tp.srv_ ){
+        if (p->getPlugin() == tp.srv_ ){
           if ( tp.id_<20 ) {
             p->config(ds[tp.id_],tp,s);
           }
@@ -423,11 +446,15 @@ void AM2H_Core::mqttReconnect() {
 }
 
 String AM2H_Core::getStatusTopic() {
-  return String(am2h_core->getNamespace()) + "/" + String(DEVICE_PROP_NAME) + "/" + String(am2h_core->getDeviceId()) + "/" + String(STATUS_PROP_NAME);
+  return AM2H_Core::getConfigTopic() + STATUS_PROP_NAME;
 }
 
 String AM2H_Core::getConfigTopic() {
-  return String(am2h_core->getNamespace()) + "/" + DEVICE_PROP_NAME + "/" + String(am2h_core->getDeviceId()) + "/";
+  return am2h_core->getNamespace() + "/" + DEVICE_PROP_NAME + "/" + am2h_core->getDeviceId() + "/";
+}
+
+String AM2H_Core::getDataTopic(const String loc, const String srv, const String id) {
+  return am2h_core->getNamespace() + "/" + loc + "/" + am2h_core->getDeviceId() + "/" + srv + "/" + id + "/";
 }
 
   bool AM2H_Core::isIntAvailable(){
