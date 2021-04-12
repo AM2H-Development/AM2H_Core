@@ -5,6 +5,21 @@
 
 class AM2H_Plugin;
 
+/*
+enum Unit{
+    QM=10,
+    KWH,
+    UNITS=500,
+};
+
+enum DeriveUnit{
+    KW=10,
+    LPERMIN,
+    MPERS,
+    UNITS=500
+};
+*/
+
 union Datastore {
     struct Ds18b20 {
         uint32_t addr;
@@ -17,6 +32,16 @@ union Datastore {
         sint16 offsetHumidity;
     } sht21;
 
+    struct Icounter {
+        // Unit tickUnit;
+        // DeriveUnit deriveUnit;
+        uint32_t absCnt;       // units
+        sint16 unitsPerTick;   // units/1
+        sint16 exponentPerTick; // 10^e
+        uint32_t unitsPerMs;      // units/ms
+        sint16 exponentPerMs; // 10^e
+        sint16 zeroLimit;      // ms
+    } icounter;
 };
 
 class AM2H_Datastore {

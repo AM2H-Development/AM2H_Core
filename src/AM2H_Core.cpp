@@ -88,6 +88,21 @@ void AM2H_Core::loop(){
     }
   }
 
+  if (isIntAvailable()) {
+    for (int i=0; i < 20; ++i){
+      if (auto p = ds[i].self){
+        p->interruptPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
+      }
+    }
+    resetInt();
+  }
+
+  for (int i=0; i < 20; ++i){
+    if (auto p = ds[i].self){
+      p->loop(i);
+    }
+  }
+
 }
 
 void AM2H_Core::checkUpdateRequired() {
@@ -419,7 +434,7 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
 void AM2H_Core::mqttReconnect() {
   if (timer_.mqttReconnect < millis()) {
     debugMessage( "Attempting MQTT connection and unsubscribe topics ..." );
-    mqttClient_.unsubscribe(getConfigTopic().c_str());
+    mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
 
     if ( mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL)) {
       debugMessage( "connected\n" );
@@ -443,6 +458,11 @@ void AM2H_Core::mqttReconnect() {
       connStatus_ = WLAN_CONNECTED;
     }
   }
+}
+
+void AM2H_Core::subscribe(const String loc, const String srv, const String id, const String meas){
+  String topic = getNamespace() + "/" + loc + "/" + getDeviceId() + "/" + srv + "/" + id + "/" + meas;
+  mqttClient_.subscribe( topic.c_str() );
 }
 
 String AM2H_Core::getStatusTopic() {

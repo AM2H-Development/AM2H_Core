@@ -2,12 +2,13 @@
 #define AM2H_Core_Constants_h
 
 // Pin Setup
-byte constexpr CORE_SCL{0};
-byte constexpr CORE_ISR_PIN{1};
-byte constexpr CORE_STATUS_LED{2};
-byte constexpr CORE_SDA{2};
-byte constexpr CORE_DQ{4};
-
+byte constexpr CORE_SCL{0}; // I2C SCL 
+byte constexpr CORE_ISR_PIN{0}; // Interrupt
+byte constexpr CORE_TX{1}; // Serial TX
+byte constexpr CORE_STATUS_LED{2}; // Internal LED (blue)
+byte constexpr CORE_SDA{2};  // I2C SDA
+byte constexpr CORE_RX{3};  // Serial RX
+byte constexpr CORE_DQ{3};  // Onewire
 
 // Connection Status
 byte constexpr DEV_RESTART_PENDING   {0x00};
