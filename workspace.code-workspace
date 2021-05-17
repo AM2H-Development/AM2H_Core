@@ -4,5 +4,12 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"istream": "cpp",
+			"ostream": "cpp",
+			"*.tcc": "cpp",
+			"algorithm": "cpp"
+		}
+	}
 }

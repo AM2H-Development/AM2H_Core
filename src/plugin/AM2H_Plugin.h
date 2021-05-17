@@ -12,9 +12,9 @@
 
 class AM2H_Plugin{
   public:
-    AM2H_Plugin(const char* plugin, const char* srv): plugin_(plugin), srv_(srv){}
-    virtual void loop(int i){};
-    virtual void setup(){};
+    AM2H_Plugin(const char* plugin, const char* srv): plugin_(plugin), srv_(srv){};
+    virtual void loopPlugin(int datastoreIndex){};
+    virtual void setupPlugin(int datastoreIndex){};
     virtual void config(AM2H_Datastore& d, const MqttTopic& t, const String payload)=0;
     virtual void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){};
     virtual void interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){};

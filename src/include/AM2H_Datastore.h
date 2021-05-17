@@ -20,6 +20,42 @@ enum DeriveUnit{
 };
 */
 
+class Config {
+    public:
+    static constexpr uint16_t SET_0 = 0x0001;
+    static constexpr uint16_t CHECK_TO_0 = 0x0001;
+    static constexpr uint16_t SET_1 = 0x0002;
+    static constexpr uint16_t CHECK_TO_1 = 0x0003;
+    static constexpr uint16_t SET_2 = 0x0004;
+    static constexpr uint16_t CHECK_TO_2 = 0x0007;
+    static constexpr uint16_t SET_3 = 0x0008;
+    static constexpr uint16_t CHECK_TO_3 = 0x0009;
+    static constexpr uint16_t SET_4 = 0x0010;
+    static constexpr uint16_t CHECK_TO_4 = 0x001F;
+    static constexpr uint16_t SET_5 = 0x0020;
+    static constexpr uint16_t CHECK_TO_5 = 0x003F;
+    static constexpr uint16_t SET_6 = 0x0040;
+    static constexpr uint16_t CHECK_TO_6 = 0x007F;
+    static constexpr uint16_t SET_7 = 0x0080;
+    static constexpr uint16_t CHECK_TO_7 = 0x00FF;
+    static constexpr uint16_t SET_8 = 0x0100;
+    static constexpr uint16_t CHECK_TO_8 = 0x01FF;
+    static constexpr uint16_t SET_9 = 0x0200;
+    static constexpr uint16_t CHECK_TO_9 = 0x03FF;
+    static constexpr uint16_t SET_A = 0x0400;
+    static constexpr uint16_t CHECK_TO_A = 0x07FF;    
+    static constexpr uint16_t SET_B = 0x0800;
+    static constexpr uint16_t CHECK_TO_B = 0x0FFF;
+    static constexpr uint16_t SET_C = 0x1000;
+    static constexpr uint16_t CHECK_TO_C = 0x1FFF;
+    static constexpr uint16_t SET_D = 0x2000;
+    static constexpr uint16_t CHECK_TO_D = 0x3FFF;
+    static constexpr uint16_t SET_E = 0x4000;
+    static constexpr uint16_t CHECK_TO_E = 0x7FFF;
+    static constexpr uint16_t SET_F = 0x8000;
+    static constexpr uint16_t CHECK_TO_F = 0xFFFF;
+};
+
 union Datastore {
     struct Ds18b20 {
         uint32_t addr;
@@ -46,8 +82,8 @@ union Datastore {
 
 class AM2H_Datastore {
 public:
-    // bool active;
-    sint16 config{0};
+    bool initialized{false};
+    uint16_t config{0};
     char loc[32];
     String plugin;
     Datastore sensor;

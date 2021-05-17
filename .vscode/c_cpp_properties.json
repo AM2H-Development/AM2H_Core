@@ -50,6 +50,7 @@
                 "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\include",
                 "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\lwip2\\include",
                 "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\libc\\xtensa-lx106-elf\\include",
+                "d:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\build\\core",
                 "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266",
                 "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\variants\\generic",
                 "D:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\AM2H_Core\\src",
@@ -299,7 +300,8 @@
                 "__GCC_ATOMIC_SHORT_LOCK_FREE=1",
                 "__UINT_FAST8_TYPE__=unsigned int",
                 "__ATOMIC_ACQ_REL=4",
-                "__ATOMIC_RELEASE=3"
+                "__ATOMIC_RELEASE=3",
+                "USBCON"
             ]
         }
     ]

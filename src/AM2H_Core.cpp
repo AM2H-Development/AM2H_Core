@@ -49,7 +49,7 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
 
 }
 
-void AM2H_Core::setup(){
+void AM2H_Core::setupCore(){
   #ifdef _SERIALDEBUG_
     Serial.begin(115200);
     for (int i = 10; i > 0; i--) {
@@ -67,17 +67,41 @@ void AM2H_Core::setup(){
 
   int i=0;
   while ( auto p = plugins_[i++] ){
-    p->setup();
+    p->setupPlugin(i);
   }
-
 }
 
-void AM2H_Core::loop(){
+void AM2H_Core::loopCore(){
   loopServer();
   loopMqtt();
   checkUpdateRequired();
+  
+  checkTimerPublish();
+  checkIntPublish();
+  loopPlugins();
+}
 
-  if (volatileSetupValues_.sampleRate>0){
+void AM2H_Core::loopPlugins(){
+    for (int datastoreIndex=0; datastoreIndex < 20; ++datastoreIndex){
+    if (auto p = ds[datastoreIndex].self){
+      p->loopPlugin(datastoreIndex);
+    }
+  }
+}
+
+void AM2H_Core::checkIntPublish(){
+    if (isIntAvailable()) {
+    for (int i=0; i < 20; ++i){
+      if (auto p = ds[i].self){
+        p->interruptPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
+      }
+    }
+    resetInt();
+  }
+}
+
+void AM2H_Core::checkTimerPublish(){
+    if (volatileSetupValues_.sampleRate>0){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
         for (int i=0; i < 20; ++i){
@@ -87,22 +111,6 @@ void AM2H_Core::loop(){
         }
     }
   }
-
-  if (isIntAvailable()) {
-    for (int i=0; i < 20; ++i){
-      if (auto p = ds[i].self){
-        p->interruptPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
-      }
-    }
-    resetInt();
-  }
-
-  for (int i=0; i < 20; ++i){
-    if (auto p = ds[i].self){
-      p->loop(i);
-    }
-  }
-
 }
 
 void AM2H_Core::checkUpdateRequired() {
@@ -150,7 +158,7 @@ void AM2H_Core::checkUpdateRequired() {
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupEEPROM() {
   debugMessage("EEPROM-Data needs size: ");
-  debugMessage(String(sizeof(PersistentSetupContainer)));
+  debugMessage(String( (unsigned long) sizeof(PersistentSetupContainer)));
   debugMessage("\n");
   EEPROM.begin(sizeof(PersistentSetupContainer));
 

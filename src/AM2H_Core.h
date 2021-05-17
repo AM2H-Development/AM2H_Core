@@ -35,8 +35,8 @@ struct Timers {
 class AM2H_Core {
 public:
   AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
-  void setup();
-  void loop();
+  void setupCore();
+  void loopCore();
   static void debugMessage(String message);
   static MqttTopic parseMqttTopic(char* topic);
 
@@ -62,6 +62,9 @@ private:
   void setupServer();
   void loopServer();
   void checkUpdateRequired();
+  void checkTimerPublish();
+  void checkIntPublish();
+  void loopPlugins();
   static void handleRoot();
   static void handleRestart();
   static void handleStatus();
@@ -81,7 +84,7 @@ public:
   static String getConfigTopic();
   static String getDataTopic(const String loc, const String srv, const String id);
 
-  PubSubClient getMqttClient(){
+  PubSubClient& getMqttClient(){
     return mqttClient_;
   }
 
