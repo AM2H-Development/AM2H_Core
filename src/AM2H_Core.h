@@ -9,6 +9,7 @@
 #include "include/AM2H_Core_Constants.h"
 #include "include/AM2H_MqttTopic.h"
 #include "plugin/AM2H_Plugin.h"
+#include "libs/OneWire/OneWire.h"
 
 void ICACHE_RAM_ATTR impulseISR();
 
@@ -34,7 +35,7 @@ struct Timers {
 
 class AM2H_Core {
 public:
-  AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
+  AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server, OneWire& owds);
   void setupCore();
   void loopCore();
   static void debugMessage(String message);
@@ -45,6 +46,8 @@ private:
 
   PubSubClient& mqttClient_;
   ESP8266WebServer& server_;
+  OneWire* owds_;
+
   String status_;
   byte updateRequired_;
   byte connStatus_;
@@ -137,8 +140,12 @@ public:
     setMQTTPort(mqttPort.toInt());
   }
 
-  String getNamespace(){
+  String const getNamespace() const{
     return persistentSetupValues_.ns;
+  }
+
+  OneWire* const getOwds() const {
+    return owds_;
   }
 
   void setNamespace(const String ns){

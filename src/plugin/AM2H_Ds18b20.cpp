@@ -1,84 +1,82 @@
 #include "AM2H_Ds18b20.h"
 #include "AM2H_Core.h"
-#include "../libs/OneWire/OneWire.h"
+#include "libs/OneWire/OneWire.h"
 
 // DS18B20: 28FFD059051603CC
 // DS18B20: 28FFB09181150351
 // DS18B20: 28FFC34001160448
 
-OneWire  owds(2);
+extern AM2H_Core* am2h_core;
 
 void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
-    AM2H_Core::debugMessage("Setup\n");
+  AM2H_Core::debugMessage("Setup\n");
+
+  OneWire* owds = am2h_core->getOwds();
 
   byte i;
   byte present = 0;
   byte type_s;
   byte data[12];
   byte addr[8];
-  float celsius, fahrenheit;
-  
-  if ( !owds.search(addr)) {
-    Serial.println("No more addresses.");
-    Serial.println();
-    owds.reset_search();
+  float celsius;
+
+  if ( !(owds->search(addr)) ) {
+    AM2H_Core::debugMessage("No more addresses.");
+    owds->reset_search();
     delay(250);
     return;
   }
-  
-  Serial.print("ROM =");
+
+  AM2H_Core::debugMessage("ROM = ");
   for( i = 0; i < 8; i++) {
-    Serial.write(' ');
-    Serial.print(addr[i], HEX);
+    AM2H_Core::debugMessage(String(addr[i], HEX));
   }
 
   if (OneWire::crc8(addr, 7) != addr[7]) {
-      Serial.println("CRC is not valid!");
+      AM2H_Core::debugMessage("CRC is not valid!");
       return;
   }
-  Serial.println();
- 
+  AM2H_Core::debugMessage("\n");
+
   // the first ROM byte indicates which chip
   switch (addr[0]) {
     case 0x10:
-      Serial.println("  Chip = DS18S20");  // or old DS1820
+      AM2H_Core::debugMessage("  Chip = DS18S20");  // or old DS1820
       type_s = 1;
       break;
     case 0x28:
-      Serial.println("  Chip = DS18B20");
+      AM2H_Core::debugMessage("  Chip = DS18B20");
       type_s = 0;
       break;
     case 0x22:
-      Serial.println("  Chip = DS1822");
+      AM2H_Core::debugMessage("  Chip = DS1822");
       type_s = 0;
       break;
     default:
-      Serial.println("Device is not a DS18x20 family device.");
+      AM2H_Core::debugMessage("Device is not a DS18x20 family device.");
       return;
-  } 
+  }
 
-  owds.reset();
-  owds.select(addr);
-  owds.write(0x44, 1);        // start conversion, with parasite power on at the end
-  
+  owds->reset();
+  owds->select(addr);
+  owds->write(0x44, 1);        // start conversion, with parasite power on at the end
+
   delay(1000);     // maybe 750ms is enough, maybe not
   // we might do a ds.depower() here, but the reset will take care of it.
-  
-  present = owds.reset();
-  owds.select(addr);    
-  owds.write(0xBE);         // Read Scratchpad
 
-  Serial.print("  Data = ");
-  Serial.print(present, HEX);
-  Serial.print(" ");
+  present = owds->reset();
+  owds->select(addr);
+  owds->write(0xBE);         // Read Scratchpad
+
+  AM2H_Core::debugMessage("  Data = ");
+  AM2H_Core::debugMessage(String(present, HEX));
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
-    data[i] = owds.read();
-    Serial.print(data[i], HEX);
-    Serial.print(" ");
+    data[i] = owds->read();
+    AM2H_Core::debugMessage(String(data[i], HEX));
   }
-  Serial.print(" CRC=");
-  Serial.print(OneWire::crc8(data, 8), HEX);
-  Serial.println();
+  AM2H_Core::debugMessage(" CRC=");
+  AM2H_Core::debugMessage(String(OneWire::crc8(data, 8), HEX));
+  AM2H_Core::debugMessage("\n");
 
   // Convert the data to actual temperature
   // because the result is a 16 bit signed integer, it should
@@ -100,14 +98,8 @@ void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
     //// default is 12 bit resolution, 750 ms conversion time
   }
   celsius = (float)raw / 16.0;
-  fahrenheit = celsius * 1.8 + 32.0;
-  Serial.print("  Temperature = ");
-  Serial.print(celsius);
-  Serial.print(" Celsius, ");
-  Serial.print(fahrenheit);
-  Serial.println(" Fahrenheit");
-
-
+  AM2H_Core::debugMessage("  Temperature = ");
+  AM2H_Core::debugMessage(String(celsius)+"\n");
 }
 
 void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){

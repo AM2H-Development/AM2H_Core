@@ -35,7 +35,7 @@
         },
         {
             "name": "Arduino",
-            "compilerPath": "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\bin\\xtensa-lx106-elf-g++",
+            "compilerPath": "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\bin\\xtensa-lx106-elf-g++",
             "compilerArgs": [
                 "-U__STRICT_ANSI__",
                 "-w",
@@ -47,26 +47,26 @@
             ],
             "intelliSenseMode": "gcc-x64",
             "includePath": [
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\include",
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\lwip2\\include",
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\libc\\xtensa-lx106-elf\\include",
-                "d:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\build\\core",
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266",
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\variants\\generic",
-                "D:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\AM2H_Core\\src",
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\libraries\\ESP8266WebServer\\src",
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\libraries\\ESP8266WiFi\\src",
-                "D:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\PubSubClient\\src",
-                "D:\\Daten\\OneDrive\\Dokumente\\Arduino\\libraries\\ESP_EEPROM\\src",
-                "c:\\users\\akm\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2",
-                "c:\\users\\akm\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2\\xtensa-lx106-elf",
-                "c:\\users\\akm\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2\\backward",
-                "c:\\users\\akm\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\lib\\gcc\\xtensa-lx106-elf\\4.8.2\\include",
-                "c:\\users\\akm\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\lib\\gcc\\xtensa-lx106-elf\\4.8.2\\include-fixed",
-                "c:\\users\\akm\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include"
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\include",
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\lwip2\\include",
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\tools\\sdk\\libc\\xtensa-lx106-elf\\include",
+                "c:\\Users\\mh\\Documents\\Arduino\\libraries\\build\\core",
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266",
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\variants\\generic",
+                "C:\\Users\\mh\\Documents\\Arduino\\libraries\\AM2H_Core\\src",
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\libraries\\ESP8266WebServer\\src",
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\libraries\\ESP8266WiFi\\src",
+                "C:\\Users\\mh\\Documents\\Arduino\\libraries\\PubSubClient\\src",
+                "C:\\Users\\mh\\Documents\\Arduino\\libraries\\ESP_EEPROM\\src",
+                "c:\\users\\mh\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2",
+                "c:\\users\\mh\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2\\xtensa-lx106-elf",
+                "c:\\users\\mh\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include\\c++\\4.8.2\\backward",
+                "c:\\users\\mh\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\lib\\gcc\\xtensa-lx106-elf\\4.8.2\\include",
+                "c:\\users\\mh\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\lib\\gcc\\xtensa-lx106-elf\\4.8.2\\include-fixed",
+                "c:\\users\\mh\\appdata\\local\\arduino15\\packages\\esp8266\\tools\\xtensa-lx106-elf-gcc\\2.5.0-4-b40a506\\xtensa-lx106-elf\\include"
             ],
             "forcedInclude": [
-                "C:\\Users\\AKM\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266\\Arduino.h"
+                "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\cores\\esp8266\\Arduino.h"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",

@@ -2,6 +2,7 @@
 #include "include/AM2H_Core_Constants.h"
 #include "include/AM2H_MqttTopic.h"
 #include "include/AM2H_Datastore.h"
+#include "libs/OneWire/OneWire.h"
 
 #define _SERIALDEBUG_  // enable serial debugging
 
@@ -10,7 +11,6 @@ unsigned long impulsesTotal_G{0};
 bool intAvailable_G{false}; // Interupt available?
 
 AM2H_Datastore ds[20];
-
 
 void impulseISR()                                    // Interupt service routine
 {
@@ -24,7 +24,7 @@ void impulseISR()                                    // Interupt service routine
 
 AM2H_Core* am2h_core{nullptr};
 
-AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server):plugins_(plugins),mqttClient_(mqttClient),server_(server){
+AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server, OneWire& owds):plugins_(plugins),mqttClient_(mqttClient),server_(server), owds_(&owds){
   status_=""; // status container for debugging messages
   updateRequired_ = NO_UPDATE_REQUIRED; // semaphore for system updates
   connStatus_ = CONN_UNKNOWN;
@@ -46,7 +46,6 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   pinMode(CORE_ISR_PIN, INPUT_PULLUP);
   attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
   am2h_core= this;
-
 }
 
 void AM2H_Core::setupCore(){
