@@ -58,7 +58,7 @@ class Config {
 
 union Datastore {
     struct Ds18b20 {
-        uint32_t addr;
+        uint8_t addr[8];
         sint16 offsetTemp;
     } ds18b20;
 

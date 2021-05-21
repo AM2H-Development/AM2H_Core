@@ -328,7 +328,7 @@ void AM2H_Core::handleApiSetRequest(){
     content += " " + a + ": " + v + "\n";
 
     if ( a == "deviceId" || a == "deviceid" ){
-      debugMessage( "am2h_core->setDeviceId(v);" );
+      debugMessage( "am2h_core->setDeviceId(" + v + ")\n" );
       am2h_core->setDeviceId(v);
     }
 

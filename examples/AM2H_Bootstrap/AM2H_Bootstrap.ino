@@ -24,7 +24,16 @@
 
     GET:  api/v1/restart  -> rebooting device
 
+MQTT Settings:
+home/dev/##esp01##/deviceCfg/-/sampleRate -> 15   (set sample rate to 15 s)
+
+For 18B20:
+home/dev/##esp01##/Ds18b20/##00..19##/addr -> e.g. 2895d54450013   (set OW-id of sensor)
+home/dev/##esp01##/Ds18b20/##00..19##/loc  -> e.g. livingRoom      (location of the sensor for mqtt publish)
+home/dev/##esp01##/Ds18b20/##00..19##/offsetTemp  -> e.g. -11      (offset temperature -1.1 °C)
+
 */
+
 
 WiFiClient mqttWifiClient;
 PubSubClient mqttClient(mqttWifiClient);
