@@ -105,7 +105,7 @@ void AM2H_Core::checkTimerPublish(){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
         for (int i=0; i < 20; ++i){
           if (auto p = ds[i].self){
-            p->timerPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
+            p->timerPublish( ds[i], mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ) );
           }
         }
     }

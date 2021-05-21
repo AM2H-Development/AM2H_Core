@@ -2,10 +2,6 @@
 #include "AM2H_Core.h"
 #include "libs/OneWire/OneWire.h"
 
-// DS18B20: 28FFD059051603CC
-// DS18B20: 28FFB09181150351
-// DS18B20: 28FFC34001160448
-
 extern AM2H_Core* am2h_core;
 
 void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
@@ -14,80 +10,76 @@ void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
   OneWire* owds = am2h_core->getOwds();
 
   byte i;
-  byte present = 0;
-  byte type_s;
-  byte data[12];
   byte addr[8];
+
+  owds->reset();
+  owds->reset_search();
+  delay (250);
+
+  while ( owds->search(addr) ) {
+    delay (250);
+
+    AM2H_Core::debugMessage("ID = ");
+    for( i = 0; i < 8; i++) {
+      if ( addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
+
+      AM2H_Core::debugMessage(String(addr[i], HEX));
+    }
+
+    if (OneWire::crc8(addr, 7) != addr[7]) {
+        AM2H_Core::debugMessage(" CRC is not valid!");
+        return;
+    }
+
+    switch (addr[0]) {
+      case 0x10:
+        AM2H_Core::debugMessage(" Chip = DS18S20");  // or old DS1820
+        break;
+      case 0x28:
+        AM2H_Core::debugMessage(" Chip = DS18B20");
+        break;
+      case 0x22:
+        AM2H_Core::debugMessage(" Chip = DS1822");
+        break;
+      default:
+        AM2H_Core::debugMessage(" Device is not a DS18x20 family device.");
+    }
+    AM2H_Core::debugMessage("\n");
+  }
+}
+
+void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
+  AM2H_Core::debugMessage("Publish: ");
+  byte i;
+  byte present = 0;
+  byte type_s = ( d.sensor.ds18b20.addr[0] == 0x10 ) ? 1 : 0;
+  byte data[12];
   float celsius;
+  OneWire* owds = am2h_core->getOwds();
 
-  if ( !(owds->search(addr)) ) {
-    AM2H_Core::debugMessage("No more addresses.");
-    owds->reset_search();
-    delay(250);
-    return;
-  }
-
-  AM2H_Core::debugMessage("ROM =");
   for( i = 0; i < 8; i++) {
-    if ( addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
-
-    AM2H_Core::debugMessage(String(addr[i], HEX));
-  }
-
-  if (OneWire::crc8(addr, 7) != addr[7]) {
-      AM2H_Core::debugMessage("CRC is not valid!");
-      return;
-  }
-
-  // the first ROM byte indicates which chip
-  switch (addr[0]) {
-    case 0x10:
-      AM2H_Core::debugMessage("  Chip = DS18S20");  // or old DS1820
-      type_s = 1;
-      break;
-    case 0x28:
-      AM2H_Core::debugMessage("  Chip = DS18B20");
-      type_s = 0;
-      break;
-    case 0x22:
-      AM2H_Core::debugMessage("  Chip = DS1822");
-      type_s = 0;
-      break;
-    default:
-      AM2H_Core::debugMessage("Device is not a DS18x20 family device.");
-      return;
+    if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
+    AM2H_Core::debugMessage(String(d.sensor.ds18b20.addr[i], HEX));
   }
 
   owds->reset();
-  owds->select(addr);
+  owds->select( d.sensor.ds18b20.addr );
   owds->write(0x44, 1);        // start conversion, with parasite power on at the end
 
-  delay(1000);     // maybe 750ms is enough, maybe not
-  // we might do a ds.depower() here, but the reset will take care of it.
+  delay(1000);
 
   present = owds->reset();
-  owds->select(addr);
+  owds->select( d.sensor.ds18b20.addr );
   owds->write(0xBE);         // Read Scratchpad
 
-  AM2H_Core::debugMessage("  Data = ");
-  AM2H_Core::debugMessage(String(present, HEX));
-  for ( i = 0; i < 9; i++) {           // we need 9 bytes
+  for ( i = 0; i < 9; i++) { // we need 9 bytes
     data[i] = owds->read();
-    AM2H_Core::debugMessage(String(data[i], HEX));
   }
-  AM2H_Core::debugMessage(" CRC=");
-  AM2H_Core::debugMessage(String(OneWire::crc8(data, 8), HEX));
-  AM2H_Core::debugMessage("\n");
 
-  // Convert the data to actual temperature
-  // because the result is a 16 bit signed integer, it should
-  // be stored to an "int16_t" type, which is always 16 bits
-  // even when compiled on a 32 bit processor.
   int16_t raw = (data[1] << 8) | data[0];
   if (type_s) {
     raw = raw << 3; // 9 bit resolution default
     if (data[7] == 0x10) {
-      // "count remain" gives full 12 bit resolution
       raw = (raw & 0xFFF0) + 12 - data[6];
     }
   } else {
@@ -98,15 +90,14 @@ void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
     else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
     //// default is 12 bit resolution, 750 ms conversion time
   }
+
   celsius = (float)raw / 16.0;
+  celsius += ( (float) d.sensor.ds18b20.offsetTemp / 10.0);
+
   AM2H_Core::debugMessage("  Temperature = ");
   AM2H_Core::debugMessage(String(celsius)+"\n");
-}
 
-void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    AM2H_Core::debugMessage("Publish: ");
-    AM2H_Core::debugMessage(topic+"\n");
-    mqttClient.publish((topic + "test").c_str() ,"payload");
+  mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
 }
 
 void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
@@ -114,7 +105,7 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
     AM2H_Core::debugMessage(p);
     AM2H_Core::debugMessage("\n");
     if (t.meas_ == "addr") {
-      AM2H_Core::debugMessage("Addr= ");
+      AM2H_Core::debugMessage("Addr = ");
       for (int i=0; i < 8; ++i){
         d.sensor.ds18b20.addr[i]=strtol(p.substring(i*2,(i*2)+2).c_str(), nullptr,16);
         if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
