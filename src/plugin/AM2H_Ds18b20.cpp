@@ -29,7 +29,9 @@ void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
 
   AM2H_Core::debugMessage("ROM =");
   for( i = 0; i < 8; i++) {
-    AM2H_Core::debugMessage("-" + String(addr[i], HEX));
+    if ( addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
+
+    AM2H_Core::debugMessage(String(addr[i], HEX));
   }
 
   if (OneWire::crc8(addr, 7) != addr[7]) {
@@ -115,6 +117,7 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
       AM2H_Core::debugMessage("Addr= ");
       for (int i=0; i < 8; ++i){
         d.sensor.ds18b20.addr[i]=strtol(p.substring(i*2,(i*2)+2).c_str(), nullptr,16);
+        if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
         AM2H_Core::debugMessage(String(d.sensor.ds18b20.addr[i],HEX));
       }
       AM2H_Core::debugMessage("\n");
