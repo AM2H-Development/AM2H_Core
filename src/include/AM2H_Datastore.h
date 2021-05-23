@@ -29,7 +29,7 @@ class Config {
     static constexpr uint16_t SET_2 = 0x0004;
     static constexpr uint16_t CHECK_TO_2 = 0x0007;
     static constexpr uint16_t SET_3 = 0x0008;
-    static constexpr uint16_t CHECK_TO_3 = 0x0009;
+    static constexpr uint16_t CHECK_TO_3 = 0x000F;
     static constexpr uint16_t SET_4 = 0x0010;
     static constexpr uint16_t CHECK_TO_4 = 0x001F;
     static constexpr uint16_t SET_5 = 0x0020;

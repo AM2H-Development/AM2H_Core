@@ -5,7 +5,7 @@
 extern AM2H_Core* am2h_core;
 
 void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
-  AM2H_Core::debugMessage("Setup\n");
+  AM2H_Core::debugMessage("\nDs18b20::Setup\n");
 
   OneWire* owds = am2h_core->getOwds();
 
@@ -49,7 +49,7 @@ void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
 }
 
 void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-  AM2H_Core::debugMessage("Publish: ");
+  AM2H_Core::debugMessage("Ds18b20::Publish: ");
   byte i;
   byte present = 0;
   byte type_s = ( d.sensor.ds18b20.addr[0] == 0x10 ) ? 1 : 0;
@@ -101,7 +101,7 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, con
 }
 
 void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
-    AM2H_Core::debugMessage("Config:");
+    AM2H_Core::debugMessage("Ds18b20::Config:");
     AM2H_Core::debugMessage(p);
     AM2H_Core::debugMessage("\n");
     if (t.meas_ == "addr") {
@@ -126,12 +126,10 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
         d.config |= Config::SET_2;
     }
     if ( d.config == Config::CHECK_TO_2 ){
-        // d.active = true;
         d.plugin = plugin_;
         d.self = this;
         AM2H_Core::debugMessage("Config finished\n");
     } else {
         d.self=nullptr;
-        // d.active = false;
     }
 }

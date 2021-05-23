@@ -1,6 +1,7 @@
 #include <AM2H_Core.h>
 #include <plugin/AM2H_Plugin.h>
 #include <plugin/AM2H_Ds18b20.h>
+#include <plugin/AM2H_Sht21.h>
 #include <plugin/AM2H_Icounter.h>
 #include "libs/OneWire/OneWire.h"
 
@@ -41,9 +42,11 @@ ESP8266WebServer server(80);
 OneWire owds(2);
 
 AM2H_Ds18b20 ds18b20("Ds18b20","envsense");
+AM2H_Sht21 sht21("Sht21","envsense");
+
 AM2H_Icounter icounter("Icounter","counter");
 
-AM2H_Plugin* plugins[] {&ds18b20, &icounter, nullptr};
+AM2H_Plugin* plugins[] {&ds18b20, &sht21, &icounter, nullptr};
 
 AM2H_Core core(plugins,mqttClient,server, owds);
 

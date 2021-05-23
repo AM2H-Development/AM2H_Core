@@ -66,6 +66,7 @@ void AM2H_Core::setupCore(){
 
   int i=0;
   while ( auto p = plugins_[i++] ){
+    debugMessage("\n" + String(i) + " : " );
     p->setupPlugin(i);
   }
 }
@@ -198,6 +199,7 @@ void AM2H_Core::debugMessage(String message) {
 
 void AM2H_Core::setupWlan() {
   WiFi.mode(WIFI_STA);
+  WiFi.persistent(false);
   WiFi.begin();
   WiFi.hostname(getDeviceId());
   connectWlan(WLAN_TIMEOUT);
@@ -206,13 +208,14 @@ void AM2H_Core::setupWlan() {
 void AM2H_Core::restartWlan(String ssid, String pw) {
   connStatus_ = CONN_UNKNOWN;
   WiFi.mode(WIFI_STA);
+  WiFi.persistent(true);
   WiFi.begin(ssid, pw);
   connectWlan(WLAN_TIMEOUT);
 }
 
 void AM2H_Core::connectWlan(int timeout) {
   bool onOff{0};
-  debugMessage("WIFI - connecting:");
+  debugMessage("WIFI - connecting to " + WiFi.SSID() + " :");
   
   timeout *= 2;
   while ( (WiFi.status() != WL_CONNECTED) && ( timeout != 0) ) {
