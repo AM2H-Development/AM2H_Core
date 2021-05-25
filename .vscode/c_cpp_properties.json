@@ -51,7 +51,7 @@
             "includePath": [
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.0\\tools\\sdk\\include",
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.0\\tools\\sdk\\lwip2\\include",
-                "c:\\Users\\mh\\Documents\\Arduino\\libraries\\build\\core",
+                "c:\\Users\\mh\\Documents\\Arduino\\build\\core",
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.0\\cores\\esp8266",
                 "C:\\Users\\mh\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.0\\variants\\generic",
                 "C:\\Users\\mh\\Documents\\Arduino\\libraries\\AM2H_Core\\src",

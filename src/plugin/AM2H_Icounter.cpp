@@ -48,6 +48,10 @@ void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p
         d.loc[p.length()]='\0';
         d.config |= Config::SET_6;
     }
+    AM2H_Core::debugMessage("set:");
+    AM2H_Core::debugMessage(String(d.config,BIN));
+    AM2H_Core::debugMessage("#\n");
+
     if ( d.config == Config::CHECK_TO_6 ){
         d.plugin = plugin_;
         d.self = this;
