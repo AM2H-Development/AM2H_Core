@@ -5,8 +5,8 @@
 #include <plugin/AM2H_Icounter.h>
 #include "libs/OneWire/OneWire.h"
 
-// AM2H ICounter
-// Version 1.0.0 - 2020/11/26
+// AM2H Bootstrap
+// Version 1.0.1 - 2021/05/25
 //
 
 /* API-Beschreibung:
