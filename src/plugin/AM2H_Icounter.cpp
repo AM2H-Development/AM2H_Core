@@ -1,6 +1,10 @@
 #include "AM2H_Icounter.h"
 #include "AM2H_Core.h"
 
+void AM2H_Icounter::setupPlugin(int datastoreIndex){
+    AM2H_Core::debugMessage("\nICounter::Setup\n");
+}
+
 void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     AM2H_Core::debugMessage("Timer Publish: ");
     AM2H_Core::debugMessage(topic+"\n");

@@ -214,13 +214,13 @@ void AM2H_Core::restartWlan(String ssid, String pw) {
 }
 
 void AM2H_Core::connectWlan(int timeout) {
-  bool onOff{0};
+  bool onOffLed{0};
   debugMessage("WIFI - connecting to " + WiFi.SSID() + " :");
   
   timeout *= 2;
   while ( (WiFi.status() != WL_CONNECTED) && ( timeout != 0) ) {
-    digitalWrite(CORE_STATUS_LED,onOff);
-    onOff = !onOff;
+    digitalWrite(CORE_STATUS_LED,onOffLed);
+    onOffLed = !onOffLed;
     delay(500);
     timeout--;
     debugMessage(".");
