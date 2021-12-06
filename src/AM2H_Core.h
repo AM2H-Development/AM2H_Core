@@ -2,6 +2,7 @@
 #define AM2H_Core_h
 
 #include "Arduino.h"
+#include <Wire.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <libs/PubSubClient/PubSubClient.h>
@@ -35,7 +36,7 @@ struct Timers {
 
 class AM2H_Core {
 public:
-  AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server, OneWire& owds);
+  AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
   void setupCore();
   void loopCore();
   static void debugMessage(String message);
@@ -46,7 +47,6 @@ private:
 
   PubSubClient& mqttClient_;
   ESP8266WebServer& server_;
-  OneWire* owds_;
 
   String status_;
   byte updateRequired_;
@@ -142,10 +142,6 @@ public:
 
   String const getNamespace() const{
     return persistentSetupValues_.ns;
-  }
-
-  OneWire* const getOwds() const {
-    return owds_;
   }
 
   void setNamespace(const String ns){

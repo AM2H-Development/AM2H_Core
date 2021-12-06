@@ -7,16 +7,14 @@ extern AM2H_Core* am2h_core;
 void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
   AM2H_Core::debugMessage("\nDs18b20::Setup\n");
 
-  OneWire* owds = am2h_core->getOwds();
-
   byte i;
   byte addr[8];
 
-  owds->reset();
-  owds->reset_search();
+  ows.reset();
+  ows.reset_search();
   delay (250);
 
-  while ( owds->search(addr) ) {
+  while ( ows.search(addr) ) {
     delay (250);
 
     AM2H_Core::debugMessage("ID = ");
@@ -51,29 +49,27 @@ void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
 void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
   AM2H_Core::debugMessage("Ds18b20::Publish: ");
   byte i;
-  byte present = 0;
   byte type_s = ( d.sensor.ds18b20.addr[0] == 0x10 ) ? 1 : 0;
   byte data[12];
   float celsius;
-  OneWire* owds = am2h_core->getOwds();
 
   for( i = 0; i < 8; i++) {
     if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
     AM2H_Core::debugMessage(String(d.sensor.ds18b20.addr[i], HEX));
   }
 
-  owds->reset();
-  owds->select( d.sensor.ds18b20.addr );
-  owds->write(0x44, 1);        // start conversion, with parasite power on at the end
+  ows.reset();
+  ows.select( d.sensor.ds18b20.addr );
+  ows.write(0x44, 1);        // start conversion, with parasite power on at the end
 
   delay(1000);
 
-  present = owds->reset();
-  owds->select( d.sensor.ds18b20.addr );
-  owds->write(0xBE);         // Read Scratchpad
+  ows.reset();
+  ows.select( d.sensor.ds18b20.addr );
+  ows.write(0xBE);         // Read Scratchpad
 
   for ( i = 0; i < 9; i++) { // we need 9 bytes
-    data[i] = owds->read();
+    data[i] = ows.read();
   }
 
   int16_t raw = (data[1] << 8) | data[0];
@@ -91,7 +87,7 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, con
     //// default is 12 bit resolution, 750 ms conversion time
   }
 
-  celsius = (float)raw / 16.0;
+  celsius = (float) raw / 16.0;
   celsius += ( (float) d.sensor.ds18b20.offsetTemp / 10.0);
 
   AM2H_Core::debugMessage("  Temperature = ");

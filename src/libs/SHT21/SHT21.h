@@ -31,15 +31,11 @@ class SHT21 {
    
 public:
   SHT21();
-	
-  void begin();
   float getHumidity(void);
   float getTemperature(void);
   	
 private:
-  
   uint16_t readSHT21(uint8_t command);
-  
 };
 
 #endif

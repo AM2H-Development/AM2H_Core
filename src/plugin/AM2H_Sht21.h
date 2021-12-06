@@ -13,6 +13,8 @@ public:
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic) override;
 private:
     SHT21 sht21;
+    void tcaselect(uint8_t i);
+    void scan();
 };
 
 #endif
