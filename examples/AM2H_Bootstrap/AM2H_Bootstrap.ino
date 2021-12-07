@@ -26,7 +26,7 @@
     GET:  api/v1/restart  -> rebooting device
 
 MQTT Settings:
-home/dev/##esp01##/deviceCfg/-/sampleRate -> 15   (set sample rate to 15 s)
+home/dev/##esp01##/deviceCfg/-/sampleRate -> 15   (set sample rate to 15 s, if sampleRate==0 no TimerPublish is executed)
 
 For 18B20:
 home/dev/##esp01##/Ds18b20/##00..19##/addr -> e.g. 2895d54450013   (set OW-id of sensor)

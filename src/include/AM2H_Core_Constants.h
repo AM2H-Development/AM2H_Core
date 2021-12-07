@@ -4,6 +4,7 @@
 // Pin Setup
 byte constexpr CORE_SCL{0}; // I2C SCL 
 byte constexpr CORE_ISR_PIN{0}; // Interrupt
+uint32_t constexpr CORE_ISR_DEBOUNCE{500}; // debounce time in ms
 byte constexpr CORE_TX{1}; // Serial TX
 byte constexpr CORE_STATUS_LED{2}; // Internal LED (blue)
 byte constexpr CORE_SDA{2};  // I2C SDA
@@ -12,6 +13,8 @@ byte constexpr CORE_DQ{2};  // Onewire
 
 // I2C config
 byte constexpr TCAADDR{0x70}; // Multiplexer address
+
+
 
 // Connection Status
 byte constexpr DEV_RESTART_PENDING   {0x00};

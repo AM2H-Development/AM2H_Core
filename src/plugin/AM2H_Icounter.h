@@ -10,7 +10,10 @@ public:
     void setupPlugin(int datastoreIndex) override;
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p);
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic);
-    void interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic);    
+    void interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic);
+private:
+    double calculatePower(AM2H_Datastore& d, const uint32_t interval);
+    double calculateCounter(AM2H_Datastore& d);    
 };
 
 #endif

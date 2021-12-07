@@ -14,7 +14,7 @@ AM2H_Datastore ds[20];
 
 void impulseISR()                                    // Interupt service routine
 {
-  if ( millis() - lastImpulseMillis_G >= 50 )            // 50ms Entprellzeit
+  if ( millis() - lastImpulseMillis_G >= CORE_ISR_DEBOUNCE )            // CORE_ISR_DEBOUNCE Entprellzeit
   {
     lastImpulseMillis_G = millis();                    // Zeit merken
     ++impulsesTotal_G;
