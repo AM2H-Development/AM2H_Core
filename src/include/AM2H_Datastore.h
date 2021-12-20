@@ -79,6 +79,14 @@ union Datastore {
         sint16 zeroLimit;      // ms
         uint32_t millis;  // lastMillis ms
     } icounter;
+
+    struct Bme680 
+    {
+        uint32_t addr;
+        sint16 offsetTemp;
+        sint16 offsetHumidity;
+    } bme680;
+    
 };
 
 class AM2H_Datastore {
