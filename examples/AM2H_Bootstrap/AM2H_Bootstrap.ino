@@ -3,6 +3,7 @@
 #include <plugin/AM2H_Ds18b20.h>
 #include <plugin/AM2H_Sht21.h>
 #include <plugin/AM2H_Bme680.h>
+#include <plugin/AM2H_Bh1750.h>
 #include <plugin/AM2H_Icounter.h>
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
@@ -41,6 +42,11 @@ home/dev/##esp01##/Sht21/##00..19##/loc  -> e.g. livingRoom      (location of th
 home/dev/##esp01##/Sht21/##00..19##/offsetTemp  -> e.g. -11      (offset temperature -1.1 °C)
 home/dev/##esp01##/Sht21/##00..19##/offsetHumidity -> e.g. -11   (offset temperature -1.1 °C)
 
+For Bh1750:
+home/dev/##esp01##/Bh1750/##00..19##/addr -> e.g. 1..7            (set I2C channel)
+home/dev/##esp01##/Bh1750/##00..19##/loc  -> e.g. livingRoom      (location of the sensor for mqtt publish)
+home/dev/##esp01##/Bh1750/##00..19##/sensitivityAdjust  -> e.g. 69   (31..254)
+
 For Icounter:
 home/dev/##esp01##/Icounter/##00..19##/absCnt -> e.g. 112345        
 home/dev/##esp01##/Icounter/##00..19##/unitsPerTick -> e.g. 1       
@@ -60,11 +66,12 @@ ESP8266WebServer server(80);
 AM2H_Ds18b20 ds18b20("Ds18b20","envsense");
 AM2H_Sht21 sht21("Sht21","envsense");
 AM2H_Bme680 bme680("Bme680","envsense");
+AM2H_Bh1750 bh1750("Bh1750","envsense");
 
 AM2H_Icounter icounter("Icounter","counter");
 
 
-AM2H_Plugin* plugins[] {&ds18b20, &sht21, &bme680, &icounter, nullptr};
+AM2H_Plugin* plugins[] {&ds18b20, &sht21, &bme680, &bh1750, &icounter, nullptr};
 
 AM2H_Core core(plugins,mqttClient,server);
 

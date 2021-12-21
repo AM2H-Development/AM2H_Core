@@ -87,6 +87,11 @@ union Datastore {
         sint16 offsetHumidity;
     } bme680;
     
+    struct Bh1750 {
+        uint32_t addr;
+        uint8 sensitivityAdjust;  // 31..254 default:69 
+    } bh1750;
+
 };
 
 class AM2H_Datastore {

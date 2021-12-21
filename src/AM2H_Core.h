@@ -12,7 +12,7 @@
 #include "plugin/AM2H_Plugin.h"
 #include "libs/OneWire/OneWire.h"
 
-void ICACHE_RAM_ATTR impulseISR();
+void IRAM_ATTR impulseISR();
 
 struct PersistentSetupContainer {
   char mqttServer[MQTT_SERVER_LEN];
@@ -155,6 +155,5 @@ public:
   void resetInt();
   unsigned long getLastImpulseMillis();
 };
-
 
 #endif
