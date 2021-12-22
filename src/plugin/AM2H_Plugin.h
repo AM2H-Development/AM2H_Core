@@ -16,6 +16,7 @@ class AM2H_Plugin{
     virtual void loopPlugin(int datastoreIndex){};
     virtual void setupPlugin(int datastoreIndex){};
     virtual void config(AM2H_Datastore& d, const MqttTopic& t, const String payload)=0;
+    virtual void postConfig(AM2H_Datastore& d){};
     virtual void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){};
     virtual void interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){};
 

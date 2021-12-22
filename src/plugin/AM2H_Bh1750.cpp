@@ -1,5 +1,6 @@
 #include "AM2H_Bh1750.h"
 #include "AM2H_Core.h"
+#include "libs/BH1750/BH1750.h"
 #include <Wire.h>
 
 extern AM2H_Core* am2h_core;
@@ -11,35 +12,11 @@ void AM2H_Bh1750::setupPlugin(int datastoreIndex){
 void AM2H_Bh1750::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     AM2H_Core::debugMessage("Publish: ");
 
-    float level = -1.0;
-    const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
-    /*
-        Wire.beginTransmission(addr);
-        Wire.write(CONTINUOUS_HIGH_RES_MODE_2);
-        Wire.endTransmission();
-
-        delay(400);
-*/
-    Wire.requestFrom(addr, static_cast<uint8_t>(2));
-      u_int16_t timeout{1000};
-
-    while( (Wire.available() < 2) && (--timeout>0) ) {
-        delay(1);
+    float level = -5.0;
+    if (lightMeter.measurementReady()) {
+        level = lightMeter.readLightLevel();
     }
-
-    if ( timeout>0 ){
-        unsigned int tmp = 0;
-        tmp = Wire.read();
-        AM2H_Core::debugMessage(String(tmp,BIN));
-        tmp <<= 8;
-        tmp |= Wire.read();
-        AM2H_Core::debugMessage(" "+String(tmp,BIN));
-        level = tmp;
-    }
-
-    if (level != -1.0) {
-        level *= (69 / static_cast<float>(d.sensor.bh1750.sensitivityAdjust)) /2.4;
-    }
+    AM2H_Core::debugMessage(String(level));
 
     mqttClient.publish( (topic + "illuminance").c_str() , String( level ).c_str() );
 }
@@ -64,25 +41,25 @@ void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
     }
     if (t.meas_ == "sensitivityAdjust") {
         d.sensor.bh1750.sensitivityAdjust=p.toInt();
+        if (d.sensor.bh1750.sensitivityAdjust<31) {d.sensor.bh1750.sensitivityAdjust=31;}
         d.config |= Config::SET_2;
     }
     if ( d.config == Config::CHECK_TO_2 ){
         d.plugin = plugin_;
         d.self = this;
-
-        const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
-        Wire.beginTransmission(addr);
-        Wire.write((0b01000 << 3) | (d.sensor.bh1750.sensitivityAdjust >> 5));
-        Wire.endTransmission();
-        Wire.beginTransmission(addr);
-        Wire.write((0b011 << 5 )  | (d.sensor.bh1750.sensitivityAdjust & 0b11111));
-        Wire.endTransmission();
-        Wire.beginTransmission(addr);
-        Wire.write(CONTINUOUS_HIGH_RES_MODE_2);
-        Wire.endTransmission();
-
+        postConfig(d);
         AM2H_Core::debugMessage("Config finished\n");
     } else {
         d.self=nullptr;
     }
+}
+
+void AM2H_Bh1750::postConfig(AM2H_Datastore& d){
+    const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
+    if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE,addr)) {
+        AM2H_Core::debugMessage("BH1750 Advanced begin");
+    } else {
+        AM2H_Core::debugMessage("Error initialising BH1750");
+    }
+    lightMeter.setMTreg(d.sensor.bh1750.sensitivityAdjust);
 }
