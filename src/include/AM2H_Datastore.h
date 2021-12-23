@@ -85,6 +85,7 @@ union Datastore {
         uint32_t addr;
         sint16 offsetTemp;
         sint16 offsetHumidity;
+		uint8_t* iaq;
     } bme680;
     
     struct Bh1750 {

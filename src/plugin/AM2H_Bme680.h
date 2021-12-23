@@ -13,13 +13,16 @@ public:
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p) override;
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic) override;
 private:
+    void postConfig(AM2H_Datastore& d) override;
+    void set_iaq(AM2H_Datastore& d, const String p);
+
     Bsec bme680;
     uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
     uint16_t stateUpdateCounter {0};
     float temperature;
     float humidity;
 
-    constexpr static uint8_t bsec_config_iaq[] {
+    constexpr static uint8_t BSEC_CONFIG_IAQ[2048] { // BSEC_MAX_WORKBUFFER_SIZE
         #include "libs/BSEC_Software_Library/src/config/generic_33v_3s_4d/bsec_iaq.txt"
     };
 };

@@ -10,9 +10,9 @@ public:
     AM2H_Bh1750(const char* plugin, const char* srv): AM2H_Plugin(plugin,srv), lightMeter(0x23){};
     void setupPlugin(int datastoreIndex) override;
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p) override;
-    void postConfig(AM2H_Datastore& d) override;
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic) override;
 private:
+    void postConfig(AM2H_Datastore& d) override;
     BH1750 lightMeter;
 };
 

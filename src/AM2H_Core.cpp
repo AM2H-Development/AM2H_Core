@@ -109,6 +109,7 @@ void AM2H_Core::checkTimerPublish(){
   if (volatileSetupValues_.sampleRate>0){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
+        debugMessage("Heap: " + String(ESP.getFreeHeap(),DEC)+"\n");
         for (int i=0; i < 20; ++i){
           if (auto p = ds[i].self){
             p->timerPublish( ds[i], mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ) );
