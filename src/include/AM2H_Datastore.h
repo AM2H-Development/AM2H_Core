@@ -96,9 +96,10 @@ union Datastore {
 
 class AM2H_Datastore {
 public:
+    static constexpr uint8_t LOC_MAX_LEN{32};
     bool initialized{false};
     uint16_t config{0};
-    char loc[32];
+    char loc[LOC_MAX_LEN];
     String plugin;
     Datastore sensor;
     AM2H_Plugin* self{nullptr};

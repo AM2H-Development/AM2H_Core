@@ -13,10 +13,7 @@ public:
     void postConfig(AM2H_Datastore& d) override;
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic) override;
 private:
-    static constexpr uint8_t CONTINUOUS_HIGH_RES_MODE_2{0x11};
     BH1750 lightMeter;
 };
-
-
 
 #endif

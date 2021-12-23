@@ -22,21 +22,15 @@ void AM2H_Bh1750::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
 }
 
 void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
-    AM2H_Core::debugMessage("Bh1750::Config (" + String(d.config,BIN) + "):");
-    AM2H_Core::debugMessage(p);
-    AM2H_Core::debugMessage("\n");
+    AM2H_Core::debugMessage("Bh1750::Config (" + String(d.config,BIN) + "):"+p+"\n");
+
     if (t.meas_ == "addr") {
-      AM2H_Core::debugMessage("Addr = 0x");
-      d.sensor.bh1750.addr= AM2H_Helper::parse_hex<uint32_t>(p);
-      AM2H_Core::debugMessage(String(d.sensor.bh1750.addr,HEX));
-      AM2H_Core::debugMessage("\n");
-      d.config |= Config::SET_0;
+        d.sensor.bh1750.addr= AM2H_Helper::parse_hex<uint32_t>(p);
+        AM2H_Core::debugMessage("Addr = 0x"+String(d.sensor.bh1750.addr,HEX)+"\n");
+        d.config |= Config::SET_0;
     }
     if (t.meas_ == "loc") {
-        for (int i=0; i < p.length(); ++i){
-            d.loc[i]= p.charAt(i);
-        }
-        d.loc[p.length()]='\0';
+        AM2H_Helper::parse_location(d.loc,p);
         d.config |= Config::SET_1;
     }
     if (t.meas_ == "sensitivityAdjust") {
@@ -57,9 +51,9 @@ void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 void AM2H_Bh1750::postConfig(AM2H_Datastore& d){
     const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
     if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE,addr)) {
-        AM2H_Core::debugMessage("BH1750 Advanced begin");
+        AM2H_Core::debugMessage("BH1750 Advanced begin\n");
     } else {
-        AM2H_Core::debugMessage("Error initialising BH1750");
+        AM2H_Core::debugMessage("Error initialising BH1750\n");
     }
     lightMeter.setMTreg(d.sensor.bh1750.sensitivityAdjust);
 }
