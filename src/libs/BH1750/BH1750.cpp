@@ -1,5 +1,7 @@
 /*
 
+  modified AM2H: removed serial debug messages 
+
   This is a library for the BH1750FVI Digital Light Sensor breakout board.
 
   The BH1750 board uses I2C for communication. Two pins are required to
@@ -110,7 +112,7 @@ bool BH1750::configure(Mode mode) {
 
     default:
       // Invalid measurement mode
-      Serial.println(F("[BH1750] ERROR: Invalid mode"));
+      // Serial.println(F("[BH1750] ERROR: Invalid mode"));
       break;
 
   }
@@ -122,19 +124,19 @@ bool BH1750::configure(Mode mode) {
       lastReadTimestamp = millis();
       return true;
     case 1: // too long for transmit buffer
-      Serial.println(F("[BH1750] ERROR: too long for transmit buffer"));
+      // Serial.println(F("[BH1750] ERROR: too long for transmit buffer"));
       break;
     case 2: // received NACK on transmit of address
-      Serial.println(F("[BH1750] ERROR: received NACK on transmit of address"));
+      // Serial.println(F("[BH1750] ERROR: received NACK on transmit of address"));
       break;
     case 3: // received NACK on transmit of data
-      Serial.println(F("[BH1750] ERROR: received NACK on transmit of data"));
+      // Serial.println(F("[BH1750] ERROR: received NACK on transmit of data"));
       break;
     case 4: // other error
-      Serial.println(F("[BH1750] ERROR: other error"));
+      // Serial.println(F("[BH1750] ERROR: other error"));
       break;
     default:
-      Serial.println(F("[BH1750] ERROR: undefined error"));
+      // Serial.println(F("[BH1750] ERROR: undefined error"));
       break;
   }
 
@@ -152,7 +154,7 @@ bool BH1750::configure(Mode mode) {
 bool BH1750::setMTreg(byte MTreg) {
   //Bug: lowest value seems to be 32!
   if (MTreg <= 31 || MTreg > 254) {
-    Serial.println(F("[BH1750] ERROR: MTreg out of range"));
+    // Serial.println(F("[BH1750] ERROR: MTreg out of range"));
     return false;
   }
   byte ack = 5;
@@ -178,19 +180,19 @@ bool BH1750::setMTreg(byte MTreg) {
       BH1750_MTreg = MTreg;
       return true;
     case 1: // too long for transmit buffer
-      Serial.println(F("[BH1750] ERROR: too long for transmit buffer"));
+      // Serial.println(F("[BH1750] ERROR: too long for transmit buffer"));
       break;
     case 2: // received NACK on transmit of address
-      Serial.println(F("[BH1750] ERROR: received NACK on transmit of address"));
+      // Serial.println(F("[BH1750] ERROR: received NACK on transmit of address"));
       break;
     case 3: // received NACK on transmit of data
-      Serial.println(F("[BH1750] ERROR: received NACK on transmit of data"));
+      // Serial.println(F("[BH1750] ERROR: received NACK on transmit of data"));
       break;
     case 4: // other error
-      Serial.println(F("[BH1750] ERROR: other error"));
+      // Serial.println(F("[BH1750] ERROR: other error"));
       break;
     default:
-      Serial.println(F("[BH1750] ERROR: undefined error"));
+      // Serial.println(F("[BH1750] ERROR: undefined error"));
       break;
   }
 
@@ -246,7 +248,7 @@ bool BH1750::measurementReady(bool maxWait) {
 float BH1750::readLightLevel() {
 
   if (BH1750_MODE == UNCONFIGURED) {
-    Serial.println(F("[BH1750] Device is not configured!"));
+    // Serial.println(F("[BH1750] Device is not configured!"));
     return -2.0;
   }
 
