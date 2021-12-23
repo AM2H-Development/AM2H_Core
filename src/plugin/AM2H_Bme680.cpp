@@ -3,35 +3,45 @@
 #include "libs/BSEC_Software_Library/src/bsec.h"
 
 extern AM2H_Core* am2h_core;
-extern AM2H_Datastore ds[20];
 
-void AM2H_Bme680::setupPlugin(int datastoreIndex){
+void AM2H_Bme680::setupPlugin(){
     AM2H_Core::debugMessage("\nBme680::Setup\n");
-    ds[datastoreIndex].sensor.bme680.iaq=nullptr;
+    // ds[datastoreIndex].sensor.bme680.iaqStateSave=nullptr;
+    // ds[datastoreIndex].sensor.bme680.bme680 = new Bsec();
 }
 
-void AM2H_Bme680::loopPlugin(int datastoreIndex){
+void AM2H_Bme680::loopPlugin(AM2H_Datastore& d){
+    Bsec& bme680 = *d.sensor.bme680.bme680;
     if (bme680.run()) { // If new data is available
         // output += ", " + String(iaqSensor.pressure);
         // output += ", " + String(iaqSensor.iaq);
         // output += ", " + String(iaqSensor.iaqAccuracy);
-        temperature = bme680.temperature;
-        humidity = bme680.humidity;
+        d.sensor.bme680.temperature = bme680.temperature;
+        d.sensor.bme680.humidity = bme680.humidity;
     }
 }
 
 void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
+    Bsec& bme680 = *d.sensor.bme680.bme680;
     AM2H_Core::debugMessage("Publish: ");
 
-    temperature += ( (float) d.sensor.bme680.offsetTemp / 10.0);
-    humidity += ( (float) d.sensor.bme680.offsetHumidity / 10.0);
-
-    mqttClient.publish( (topic + "temperature").c_str() , String( temperature ).c_str() );
-    mqttClient.publish( (topic + "humidity").c_str() , String( humidity ).c_str() );
-    // mqttClient.publish( (topic + "iaqsave").c_str() , d.sensor.bme680.iaq, 2048, true );
+    d.sensor.bme680.temperature += ( (float) d.sensor.bme680.offsetTemp / 10.0);
+    d.sensor.bme680.humidity += ( (float) d.sensor.bme680.offsetHumidity / 10.0);
+    
+    AM2H_Core::debugMessage("Temp+Hum:" + String(millis())+"\n");
+    mqttClient.publish( (topic + "temperature").c_str() , String( d.sensor.bme680.temperature ).c_str() );
+    mqttClient.publish( (topic + "humidity").c_str() , String( d.sensor.bme680.humidity ).c_str() );
+    uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
+    bme680.getState(bsecState);
+    AM2H_Core::debugMessage("IAQSave:" + String(millis())+"\n");
+    mqttClient.publish( (topic + "iaqsave").c_str() , bsecState, BSEC_MAX_STATE_BLOB_SIZE, true );
 }
 
 void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
+    if (!d.initialized) {
+        d.sensor.bme680.bme680 = new Bsec();
+        d.initialized=true;    
+    }
     AM2H_Core::debugMessage("Bme680::Config (" + String(d.config,BIN) + "):");
     AM2H_Core::debugMessage(p);
     AM2H_Core::debugMessage("\n");
@@ -67,16 +77,16 @@ void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 }
 
 void AM2H_Bme680::postConfig(AM2H_Datastore& d){
+    Bsec& bme680 = *d.sensor.bme680.bme680;
+
     bme680.begin(d.sensor.bme680.addr, Wire);
+    bme680.setConfig(BSEC_CONFIG_IAQ);
 
-    if ( d.sensor.bme680.iaq==nullptr ){
-        bme680.setConfig(BSEC_CONFIG_IAQ);
-    } else {
-        bme680.setConfig(d.sensor.bme680.iaq);
-        delete [] d.sensor.bme680.iaq;
-        d.sensor.bme680.iaq=nullptr;
+    if ( d.sensor.bme680.iaqStateSave!=nullptr ){
+        bme680.setState(d.sensor.bme680.iaqStateSave);
+        delete [] d.sensor.bme680.iaqStateSave;
+        d.sensor.bme680.iaqStateSave=nullptr;
     }
-
     constexpr int SENSORS{3};
     bsec_virtual_sensor_t sensorList[SENSORS] = {
         BSEC_OUTPUT_IAQ,
@@ -89,12 +99,34 @@ void AM2H_Bme680::postConfig(AM2H_Datastore& d){
 
 void AM2H_Bme680::set_iaq(AM2H_Datastore& d, const String p){
     if (p.length()<10){return;}
-    if ( d.sensor.bme680.iaq == nullptr ){
-        d.sensor.bme680.iaq = new uint8_t[BSEC_MAX_WORKBUFFER_SIZE];
+    if ( d.sensor.bme680.iaqStateSave == nullptr ){
+        d.sensor.bme680.iaqStateSave = new uint8_t[BSEC_MAX_STATE_BLOB_SIZE];
     }
     size_t i{0};
     for (auto c : p){
-       d.sensor.bme680.iaq[i++]=c;
-       if (i>=BSEC_MAX_WORKBUFFER_SIZE) {break;} 
+       d.sensor.bme680.iaqStateSave[i++]=c;
+       if (i>=BSEC_MAX_STATE_BLOB_SIZE) {break;} 
     }
+}
+
+void AM2H_Bme680::update_iaq(AM2H_Datastore& d){
+/*    bool update = false;
+    if (stateUpdateCounter == 0) {
+        if (bme680.iaqAccuracy >= 3) {
+            update = true;
+            stateUpdateCounter++;
+        }
+    } else {
+        if ((stateUpdateCounter * STATE_SAVE_PERIOD) < millis()) {
+            update = true;
+            stateUpdateCounter++;
+        }
+    }
+
+    if (update) {
+
+        bme680.getState(bsecState);
+        AM2H_Core::debugMessage("Writing state to MQTT");
+    }
+    */
 }

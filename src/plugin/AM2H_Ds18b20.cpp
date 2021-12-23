@@ -4,7 +4,7 @@
 
 extern AM2H_Core* am2h_core;
 
-void AM2H_Ds18b20::setupPlugin(int datastoreIndex){
+void AM2H_Ds18b20::setupPlugin(){
   AM2H_Core::debugMessage("\nDs18b20::Setup\n");
 
   byte i;

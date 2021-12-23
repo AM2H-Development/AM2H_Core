@@ -4,7 +4,7 @@
 
 extern AM2H_Core* am2h_core;
 
-void AM2H_Sht21::setupPlugin(int datastoreIndex){
+void AM2H_Sht21::setupPlugin(){
   AM2H_Core::debugMessage("\nSht21::Setup\n");
   scan();
 }

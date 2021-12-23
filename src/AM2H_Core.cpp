@@ -72,7 +72,7 @@ void AM2H_Core::setupCore(){
   int i=0;
   while ( auto p = plugins_[i++] ){
     debugMessage("\n" + String(i) + " : " );
-    p->setupPlugin(i);
+    p->setupPlugin();
   }
 }
 
@@ -89,7 +89,7 @@ void AM2H_Core::loopCore(){
 void AM2H_Core::loopPlugins(){
   for (int datastoreIndex=0; datastoreIndex < 20; ++datastoreIndex){
     if (auto p = ds[datastoreIndex].self){
-      p->loopPlugin(datastoreIndex);
+      p->loopPlugin(ds[datastoreIndex]);
     }
   }
 }

@@ -7,7 +7,7 @@
 class AM2H_Icounter : public AM2H_Plugin {
 public:
     AM2H_Icounter(const char* plugin, const char* srv): AM2H_Plugin(plugin,srv){};
-    void setupPlugin(int datastoreIndex) override;
+    void setupPlugin() override;
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p);
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic);
     void interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic);

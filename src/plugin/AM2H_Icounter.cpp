@@ -1,7 +1,7 @@
 #include "AM2H_Icounter.h"
 #include "AM2H_Core.h"
 
-void AM2H_Icounter::setupPlugin(int datastoreIndex){
+void AM2H_Icounter::setupPlugin(){
     AM2H_Core::debugMessage("\nICounter::Setup\n");
 }
 

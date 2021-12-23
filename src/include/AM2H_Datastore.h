@@ -2,6 +2,7 @@
 #define AM2H_Datastore_h
 #include "Arduino.h"
 #include <plugin/AM2H_Plugin.h>
+#include "bsec.h"
 
 class AM2H_Plugin;
 
@@ -82,10 +83,13 @@ union Datastore {
 
     struct Bme680 
     {
+        Bsec* bme680;
         uint32_t addr;
         sint16 offsetTemp;
         sint16 offsetHumidity;
-		uint8_t* iaq;
+		uint8_t* iaqStateSave;
+        float temperature;
+        float humidity;
     } bme680;
     
     struct Bh1750 {

@@ -5,7 +5,7 @@
 
 extern AM2H_Core* am2h_core;
 
-void AM2H_Bh1750::setupPlugin(int datastoreIndex){
+void AM2H_Bh1750::setupPlugin(){
     AM2H_Core::debugMessage("\nBh1750::Setup\n");
 }
 
