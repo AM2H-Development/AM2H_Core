@@ -1,14 +1,15 @@
 #include "AM2H_Core.h"
-#include "include/AM2H_Core_Constants.h"
-#include "include/AM2H_MqttTopic.h"
 #include "include/AM2H_Datastore.h"
-#include "libs/OneWire/OneWire.h"
 
 #define _SERIALDEBUG_  // enable serial debugging
 
 unsigned long lastImpulseMillis_G{0};
 unsigned long impulsesTotal_G{0};
 bool intAvailable_G{false}; // Interupt available?
+
+WiFiClient mqttWifiClient;
+PubSubClient mqttClient(mqttWifiClient);
+ESP8266WebServer server(80);
 
 AM2H_Datastore ds[20];
 
@@ -50,6 +51,8 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   am2h_core= this;
 }
 
+AM2H_Core::AM2H_Core(AM2H_Plugin** plugins):AM2H_Core(plugins, mqttClient, server){};
+
 void AM2H_Core::setupCore(){
   #ifdef _SERIALDEBUG_
     Serial.begin(115200);
@@ -84,7 +87,7 @@ void AM2H_Core::loopCore(){
 }
 
 void AM2H_Core::loopPlugins(){
-    for (int datastoreIndex=0; datastoreIndex < 20; ++datastoreIndex){
+  for (int datastoreIndex=0; datastoreIndex < 20; ++datastoreIndex){
     if (auto p = ds[datastoreIndex].self){
       p->loopPlugin(datastoreIndex);
     }
@@ -92,7 +95,7 @@ void AM2H_Core::loopPlugins(){
 }
 
 void AM2H_Core::checkIntPublish(){
-    if (isIntAvailable()) {
+  if (isIntAvailable()) {
     for (int i=0; i < 20; ++i){
       if (auto p = ds[i].self){
         p->interruptPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
@@ -103,7 +106,7 @@ void AM2H_Core::checkIntPublish(){
 }
 
 void AM2H_Core::checkTimerPublish(){
-    if (volatileSetupValues_.sampleRate>0){
+  if (volatileSetupValues_.sampleRate>0){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
         for (int i=0; i < 20; ++i){
@@ -187,7 +190,7 @@ void AM2H_Core::writeEEPROM() {
 // ---------- Debug Message Handler ------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 
-void AM2H_Core::debugMessage(String message) {
+void const AM2H_Core::debugMessage(const String message) {
   if (am2h_core->status_.length() > 2000) am2h_core->status_ = am2h_core->status_.substring(500);
   am2h_core->status_ += message;
 #ifdef _SERIALDEBUG_
@@ -251,7 +254,6 @@ void AM2H_Core::connectWlan(int timeout) {
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupServer() {
   debugMessage("setting up server handlers...\n");
-
   server_.on("/", handleRoot);
   server_.on(HTTP_API_V1_SET, handleApiSetRequest);
   server_.on(HTTP_API_V1_GET, handleApiGetRequest);
@@ -477,25 +479,25 @@ void AM2H_Core::subscribe(const String loc, const String srv, const String id, c
   mqttClient_.subscribe( topic.c_str() );
 }
 
-String AM2H_Core::getStatusTopic() {
+const String AM2H_Core::getStatusTopic() {
   return AM2H_Core::getConfigTopic() + STATUS_PROP_NAME;
 }
 
-String AM2H_Core::getConfigTopic() {
+const String AM2H_Core::getConfigTopic() {
   return am2h_core->getNamespace() + "/" + DEVICE_PROP_NAME + "/" + am2h_core->getDeviceId() + "/";
 }
 
-String AM2H_Core::getDataTopic(const String loc, const String srv, const String id) {
+const String AM2H_Core::getDataTopic(const String loc, const String srv, const String id) {
   return am2h_core->getNamespace() + "/" + loc + "/" + am2h_core->getDeviceId() + "/" + srv + "/" + id + "/";
 }
 
-  bool AM2H_Core::isIntAvailable(){
+const bool AM2H_Core::isIntAvailable() const{
     return intAvailable_G;
   }
-  void AM2H_Core::resetInt(){
+void AM2H_Core::resetInt() {
     intAvailable_G=false;
   }
-  unsigned long AM2H_Core::getLastImpulseMillis(){
+const unsigned long AM2H_Core::getLastImpulseMillis() const {
     return lastImpulseMillis_G;
   }
 
@@ -505,8 +507,7 @@ MqttTopic AM2H_Core::parseMqttTopic(char* topic){
   int p{0};
   // home/dev/esp01/devCfg/id/sampleRate\0
 
-  while ( ( topic[i] != '\0' ) && ( p < 6 ))
-  {
+  while ( ( topic[i] != '\0' ) && ( p < 6 )) {
     if ( topic[i] != '/' ){
       part[p]+=topic[i];
     } else {

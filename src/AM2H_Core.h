@@ -1,6 +1,5 @@
 #ifndef AM2H_Core_h
 #define AM2H_Core_h
-
 #include "Arduino.h"
 #include <Wire.h>
 #include <ESP8266WebServer.h>
@@ -11,6 +10,7 @@
 #include "include/AM2H_MqttTopic.h"
 #include "plugin/AM2H_Plugin.h"
 #include "libs/OneWire/OneWire.h"
+#include "bsec.h"
 
 void IRAM_ATTR impulseISR();
 
@@ -36,25 +36,22 @@ struct Timers {
 
 class AM2H_Core {
 public:
+  AM2H_Core(AM2H_Plugin** plugins);
   AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
   void setupCore();
   void loopCore();
-  static void debugMessage(String message);
+  static void const debugMessage(String message);
   static MqttTopic parseMqttTopic(char* topic);
 
 private:
   AM2H_Plugin** plugins_;
-
   PubSubClient& mqttClient_;
   ESP8266WebServer& server_;
-
   String status_;
   byte updateRequired_;
   byte connStatus_;
-
   PersistentSetupContainer persistentSetupValues_;
   VolatileSetupContainer volatileSetupValues_;
-
   Timers timer_;
 
   void setupEEPROM();
@@ -75,7 +72,6 @@ private:
   static void handleApiRequest();
   static void handleApiGetRequest();
   static void handleApiSetRequest();
-
   void setupMqtt();
   void loopMqtt();
   static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
@@ -83,25 +79,21 @@ private:
 
 public:
   // Getters/Setters:
-  static String getStatusTopic();
-  static String getConfigTopic();
-  static String getDataTopic(const String loc, const String srv, const String id);
+  static const String getStatusTopic();
+  static const String getConfigTopic();
+  static const String getDataTopic(const String loc, const String srv, const String id);
 
-  PubSubClient& getMqttClient(){
-    return mqttClient_;
-  }
-
-  String getDeviceId(){
-    return persistentSetupValues_.deviceId;
-  }
+  const PubSubClient& getMqttClient() const { return mqttClient_; }
+  const String getDeviceId() const { return persistentSetupValues_.deviceId; }
+  const String getSSID() const { return volatileSetupValues_.ssid; }
+  const String getPW() const { return volatileSetupValues_.pw; }
+  const char* getMQTTServer() const { return persistentSetupValues_.mqttServer; }
+  const int getMQTTPort() const { return persistentSetupValues_.mqttPort; }
+  const String getNamespace() const { return persistentSetupValues_.ns; }
 
   void setDeviceId(const String deviceId){
     deviceId.toCharArray(persistentSetupValues_.deviceId, DEVICE_ID_LEN);
     updateRequired_ |= COMMIT_TO_EEPROM_REQUIRED | MQTT_UPDATE_REQUIRED | MQTT_RESET_REQUIRED;
-  }
-
-  String getSSID(){
-    return volatileSetupValues_.ssid;
   }
 
   void setSSID(const String ssid){
@@ -109,26 +101,14 @@ public:
     updateRequired_ |= WLAN_RESET_REQUIRED;
   }
 
-  String getPW(){
-    return volatileSetupValues_.pw;
-  }
-
   void setPW(const String pw){
     volatileSetupValues_.pw = pw;
     updateRequired_ |= WLAN_RESET_REQUIRED;
   }
 
-  const char* getMQTTServer(){
-    return persistentSetupValues_.mqttServer;
-  }
-
   void setMQTTServer(const String mqttServer){
     mqttServer.toCharArray(persistentSetupValues_.mqttServer, MQTT_SERVER_LEN);
     updateRequired_ |= COMMIT_TO_EEPROM_REQUIRED | MQTT_RESET_REQUIRED;
-}
-
-  int getMQTTPort(){
-    return persistentSetupValues_.mqttPort;
   }
 
   void setMQTTPort(int mqttPort){
@@ -140,10 +120,6 @@ public:
     setMQTTPort(mqttPort.toInt());
   }
 
-  String const getNamespace() const{
-    return persistentSetupValues_.ns;
-  }
-
   void setNamespace(const String ns){
     ns.toCharArray(persistentSetupValues_.ns, NS_LEN);
     updateRequired_ |= COMMIT_TO_EEPROM_REQUIRED | MQTT_UPDATE_REQUIRED | MQTT_RESET_REQUIRED;
@@ -151,9 +127,9 @@ public:
 
   void subscribe(const String loc, const String srv, const String id, const String meas);
 
-  bool isIntAvailable();
+  const bool isIntAvailable() const;
   void resetInt();
-  unsigned long getLastImpulseMillis();
+  const unsigned long getLastImpulseMillis() const;
 };
 
 #endif
