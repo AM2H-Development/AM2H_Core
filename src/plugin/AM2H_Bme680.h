@@ -19,7 +19,6 @@ private:
     float temperature;
     float humidity;
 
-
     constexpr static uint8_t bsec_config_iaq[] {
         #include "libs/BSEC_Software_Library/src/config/generic_33v_3s_4d/bsec_iaq.txt"
     };
