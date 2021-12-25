@@ -24,37 +24,37 @@ enum DeriveUnit{
 class Config {
     public:
     static constexpr uint16_t SET_0 = 0x0001;
-    static constexpr uint16_t CHECK_TO_0 = 0x0001;
+    static constexpr uint16_t CHECK_TO_0 = SET_0;
     static constexpr uint16_t SET_1 = 0x0002;
-    static constexpr uint16_t CHECK_TO_1 = 0x0003;
+    static constexpr uint16_t CHECK_TO_1 = CHECK_TO_0+SET_1;
     static constexpr uint16_t SET_2 = 0x0004;
-    static constexpr uint16_t CHECK_TO_2 = 0x0007;
+    static constexpr uint16_t CHECK_TO_2 = CHECK_TO_1+SET_2;
     static constexpr uint16_t SET_3 = 0x0008;
-    static constexpr uint16_t CHECK_TO_3 = 0x000F;
+    static constexpr uint16_t CHECK_TO_3 = CHECK_TO_2+SET_3;
     static constexpr uint16_t SET_4 = 0x0010;
-    static constexpr uint16_t CHECK_TO_4 = 0x001F;
+    static constexpr uint16_t CHECK_TO_4 = CHECK_TO_3+SET_4;
     static constexpr uint16_t SET_5 = 0x0020;
-    static constexpr uint16_t CHECK_TO_5 = 0x003F;
+    static constexpr uint16_t CHECK_TO_5 = CHECK_TO_4+SET_5;
     static constexpr uint16_t SET_6 = 0x0040;
-    static constexpr uint16_t CHECK_TO_6 = 0x007F;
+    static constexpr uint16_t CHECK_TO_6 = CHECK_TO_5+SET_6;
     static constexpr uint16_t SET_7 = 0x0080;
-    static constexpr uint16_t CHECK_TO_7 = 0x00FF;
+    static constexpr uint16_t CHECK_TO_7 = CHECK_TO_6+SET_7;
     static constexpr uint16_t SET_8 = 0x0100;
-    static constexpr uint16_t CHECK_TO_8 = 0x01FF;
+    static constexpr uint16_t CHECK_TO_8 = CHECK_TO_7+SET_8;
     static constexpr uint16_t SET_9 = 0x0200;
-    static constexpr uint16_t CHECK_TO_9 = 0x03FF;
+    static constexpr uint16_t CHECK_TO_9 = CHECK_TO_8+SET_9;
     static constexpr uint16_t SET_A = 0x0400;
-    static constexpr uint16_t CHECK_TO_A = 0x07FF;    
+    static constexpr uint16_t CHECK_TO_A = CHECK_TO_9+SET_A;    
     static constexpr uint16_t SET_B = 0x0800;
-    static constexpr uint16_t CHECK_TO_B = 0x0FFF;
+    static constexpr uint16_t CHECK_TO_B = CHECK_TO_A+SET_B;
     static constexpr uint16_t SET_C = 0x1000;
-    static constexpr uint16_t CHECK_TO_C = 0x1FFF;
+    static constexpr uint16_t CHECK_TO_C = CHECK_TO_B+SET_C;
     static constexpr uint16_t SET_D = 0x2000;
-    static constexpr uint16_t CHECK_TO_D = 0x3FFF;
+    static constexpr uint16_t CHECK_TO_D = CHECK_TO_C+SET_D;
     static constexpr uint16_t SET_E = 0x4000;
-    static constexpr uint16_t CHECK_TO_E = 0x7FFF;
+    static constexpr uint16_t CHECK_TO_E = CHECK_TO_D+SET_E;
     static constexpr uint16_t SET_F = 0x8000;
-    static constexpr uint16_t CHECK_TO_F = 0xFFFF;
+    static constexpr uint16_t CHECK_TO_F = CHECK_TO_E+SET_F;
 };
 
 union Datastore {
@@ -87,9 +87,10 @@ union Datastore {
         uint32_t addr;
         sint16 offsetTemp;
         sint16 offsetHumidity;
+        sint16 offsetPressure;
+        char*  iaqConfigTopic;
 		uint8_t* iaqStateSave;
-        float temperature;
-        float humidity;
+        bool iaqStateSetReady;
     } bme680;
     
     struct Bh1750 {

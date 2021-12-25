@@ -492,7 +492,7 @@ const String AM2H_Core::getDataTopic(const String loc, const String srv, const S
   return am2h_core->getNamespace() + "/" + loc + "/" + am2h_core->getDeviceId() + "/" + srv + "/" + id + "/";
 }
 
-const bool AM2H_Core::isIntAvailable() const{
+const bool AM2H_Core::isIntAvailable() const {
     return intAvailable_G;
   }
 void AM2H_Core::resetInt() {
