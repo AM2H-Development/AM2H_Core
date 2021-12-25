@@ -8,7 +8,6 @@
 class AM2H_Bme680 : public AM2H_Plugin {
 public:
     AM2H_Bme680(const char* plugin, const char* srv): AM2H_Plugin(plugin,srv){};
-    void setupPlugin() override;
     void loopPlugin(AM2H_Datastore& d) override;
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p) override;
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic) override;

@@ -4,20 +4,16 @@
 
 extern AM2H_Core* am2h_core;
 
-void AM2H_Bme680::setupPlugin(){
-    AM2H_Core::debugMessage("\nBme680::Setup\n");
-    // ds[datastoreIndex].sensor.bme680.iaqStateSave=nullptr;
-    // ds[datastoreIndex].sensor.bme680.bme680 = new Bsec();
-}
-
 void AM2H_Bme680::loopPlugin(AM2H_Datastore& d){
     Bsec& bme680 = *d.sensor.bme680.bme680;
     if (bme680.run()) { // If new data is available
         // output += ", " + String(iaqSensor.pressure);
         // output += ", " + String(iaqSensor.iaq);
         // output += ", " + String(iaqSensor.iaqAccuracy);
-        d.sensor.bme680.temperature = bme680.temperature;
-        d.sensor.bme680.humidity = bme680.humidity;
+        // auto a = bme680.pressure;
+        
+        // d.sensor.bme680.temperature = bme680.temperature;
+        // d.sensor.bme680.humidity = bme680.humidity;
     }
 }
 
@@ -29,8 +25,12 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
     d.sensor.bme680.humidity += ( (float) d.sensor.bme680.offsetHumidity / 10.0);
     
     AM2H_Core::debugMessage("Temp+Hum:" + String(millis())+"\n");
-    mqttClient.publish( (topic + "temperature").c_str() , String( d.sensor.bme680.temperature ).c_str() );
-    mqttClient.publish( (topic + "humidity").c_str() , String( d.sensor.bme680.humidity ).c_str() );
+    mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature ).c_str() );
+    mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity ).c_str() );
+    mqttClient.publish( (topic + "pressure").c_str() , String( bme680.pressure ).c_str() );
+    mqttClient.publish( (topic + "iaq").c_str() , String( bme680.iaq ).c_str() );
+    mqttClient.publish( (topic + "iaqAccuracy").c_str() , String( bme680.iaqAccuracy ).c_str() );
+
     uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
     bme680.getState(bsecState);
     AM2H_Core::debugMessage("IAQSave:" + String(millis())+"\n");
@@ -87,11 +87,12 @@ void AM2H_Bme680::postConfig(AM2H_Datastore& d){
         delete [] d.sensor.bme680.iaqStateSave;
         d.sensor.bme680.iaqStateSave=nullptr;
     }
-    constexpr int SENSORS{3};
+    constexpr int SENSORS{4};
     bsec_virtual_sensor_t sensorList[SENSORS] = {
         BSEC_OUTPUT_IAQ,
+        BSEC_OUTPUT_RAW_PRESSURE,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY
     };
 
     bme680.updateSubscription(sensorList, SENSORS, BSEC_SAMPLE_RATE_LP);
