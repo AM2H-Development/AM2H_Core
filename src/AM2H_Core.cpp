@@ -71,7 +71,7 @@ void AM2H_Core::setupCore(){
 
   int i=0;
   while ( auto p = plugins_[i++] ){
-    debugMessage("\n" + String(i) + " : " );
+    debugMessage("AM2H_Core::setupCore()","Plugin-ID=" + String(i) + " : " );
     p->setupPlugin();
   }
 }
@@ -109,7 +109,7 @@ void AM2H_Core::checkTimerPublish(){
   if (volatileSetupValues_.sampleRate>0){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
-        debugMessage("Heap: " + String(ESP.getFreeHeap(),DEC)+"\n");
+        debugMessage("Heap: " + String(ESP.getFreeHeap(),DEC)+"/"+String(ESP.getHeapFragmentation())+"\n");
         for (int i=0; i < 20; ++i){
           if (auto p = ds[i].self){
             p->timerPublish( ds[i], mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ) );
@@ -163,9 +163,7 @@ void AM2H_Core::checkUpdateRequired() {
 // ---------- EEPROM Utility Functions ---------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupEEPROM() {
-  debugMessage("EEPROM-Data needs size: ");
-  debugMessage(String( (unsigned long) sizeof(PersistentSetupContainer)));
-  debugMessage("\n");
+  debugMessage("EEPROM-Data needs size: "+String(sizeof(PersistentSetupContainer))+"\n");
   EEPROM.begin(sizeof(PersistentSetupContainer));
 
   if (EEPROM.percentUsed() >= 0) {
@@ -191,12 +189,39 @@ void AM2H_Core::writeEEPROM() {
 // ---------- Debug Message Handler ------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 
-void const AM2H_Core::debugMessage(const String message) {
+void const AM2H_Core::debugMessage(const String& caller, const String& message) {
+  String newMessage;
+  if ( am2h_core->lastCaller != caller ){
+    newMessage+="\n["+millis();
+    newMessage+="] [H:"+ESP.getFreeHeap();
+    newMessage+="] "+caller+" -> ";
+    am2h_core->lastCaller=caller;
+  }
+  if (parse_debugMessage(message, newMessage)) {am2h_core->lastCaller="";}
   if (am2h_core->status_.length() > 2000) am2h_core->status_ = am2h_core->status_.substring(500);
-  am2h_core->status_ += message;
+  am2h_core->status_ += newMessage;
 #ifdef _SERIALDEBUG_
-  Serial.print(message);
+  Serial.print(newMessage);
 #endif
+}
+void const AM2H_Core::debugMessage(const String& message) {
+  debugMessage(String(millis()), message);
+}
+
+bool AM2H_Core::parse_debugMessage(const String message, String& newMessage) {
+  bool nl{false};
+  for (auto c: message){
+    if (c=='\n'){
+      newMessage+=" | ";
+      nl=true;
+      continue;}
+    if (c<' ' || c>'~'){
+      newMessage+="&#"+static_cast<uint8_t>(c)+';';
+    } else {
+      newMessage+=c;
+    }
+  }
+  return nl;
 }
 
 // ----------

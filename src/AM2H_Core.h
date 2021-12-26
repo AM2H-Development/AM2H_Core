@@ -40,10 +40,14 @@ public:
   AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
   void setupCore();
   void loopCore();
-  static void const debugMessage(String message);
   static MqttTopic parseMqttTopic(char* topic);
 
+  static void const debugMessage(const String& caller, const String& message);
+  static void const debugMessage(const String& message);
+  static bool AM2H_Core::parse_debugMessage(const String message, String& newMessage);
+
 private:
+  String lastCaller{""}; 
   AM2H_Plugin** plugins_;
   PubSubClient& mqttClient_;
   ESP8266WebServer& server_;

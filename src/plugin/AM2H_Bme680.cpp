@@ -25,8 +25,14 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
     mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( (float) d.sensor.bme680.offsetTemp / 10.0)).c_str() );
     mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity+ ( (float) d.sensor.bme680.offsetHumidity / 10.0) ).c_str() );
     mqttClient.publish( (topic + "pressure").c_str() , String( bme680.pressure+ ( (float) d.sensor.bme680.offsetPressure / 10.0) ).c_str() );
-    mqttClient.publish( (topic + "iaq").c_str() , String( bme680.iaq ).c_str() );
+    if ( bme680.iaqAccuracy>=1 ) {
+        mqttClient.publish( (topic + "iaq").c_str() , String( bme680.iaq ).c_str() );
+    }
+    if ( bme680.staticIaqAccuracy>=1 ) {
+        mqttClient.publish( (topic + "staticIaq").c_str() , String( bme680.staticIaq ).c_str() );
+    }
     mqttClient.publish( (topic + "iaqAccuracy").c_str() , String( bme680.iaqAccuracy ).c_str() );
+    mqttClient.publish( (topic + "staticIaqAccuracy").c_str() , String( bme680.staticIaqAccuracy ).c_str() );
 
     if ( bme680.staticIaqAccuracy>=3 ) {
         uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
@@ -124,7 +130,7 @@ void AM2H_Bme680::postConfig(AM2H_Datastore& d){
 }
 
 void AM2H_Bme680::set_iaq(AM2H_Datastore& d, const String p){
-    if (p.length()<10){return;}
+    if (p.length()!=BSEC_MAX_STATE_BLOB_SIZE){return;}
     if ( d.sensor.bme680.iaqStateSave == nullptr ){
         d.sensor.bme680.iaqStateSave = new uint8_t[BSEC_MAX_STATE_BLOB_SIZE];
     }
