@@ -44,7 +44,7 @@ public:
 
   static void const debugMessage(const String& caller, const String& message);
   static void const debugMessage(const String& message);
-  static bool AM2H_Core::parse_debugMessage(const String message, String& newMessage);
+  static bool const parse_debugMessage (const String message, String& newMessage);
 
 private:
   String lastCaller{""}; 

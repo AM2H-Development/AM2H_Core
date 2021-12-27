@@ -36,15 +36,15 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   persistentSetupValues_.mqttPort = 1883;
   String("myDevice12").toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
   String("myHome").toCharArray(persistentSetupValues_.ns,NS_LEN);
-  volatileSetupValues_.ssid=""; 
+  volatileSetupValues_.ssid="";
   volatileSetupValues_.pw="";
   volatileSetupValues_.sampleRate=0;
-  
+
   timer_.espRestart=0;
   timer_.mqttReconnect=0;
   timer_.wlanReconnect=0;
   timer_.sendData=0;
-  
+
   pinMode(CORE_STATUS_LED, OUTPUT);
   pinMode(CORE_ISR_PIN, INPUT_PULLUP);
   attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
@@ -80,7 +80,7 @@ void AM2H_Core::loopCore(){
   loopServer();
   loopMqtt();
   checkUpdateRequired();
-  
+
   checkTimerPublish();
   checkIntPublish();
   loopPlugins();
@@ -208,7 +208,7 @@ void const AM2H_Core::debugMessage(const String& message) {
   debugMessage(String(millis()), message);
 }
 
-bool AM2H_Core::parse_debugMessage(const String message, String& newMessage) {
+bool const AM2H_Core::parse_debugMessage(const String message, String& newMessage) {
   bool nl{false};
   for (auto c: message){
     if (c=='\n'){
@@ -247,7 +247,7 @@ void AM2H_Core::restartWlan(String ssid, String pw) {
 void AM2H_Core::connectWlan(int timeout) {
   bool onOffLed{0};
   debugMessage("WIFI - connecting to " + WiFi.SSID() + " :");
-  
+
   timeout *= 2;
   while ( (WiFi.status() != WL_CONNECTED) && ( timeout != 0) ) {
     digitalWrite(CORE_STATUS_LED,onOffLed);
@@ -257,7 +257,7 @@ void AM2H_Core::connectWlan(int timeout) {
     debugMessage(".");
   }
   digitalWrite(CORE_STATUS_LED,LOW);
-  
+
   if (timeout == 0) {
     WiFi.mode(WIFI_AP);
     WiFi.softAP(getDeviceId());
@@ -368,14 +368,14 @@ void AM2H_Core::handleApiSetRequest(){
     if ( a == "ssid" ){
       am2h_core->setSSID(v);
     }
-    
+
     if ( a == "pw" ){
       am2h_core->setPW(v);
     }
 
     if ( a == "mqttServer" || a == "mqttserver" ){
       am2h_core->setMQTTServer(v);
-    }      
+    }
 
     if ( a == "mqttPort" || a == "mqttport" ){
       am2h_core->setMQTTPort(v);
@@ -440,9 +440,9 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
 
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
   // Global:
-  // home / dev / esp01 / deviceCfg / - / sampleRate 
+  // home / dev / esp01 / deviceCfg / - / sampleRate
   // Plugins:
-  // home / dev / esp01 / ds18b20 / id / addr 
+  // home / dev / esp01 / ds18b20 / id / addr
   // ns_  /loc_ / dev_  / srv_ or plugin_ / id_ / meas_
 
   String s;
