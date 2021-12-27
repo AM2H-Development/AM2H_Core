@@ -31,11 +31,9 @@ double AM2H_Icounter::calculatePower(AM2H_Datastore& d, const uint32_t interval)
     if ( interval > d.sensor.icounter.zeroLimit ){
         return 0.;
     }
-    const double d_counter = static_cast<double>(d.sensor.icounter.unitsPerTick) * pow (10., d.sensor.icounter.exponentPerTick); // counter_units
-    const double d_interval = static_cast<double>(interval) * static_cast<double>(d.sensor.icounter.unitsPerMs) * pow(10., static_cast<double>(d.sensor.icounter.exponentPerMs)); // interval_units
-    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()"," d_counter: " + String(d_counter) );
-    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()"," d_interval: " + String(d_interval) );
-    return  d_counter / d_interval;
+    const double power = 1. / (static_cast<double>(interval)/1000) * static_cast<double>(d.sensor.icounter.unitsPerMs) * pow(10., static_cast<double>(d.sensor.icounter.exponentPerMs));
+    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()"," power: " + String(power) );
+    return  power;
 }
 
 void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
