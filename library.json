@@ -6,7 +6,7 @@
         "type": "git",
         "url": "https://github.com/AM2H-Development/AM2H_Core.git"
     },
-    "version": "0.8",
+    "version": "0.8.1",
     "exclude": "tests",
     "examples": "examples/*/*.ino",
     "frameworks": "arduino",
