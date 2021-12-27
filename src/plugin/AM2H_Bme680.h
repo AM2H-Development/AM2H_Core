@@ -14,7 +14,6 @@ public:
 private:
     void postConfig(AM2H_Datastore& d) override;
     void set_iaq(AM2H_Datastore& d, const String p);
-    void update_iaq(AM2H_Datastore& d);
 
     // Bsec bme680;
     // uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};

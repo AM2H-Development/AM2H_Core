@@ -109,7 +109,7 @@ void AM2H_Core::checkTimerPublish(){
   if (volatileSetupValues_.sampleRate>0){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
-        debugMessage("Heap: " + String(ESP.getFreeHeap(),DEC)+"/"+String(ESP.getHeapFragmentation())+"\n");
+        debugMessage("AM2H_Core::checkTimerPublish()","");
         for (int i=0; i < 20; ++i){
           if (auto p = ds[i].self){
             p->timerPublish( ds[i], mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ) );
@@ -122,24 +122,24 @@ void AM2H_Core::checkTimerPublish(){
 void AM2H_Core::checkUpdateRequired() {
   if (updateRequired_ != NO_UPDATE_REQUIRED) {
     if (updateRequired_ & COMMIT_TO_EEPROM_REQUIRED) {
-      debugMessage("COMMIT_TO_EEPROM_REQUIRED\n");
+      debugMessage("AM2H_Core::checkUpdateRequired()","COMMIT_TO_EEPROM_REQUIRED\n");
       updateRequired_ ^= COMMIT_TO_EEPROM_REQUIRED;
       writeEEPROM();
     }
     if (updateRequired_ & WLAN_RESET_REQUIRED) {
-      debugMessage("WLAN_RESET_REQUIRED\n");
+      debugMessage("AM2H_Core::checkUpdateRequired()","WLAN_RESET_REQUIRED\n");
       timer_.wlanReconnect = millis() + 1000;
       updateRequired_ ^= WLAN_RESET_REQUIRED;
     }
     if (updateRequired_ & MQTT_RESET_REQUIRED && (connStatus_ >= WLAN_CONNECTED) ) {
-      debugMessage("MQTT_RESET_REQUIRED\n");
+      debugMessage("AM2H_Core::checkUpdateRequired()","MQTT_RESET_REQUIRED\n");
       mqttClient_.disconnect();
       mqttClient_.setServer(getMQTTServer(), getMQTTPort());
       connStatus_ = WLAN_CONNECTED;
       updateRequired_ ^= MQTT_RESET_REQUIRED;
     }
     if (updateRequired_ & ESP_RESET_REQUIRED) {
-      debugMessage("ESP_RESET_REQUIRED\n");
+      debugMessage("AM2H_Core::checkUpdateRequired()","ESP_RESET_REQUIRED\n");
       timer_.espRestart = millis() + 2000;
       updateRequired_ ^= ESP_RESET_REQUIRED;
       connStatus_ = DEV_RESTART_PENDING;
@@ -148,9 +148,8 @@ void AM2H_Core::checkUpdateRequired() {
   }
 
   if ( (timer_.wlanReconnect > 0) && (millis() > timer_.wlanReconnect) ) {
-    debugMessage("Proceed WLAN reconnect!\n");
+    debugMessage("AM2H_Core::checkUpdateRequired()","Proceed WLAN reconnect! " + getSSID() + " : " + getPW());
     timer_.wlanReconnect = 0;
-    debugMessage(getSSID() + " : " + getPW() );
     restartWlan(getSSID(), getPW());
   }
 
@@ -163,16 +162,14 @@ void AM2H_Core::checkUpdateRequired() {
 // ---------- EEPROM Utility Functions ---------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupEEPROM() {
-  debugMessage("EEPROM-Data needs size: "+String(sizeof(PersistentSetupContainer))+"\n");
+  debugMessage("AM2H_Core::setupEEPROM()","EEPROM-Data size: "+String(sizeof(PersistentSetupContainer))+"\n");
   EEPROM.begin(sizeof(PersistentSetupContainer));
 
   if (EEPROM.percentUsed() >= 0) {
     EEPROM.get(0, persistentSetupValues_);
-    debugMessage("EEPROM has data from a previous run. ");
-    debugMessage(String(EEPROM.percentUsed()));
-    debugMessage("% of ESP flash space currently used\n");
+    debugMessage("AM2H_Core::setupEEPROM()","EEPROM has data from a previous run. " + String(EEPROM.percentUsed())+"% of ESP flash space currently used\n");
   } else {
-    debugMessage("EEPROM size changed - EEPROM data zeroed - write default values\n");
+    debugMessage("AM2H_Core::setupEEPROM()","EEPROM size changed - EEPROM data zeroed - write default values\n");
     writeEEPROM();
   }
 }
@@ -180,9 +177,7 @@ void AM2H_Core::setupEEPROM() {
 void AM2H_Core::writeEEPROM() {
   EEPROM.put(0, persistentSetupValues_);
   boolean ok = EEPROM.commit();
-  debugMessage( (ok) ? "Commit OK\n" : "Commit failed\n");
-  debugMessage(String(EEPROM.percentUsed()));
-  debugMessage("% of ESP flash space currently used\n");
+  debugMessage("AM2H_Core::writeEEPROM()", (ok) ? "Commit to EEPROM OK\n" : "Commit to EEPROM failed\n");
 }
 
 // ----------
@@ -246,7 +241,7 @@ void AM2H_Core::restartWlan(String ssid, String pw) {
 
 void AM2H_Core::connectWlan(int timeout) {
   bool onOffLed{0};
-  debugMessage("WIFI - connecting to " + WiFi.SSID() + " :");
+  debugMessage("AM2H_Core::connectWlan()","WIFI - connecting to " + WiFi.SSID());
 
   timeout *= 2;
   while ( (WiFi.status() != WL_CONNECTED) && ( timeout != 0) ) {
@@ -254,23 +249,17 @@ void AM2H_Core::connectWlan(int timeout) {
     onOffLed = !onOffLed;
     delay(500);
     timeout--;
-    debugMessage(".");
+    debugMessage("AM2H_Core::connectWlan()",".");
   }
   digitalWrite(CORE_STATUS_LED,LOW);
 
   if (timeout == 0) {
     WiFi.mode(WIFI_AP);
     WiFi.softAP(getDeviceId());
-    debugMessage("\n No connection established ... switching to AP mode with SSID=");
-    debugMessage(getDeviceId());
-    debugMessage("\n");
+    debugMessage("AM2H_Core::connectWlan()","\n No connection established ... switching to AP mode with SSID:"+getDeviceId()+"\n");
     connStatus_ = WLAN_AP_PROV;
   } else {
-    debugMessage("Connected to ");
-    debugMessage(WiFi.SSID() );
-    debugMessage(" IP address: ");
-    debugMessage(WiFi.localIP().toString());
-    debugMessage("\r\n");
+    debugMessage("AM2H_Core::connectWlan()","Connected to "+WiFi.SSID()+" IP address: "+WiFi.localIP().toString()+"\n");
     connStatus_ = WLAN_CONNECTED;
   }
 }
@@ -279,7 +268,7 @@ void AM2H_Core::connectWlan(int timeout) {
 // ---------- Server Response Handler + Utility ------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupServer() {
-  debugMessage("setting up server handlers...\n");
+  debugMessage("AM2H_Core::setupServer()","setting up server handlers\n");
   server_.on("/", handleRoot);
   server_.on(HTTP_API_V1_SET, handleApiSetRequest);
   server_.on(HTTP_API_V1_GET, handleApiGetRequest);
@@ -294,28 +283,16 @@ inline void AM2H_Core::loopServer(){
 }
 
 void AM2H_Core::handleRoot() {
-  String content = "INDEX\n\n";
-  content += "\nMethod: ";
-  content += (am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST";
-  content += "\nArguments: ";
-  content += am2h_core->server_.args();
-  content += "\n";
+  debugMessage("AM2H_Core::handleRoot()", String((am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST") + " INDEX/?");
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
-    content += " " + am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + "\n";
+    debugMessage("AM2H_Core::handleRoot()/args", am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + "\n");
   }
-  content += "\n\nSTATUS-LOG !-->\n";
-  content += am2h_core->status_;
-  content += "<--!\n";
-
-#ifdef _SERIALDEBUG_
-  Serial.print(content);
-#endif
-  am2h_core->server_.send(200, ENCODING_PLAIN, content);
+  am2h_core->server_.send(200, ENCODING_PLAIN, "<h1>Debug-Log:</h1><code>" + am2h_core->status_ + "</code>");
 }
 
 void AM2H_Core::handleRestart() {
-  debugMessage("Restart-request received\n");
-  String content = "{\"message\":\"restart in 2 s!\"}";
+  debugMessage("AM2H_Core::handleRestart()","Restart-request received\n");
+  const String content = "{\"message\":\"restart in 2 s!\"}";
   am2h_core->updateRequired_ |= ESP_RESET_REQUIRED;
   am2h_core->server_.send(200, ENCODING_JSON, content);
 }
@@ -385,9 +362,7 @@ void AM2H_Core::handleApiSetRequest(){
       am2h_core->setNamespace(v);
     }
   }
-#ifdef _SERIALDEBUG_
-  Serial.print(content);
-#endif
+  debugMessage("AM2H_Core::handleApiSetRequest()",content);
   am2h_core->server_.send(200, ENCODING_PLAIN, content);
 }
 
@@ -403,9 +378,7 @@ void AM2H_Core::handleNotFound() {
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
     content += " " + am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + "\n";
   }
-#ifdef _SERIALDEBUG_
-  Serial.print(content);
-#endif
+  debugMessage("AM2H_Core::handleNotFound()",content);
   am2h_core->server_.send(404, ENCODING_PLAIN, content);
 }
 
@@ -413,10 +386,7 @@ void AM2H_Core::handleNotFound() {
 // ---------- MQTT Utility Functions -----------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupMqtt() {
-  debugMessage( "setupMqtt()::" );
-  debugMessage( getMQTTServer() );
-  debugMessage( ":" );
-  debugMessage( String(getMQTTPort()) );
+  debugMessage("AM2H_Core::setupMqtt()",String(getMQTTServer()) + ":" + String(getMQTTPort()) );
 
   // mqttClient_.setServer("server-akm.fritz.box", getMQTTPort());
   mqttClient_.setServer(getMQTTServer(), getMQTTPort());
@@ -434,9 +404,7 @@ void AM2H_Core::loopMqtt() {
 }
 
 void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length) {
-  debugMessage( "Message arrived [" );
-  debugMessage( topic );
-  debugMessage( "]\n" );
+  debugMessage("AM2H_Core::mqttCallback()", topic );
 
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
   // Global:
@@ -445,17 +413,15 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
   // home / dev / esp01 / ds18b20 / id / addr
   // ns_  /loc_ / dev_  / srv_ or plugin_ / id_ / meas_
 
-  String s;
+  String topicString;
   for (int i = 0; i < length; i++) {
-    s += (char) payload[i];
+    topicString += (char) payload[i];
   }
 
   if ( tp.srv_ == DEVICE_CFG_TOPIC  ){
-    debugMessage( "config: " );
-    debugMessage( s );
-    debugMessage( " #\n" );
+    debugMessage("AM2H_Core::mqttCallback()", " config: " + topicString);
     if ( tp.meas_ == "sampleRate" ){
-      am2h_core->volatileSetupValues_.sampleRate = s.toInt();
+      am2h_core->volatileSetupValues_.sampleRate = topicString.toInt();
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
     }
   } else {
@@ -464,7 +430,7 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
       while ( auto p = am2h_core->plugins_[i++] ){
         if (p->getPlugin() == tp.srv_ ){
           if ( tp.id_<20 ) {
-            p->config(ds[tp.id_],tp,s);
+            p->config(ds[tp.id_],tp,topicString);
           }
         }
       }
@@ -473,27 +439,19 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
 
 void AM2H_Core::mqttReconnect() {
   if (timer_.mqttReconnect < millis()) {
-    debugMessage( "Attempting MQTT connection and unsubscribe topics ..." );
+    debugMessage("AM2H_Core::mqttReconnect()", "Attempting MQTT connection and unsubscribe topics. Wait for connection: " );
     mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
 
     if ( mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL)) {
-      debugMessage( "connected\n" );
+      debugMessage("AM2H_Core::mqttReconnect()", "connected\nPublish Status to " + getStatusTopic() );
       mqttClient_.publish(getStatusTopic().c_str(), CONFIG_PROP_VAL, RETAINED);
-      debugMessage("\nPublish Status to \"config\": " );
-      debugMessage( getStatusTopic() );
-      debugMessage("\n");
       if ( !(updateRequired_ & MQTT_UPDATE_REQUIRED) ) {
-        debugMessage("\nSubscribe Config: " );
-        debugMessage( getConfigTopic() );
-        debugMessage("\n" );
+        debugMessage("AM2H_Core::mqttReconnect()", "Subscribe config-topic " +  getConfigTopic() );
         mqttClient_.subscribe((getConfigTopic() + "#").c_str());
       }
       connStatus_ = MQTT_CLIENT_CONNECTED;
-      // updateRequired ^= MQTT_RESET_REQUIRED;
     } else {
-      debugMessage( "failed, rc=" );
-      debugMessage( String(mqttClient_.state()) );
-      debugMessage( " try again in 1 second\n" );
+      debugMessage( "failed with error code " + String(mqttClient_.state()) + " trying again in 1 second\n" );
       timer_.mqttReconnect = millis() + 1000;
       connStatus_ = WLAN_CONNECTED;
     }
