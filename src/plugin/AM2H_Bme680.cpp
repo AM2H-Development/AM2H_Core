@@ -82,7 +82,7 @@ void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
         d.config |= Config::SET_5;
     }
     if ( d.config == Config::CHECK_TO_5 ){
-        d.plugin = plugin_;
+        // d.plugin = plugin_;
         d.self = this;
         if ( !d.sensor.bme680.iaqStateSetReady ) { // apply post config and set saved IAQ data only once
             d.sensor.bme680.iaqStateSetReady = true;

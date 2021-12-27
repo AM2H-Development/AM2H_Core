@@ -113,7 +113,7 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
     d.config |= Config::SET_2;
   }
   if ( d.config == Config::CHECK_TO_2 ){
-      d.plugin = plugin_;
+      // d.plugin = plugin_;
       d.self = this;
       AM2H_Core::debugMessage("AM2H_Ds18b20::config()","finished, new config state {"+String(d.config,BIN)+"}");
   } else {

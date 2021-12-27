@@ -70,8 +70,6 @@ union Datastore {
     } sht21;
 
     struct Icounter {
-        // Unit tickUnit;
-        // DeriveUnit deriveUnit;
         uint32_t absCnt;       // units
         sint16 unitsPerTick;   // units/1
         sint16 exponentPerTick; // 10^e
@@ -81,8 +79,7 @@ union Datastore {
         uint32_t millis;  // lastMillis ms
     } icounter;
 
-    struct Bme680 
-    {
+    struct Bme680 {
         Bsec* bme680;
         uint32_t addr;
         sint16 offsetTemp;
@@ -97,16 +94,15 @@ union Datastore {
         uint32_t addr;
         uint8 sensitivityAdjust;  // 31..254 default:69 
     } bh1750;
-
 };
 
 class AM2H_Datastore {
 public:
     static constexpr uint8_t LOC_MAX_LEN{32};
-    bool initialized{false};
-    uint16_t config{0};
+    bool initialized{false}; // used to identify the first config run
+    uint16_t config{0}; // array for "Config" state
     char loc[LOC_MAX_LEN];
-    String plugin;
+    // String plugin; // name of the plugin, set after final config
     Datastore sensor;
     AM2H_Plugin* self{nullptr};
 };

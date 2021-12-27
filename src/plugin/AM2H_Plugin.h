@@ -24,7 +24,7 @@ class AM2H_Plugin{
     const String getPlugin() const { return plugin_; }
 
   protected:
-    String plugin_{""};
+    String plugin_{""}; // name of the plugin
     String srv_ {"none"};
 };
 
