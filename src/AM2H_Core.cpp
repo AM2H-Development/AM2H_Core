@@ -187,8 +187,8 @@ void AM2H_Core::writeEEPROM() {
 void const AM2H_Core::debugMessage(const String& caller, const String& message) {
   String newMessage;
   if ( am2h_core->lastCaller != caller ){
-    newMessage+="\n["+millis();
-    newMessage+="] [H:"+ESP.getFreeHeap();
+    newMessage+="\n["+String(millis());
+    newMessage+="] [H:"+String(ESP.getFreeHeap());
     newMessage+="] "+caller+" -> ";
     am2h_core->lastCaller=caller;
   }
@@ -287,7 +287,7 @@ void AM2H_Core::handleRoot() {
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
     debugMessage("AM2H_Core::handleRoot()/args", am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + "\n");
   }
-  am2h_core->server_.send(200, ENCODING_PLAIN, "<h1>Debug-Log:</h1><code>" + am2h_core->status_ + "</code>");
+  am2h_core->server_.send(200, ENCODING_PLAIN, "<h1>Debug-Log:</h1>\n<code>\n" + am2h_core->status_ + "\n</code>\n");
 }
 
 void AM2H_Core::handleRestart() {
