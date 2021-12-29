@@ -95,7 +95,7 @@ void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
             d.sensor.bme680.iaqStateSetReady = true;
             postConfig(d);
         }
-        AM2H_Core::debugMessage("AM2H_Bme680::config()","finished, new config state {"+String(d.config,BIN)+"}");
+        AM2H_Core::debugMessage("AM2H_Bme680::config()"," finished, new config state {"+String(d.config,BIN)+"}");
     } else {
         d.self=nullptr;
     }

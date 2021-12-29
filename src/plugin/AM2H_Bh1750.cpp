@@ -30,7 +30,7 @@ void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
     if (t.meas_ == "sensitivityAdjust") {
         d.sensor.bh1750.sensitivityAdjust=p.toInt();
         if (d.sensor.bh1750.sensitivityAdjust<32) {d.sensor.bh1750.sensitivityAdjust=32;}
-        AM2H_Core::debugMessage("AM2H_Bh1750::config()","set sensitivityAdjust = "+String(d.sensor.bh1750.sensitivityAdjust)+"\n");
+        AM2H_Core::debugMessage("AM2H_Bh1750::config()","set sensitivityAdjust = "+String(d.sensor.bh1750.sensitivityAdjust));
         d.config |= Config::SET_2;
     }
     if ( d.config == Config::CHECK_TO_2 ){
@@ -46,7 +46,7 @@ void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 void AM2H_Bh1750::postConfig(AM2H_Datastore& d){
     const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
     if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE,addr)) {
-       AM2H_Core::debugMessage("AM2H_Bh1750::postConfig()","BH1750 initialized. Setting sensitivity to " + d.sensor.bh1750.sensitivityAdjust);
+       AM2H_Core::debugMessage("AM2H_Bh1750::postConfig()","BH1750 initialized. Setting sensitivity to " + String(d.sensor.bh1750.sensitivityAdjust) );
     } else {
         AM2H_Core::debugMessage("AM2H_Bh1750::postConfig()","Error initialising BH1750");
     }
