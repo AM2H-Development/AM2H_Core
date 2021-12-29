@@ -87,7 +87,7 @@ public:
   static const String getConfigTopic();
   static const String getDataTopic(const String loc, const String srv, const String id);
 
-  const PubSubClient& getMqttClient() const { return mqttClient_; }
+  PubSubClient& getMqttClient() const { return mqttClient_; }
   const String getDeviceId() const { return persistentSetupValues_.deviceId; }
   const String getSSID() const { return volatileSetupValues_.ssid; }
   const String getPW() const { return volatileSetupValues_.pw; }

@@ -22,13 +22,22 @@ void AM2H_Rgbled::loopPlugin(AM2H_Datastore& d){
 }
 
 void AM2H_Rgbled::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    AM2H_Core::debugMessage("AM2H_Rgbled::timerPublish()","publishing to " + topic);
-
-    // mqttClient.publish( (topic + "illuminance").c_str() , String( level ).c_str() );
+    const auto& rgbled=d.sensor.rgbled;
+    if (rgbled.active){
+        String config = "colorOn="+getColorName(rgbled.color[State::ON])+"&colorOff="+getColorName(rgbled.color[State::OFF])+"&timeOn="+String(rgbled.time[State::ON])+"&timeOff="+String(rgbled.time[State::OFF]);
+        AM2H_Core::debugMessage("AM2H_Rgbled::timerPublish()","publishing to " + topic + "state: " + config);
+        mqttClient.publish( (topic + "state").c_str() , config.c_str() );
+    }
 }
 
 void AM2H_Rgbled::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
     AM2H_Core::debugMessage("AM2H_Rgbled::config()","old config state {"+String(d.config,BIN)+"}\n");
+    if ( d.initialized && (t.meas_ == "setState") ) {
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set state\n");
+        parseStateTopic(d,p);
+        timerPublish(d, am2h_core->getMqttClient(), am2h_core->getDataTopic(d.loc,getSrv(),String(t.id_)) );
+        return;
+    }
 
     if (t.meas_ == "addr") {
         d.sensor.bh1750.addr= AM2H_Helper::parse_hex<uint32_t>(p);
@@ -99,6 +108,34 @@ void AM2H_Rgbled::postConfig(AM2H_Datastore& d){
     d.sensor.rgbled.state=State::OFF;
 }
 
+void AM2H_Rgbled::parseStateTopic(AM2H_Datastore& d,const String& p_origin){
+    auto& rgbled=d.sensor.rgbled;
+    String p=p_origin+"&";
+    String key{};
+    String value{};
+    bool isKey{true};
+
+    for (auto c: p){
+        if (c=='='){
+            isKey=false;
+            continue;
+        }
+        if (c=='&'){
+            isKey=true;
+            if (key=="colorOn") { rgbled.color[State::ON] = static_cast<uint8_t>(getColor(value)); }
+            if (key=="colorOff") { rgbled.color[State::OFF] = static_cast<uint8_t>(getColor(value)); }
+            if (key=="timeOn") { rgbled.time[State::ON] = value.toInt(); }
+            if (key=="timeOff") { rgbled.time[State::OFF] = value.toInt(); }
+            AM2H_Core::debugMessage("AM2H_Rgbled::parseStateTopic()","key:value = "+key+":"+value+"\n");
+            key="";
+            value="";
+            continue;
+        }
+        if (isKey) { key+=c; } else { value+=c; }
+    }
+    rgbled.active=true;
+}
+
 const AM2H_Rgbled::Color AM2H_Rgbled::getColor(const String& color){
     String uColor = color;
     uColor.toUpperCase();
@@ -110,4 +147,16 @@ const AM2H_Rgbled::Color AM2H_Rgbled::getColor(const String& color){
     if (uColor=="YELLOW"){ return Color::YELLOW; }
     if (uColor=="GREEN"){ return Color::GREEN; }
     return Color::BLACK;    
+}
+
+const String AM2H_Rgbled::getColorName(const uint8_t col){
+    const Color c = static_cast<Color>(col);
+    if (c==Color::WHITE){ return "WHITE"; }
+    if (c==Color::FUCHSIA){ return "FUCHSIA"; }
+    if (c==Color::AQUA){ return "AQUA"; }
+    if (c==Color::BLUE){ return "BLUE"; }
+    if (c==Color::RED){ return "RED"; }
+    if (c==Color::YELLOW){ return "YELLOW"; }
+    if (c==Color::GREEN){ return "GREEN"; }
+    return "BLACK";
 }

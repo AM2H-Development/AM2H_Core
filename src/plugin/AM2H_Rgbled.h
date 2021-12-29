@@ -14,7 +14,7 @@ public:
     AM2H_Rgbled(const char* plugin, const char* srv): AM2H_Plugin(plugin,srv){};
     void loopPlugin(AM2H_Datastore& d) override;
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p) override;
-    void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic) override;
+    void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic);
 private:
     enum class Color{
         WHITE=0x0,
@@ -30,11 +30,13 @@ private:
     static constexpr uint8_t OUTPUT_REGISTER{0x01};
 
     const Color getColor(const String& color);
+    const String getColorName(const uint8_t C);
     void postConfig(AM2H_Datastore& d) override;
     struct State{
         static constexpr uint8_t ON{0x00};
         static constexpr uint8_t OFF{0x01};
     };
+    void parseStateTopic(AM2H_Datastore& d,const String& p);
 };
 
 #endif

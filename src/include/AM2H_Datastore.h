@@ -115,5 +115,5 @@ public:
     Datastore sensor;
     AM2H_Plugin* self{nullptr};
 };
- 
+
 #endif
