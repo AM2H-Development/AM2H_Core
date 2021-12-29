@@ -45,6 +45,7 @@ public:
   static void const debugMessage(const String& caller, const String& message);
   static void const debugMessage(const String& message);
   static bool const parse_debugMessage (const String message, String& newMessage);
+  void loopMqtt();
 
 private:
   String lastCaller{""}; 
@@ -77,7 +78,6 @@ private:
   static void handleApiGetRequest();
   static void handleApiSetRequest();
   void setupMqtt();
-  void loopMqtt();
   static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
   void mqttReconnect();
 

@@ -94,6 +94,15 @@ union Datastore {
         uint32_t addr;
         uint8 sensitivityAdjust;  // 31..254 default:69 
     } bh1750;
+
+    struct Rgbled {
+        uint32_t addr;
+        uint8_t color[2];
+        uint16_t time[2];
+        bool active;
+        uint32_t timestamp;
+        uint8_t state;
+    } rgbled;
 };
 
 class AM2H_Datastore {

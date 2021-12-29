@@ -14,8 +14,6 @@ byte constexpr CORE_DQ{2};  // Onewire
 // I2C config
 byte constexpr TCAADDR{0x70}; // Multiplexer address
 
-
-
 // Connection Status
 byte constexpr DEV_RESTART_PENDING   {0x00};
 byte constexpr CONN_UNKNOWN          {0x01};
