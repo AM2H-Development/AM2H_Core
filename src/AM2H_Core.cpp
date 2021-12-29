@@ -283,7 +283,7 @@ inline void AM2H_Core::loopServer(){
 }
 
 void AM2H_Core::handleRoot() {
-  debugMessage("AM2H_Core::handleRoot()", String((am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST") + " INDEX/?");
+  debugMessage("AM2H_Core::handleRoot()", String((am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST") + " INDEX");
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
     debugMessage("AM2H_Core::handleRoot()/args", am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + "\n");
   }

@@ -13,13 +13,13 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
     Bsec& bme680 = *d.sensor.bme680.bme680;
     AM2H_Core::debugMessage("AM2H_Bme680::timerPublish()","publishing to " + topic);
 
-    mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( (float) d.sensor.bme680.offsetTemp / 10.0)).c_str() );
-    mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity+ ( (float) d.sensor.bme680.offsetHumidity / 10.0) ).c_str() );
-    mqttClient.publish( (topic + "pressure").c_str() , String( bme680.pressure+ ( (float) d.sensor.bme680.offsetPressure / 10.0) ).c_str() );
+    mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( static_cast<float>(d.sensor.bme680.offsetTemp) / 10.0)).c_str() );
+    mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity+ ( static_cast<float>(d.sensor.bme680.offsetHumidity) / 10.0) ).c_str() );
+    mqttClient.publish( (topic + "pressure").c_str() , String( bme680.pressure/100. + ( static_cast<float>(d.sensor.bme680.offsetPressure) / 10.0) ).c_str() );
     if ( bme680.iaqAccuracy>=1 ) {
         mqttClient.publish( (topic + "iaq").c_str() , String( bme680.iaq ).c_str() );
     }
-    if ( bme680.staticIaqAccuracy>=1 ) {
+    if ( bme680.staticIaqAccuracy>=0 ) {
         mqttClient.publish( (topic + "staticIaq").c_str() , String( bme680.staticIaq ).c_str() );
     }
     mqttClient.publish( (topic + "iaqAccuracy").c_str() , String( bme680.iaqAccuracy ).c_str() );
@@ -108,9 +108,10 @@ void AM2H_Bme680::postConfig(AM2H_Datastore& d){
         delete [] d.sensor.bme680.iaqStateSave;
         d.sensor.bme680.iaqStateSave=nullptr;
     }
-    constexpr int SENSORS{4};
+    constexpr int SENSORS{5};
     bsec_virtual_sensor_t sensorList[SENSORS] = {
         BSEC_OUTPUT_IAQ,
+        BSEC_OUTPUT_STATIC_IAQ,
         BSEC_OUTPUT_RAW_PRESSURE,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY
