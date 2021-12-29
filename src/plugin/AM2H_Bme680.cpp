@@ -81,7 +81,7 @@ void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
         d.config |= Config::SET_4;
     }
     if (t.meas_ == "setIAQ") {
-        AM2H_Core::debugMessage("AM2H_Bme680::config()","attempt to set IAQ = "+String(d.sensor.bme680.iaqStateSetReady));
+        AM2H_Core::debugMessage("AM2H_Bme680::config()","attempt to set IAQ when iaqStateSetReady==false: iaqStateSetReady is" + String(d.sensor.bme680.iaqStateSetReady ? " true":" false") );
         if ( !d.sensor.bme680.iaqStateSetReady ) { // set saved IAQ data only once
             AM2H_Core::debugMessage("AM2H_Bme680::config()"," set!");
             set_iaq(d,p);
