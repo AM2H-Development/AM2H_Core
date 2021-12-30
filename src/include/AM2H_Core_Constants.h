@@ -73,6 +73,9 @@ String const DEVICE_PROP_NAME {"dev"};
 #define   SERVICE_PROP_VAL "srv"
 #define DATA_PROP_NAME "data"
 String const STATUS_PROP_NAME {"status"};
+String const RESET_PROP_NAME {"resetCause"};
+String const HEAP_PROP_NAME {"freeHeap"};
+String const RUN_PROP_NAME {"runningSince"};
 #define   OFFLINE_PROP_VAL "offline"
 #define   CONFIG_PROP_VAL  "config"
 #define   ONLINE_PROP_VAL  "online"

@@ -110,9 +110,17 @@ void AM2H_Core::checkTimerPublish(){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
         debugMessage("AM2H_Core::checkTimerPublish()","");
+        am2h_core->mqttClient_.publish((getConfigTopic()+RESET_PROP_NAME).c_str(), ESP.getResetReason().c_str(), RETAINED);
+        loopMqtt();
+        am2h_core->mqttClient_.publish((getConfigTopic()+HEAP_PROP_NAME).c_str(), String(ESP.getFreeHeap()).c_str(), RETAINED);
+        loopMqtt();
+        am2h_core->mqttClient_.publish((getConfigTopic()+RUN_PROP_NAME).c_str(), String(millis()).c_str(), RETAINED);
+        loopMqtt();
+
         for (int i=0; i < 20; ++i){
           if (auto p = ds[i].self){
             p->timerPublish( ds[i], mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ) );
+            loopMqtt();
           }
         }
     }
@@ -187,7 +195,7 @@ void AM2H_Core::writeEEPROM() {
 void const AM2H_Core::debugMessage(const String& caller, const String& message) {
   String newMessage;
   if ( am2h_core->lastCaller != caller ){
-    newMessage+="\n["+String(millis());
+    newMessage+="\n["+String(millis()/1000.,3);
     newMessage+="] [H:"+String(ESP.getFreeHeap());
     newMessage+="] "+caller+" -> ";
     am2h_core->lastCaller=caller;
