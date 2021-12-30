@@ -8,16 +8,13 @@ void AM2H_Rgbled::loopPlugin(AM2H_Datastore& d){
     auto& rgbled=d.sensor.rgbled;
     if (!rgbled.active) {return;}
     if ( (rgbled.timestamp+rgbled.time[rgbled.state]) < millis() ) {
-        // AM2H_Core::debugMessage("AM2H_Rgbled::loopPlugin()","state = "+String(rgbled.state)+"}\n");        
-        // AM2H_Core::debugMessage("AM2H_Rgbled::loopPlugin()","timestamp = "+String(rgbled.timestamp)+"}\n");
-        // AM2H_Core::debugMessage("AM2H_Rgbled::loopPlugin()","time[state] = "+String(rgbled.time[rgbled.state])+"}\n");
         rgbled.state = (rgbled.state==State::ON) ? State::OFF : State::ON;
-        rgbled.timestamp=millis();
-        // AM2H_Core::debugMessage("AM2H_Rgbled::loopPlugin()","set color {"+String(rgbled.color[rgbled.state])+"}\n");
+        if (rgbled.time[rgbled.state]==0){return;}
         Wire.beginTransmission(static_cast<uint8_t>(d.sensor.rgbled.addr));
         Wire.write(OUTPUT_REGISTER);
         Wire.write(rgbled.color[rgbled.state]);
         Wire.endTransmission();
+        rgbled.timestamp=millis();
     }
 }
 
@@ -81,7 +78,6 @@ void AM2H_Rgbled::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
         d.config |= Config::SET_6;
     }
     if ( d.config == Config::CHECK_TO_6 ){
-        // d.plugin = plugin_;
         d.self = this;
         if (!d.initialized){
             postConfig(d);
