@@ -134,8 +134,6 @@ public:
     updateRequired_ |= COMMIT_TO_EEPROM_REQUIRED | MQTT_UPDATE_REQUIRED | MQTT_RESET_REQUIRED;
   }
 
-  void subscribe(const String loc, const String srv, const String id, const String meas);
-
   const bool isIntAvailable() const;
   void resetInt();
   const unsigned long getLastImpulseMillis() const;

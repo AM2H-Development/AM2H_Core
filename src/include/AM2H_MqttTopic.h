@@ -12,7 +12,7 @@ public:
     String meas_;
     String value_;
 
-    MqttTopic(String ns, String loc, String dev, String srv, String id, String meas): ns_(ns), loc_(loc), dev_(dev), srv_(srv), id_(id.toInt()), meas_(meas){}
+    MqttTopic(String ns, String loc, String dev, String id, String srv, String meas): ns_(ns), loc_(loc), dev_(dev), srv_(srv), id_(id.toInt()), meas_(meas){}
 
     void setValue(const String value){
         value_=value;
