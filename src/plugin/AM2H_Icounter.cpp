@@ -1,5 +1,8 @@
 #include "AM2H_Icounter.h"
 #include "AM2H_Core.h"
+#include "include/AM2H_Datastore.h"
+#include "include/AM2H_Helper.h"
+
 
 void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     const uint32_t now = millis();

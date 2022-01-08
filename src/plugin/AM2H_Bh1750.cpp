@@ -1,4 +1,5 @@
 #include "AM2H_Bh1750.h"
+#include "include/AM2H_Helper.h"
 #include "AM2H_Core.h"
 #include "libs/BH1750/BH1750.h"
 #include <Wire.h>
@@ -8,6 +9,8 @@ extern AM2H_Core* am2h_core;
 void AM2H_Bh1750::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     float level = -5.0;
     if (lightMeter.measurementReady()) {
+        // 0x0541
+        am2h_core->switchWire(d.sensor.bh1750.addr);
         level = lightMeter.readLightLevel();
     }
     AM2H_Core::debugMessage("AM2H_Bh1750::timerPublish()","publishing to " + topic + "illuminance="+String(level));
@@ -45,6 +48,7 @@ void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 
 void AM2H_Bh1750::postConfig(AM2H_Datastore& d){
     const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
+    am2h_core->switchWire(d.sensor.bh1750.addr);
     if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE,addr)) {
        AM2H_Core::debugMessage("AM2H_Bh1750::postConfig()","BH1750 initialized. Setting sensitivity to " + String(d.sensor.bh1750.sensitivityAdjust) );
     } else {

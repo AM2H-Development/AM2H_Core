@@ -1,7 +1,7 @@
 #ifndef AM2H_Datastore_h
 #define AM2H_Datastore_h
-#include "Arduino.h"
-#include <plugin/AM2H_Plugin.h>
+// #include "Arduino.h"
+// #include <plugin/AM2H_Plugin.h>
 #include "bsec.h"
 
 class AM2H_Plugin;

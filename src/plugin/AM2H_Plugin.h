@@ -9,6 +9,7 @@
 #include "include/AM2H_Core_Constants.h"
 #include "include/AM2H_Datastore.h"
 #include "include/AM2H_MqttTopic.h"
+// #include "include/AM2H_Helper.h"
 
 class AM2H_Plugin{
   public:
@@ -26,33 +27,6 @@ class AM2H_Plugin{
   protected:
     String plugin_{""}; // name of the plugin
     String srv_ {"none"};
-};
-
-class AM2H_Helper {
-  public:
-    template <class T> const static T parse_hex(const String& string){
-      T number{0};
-      uint32_t shift{0};
-      int len = string.length();
-      for (int pos=0;  pos<len; ++pos){
-          char c = string.charAt(len-pos-1);
-          if ( c >= '0' && c <='9' ){ number += (c-'0') << shift; }
-          if ( c >= 'A' && c <= 'F' ){ number+= (c-'A'+10) << shift;}
-          if ( c >= 'a' && c <= 'f' ){ number+= (c-'a'+10) << shift;}
-          if ( c=='x' ) {break;}
-          shift+=4;
-      }
-      return number;
-    }
-
-    static void parse_location(char* loc, const String parse ){
-      const uint8_t len = (parse.length()>= AM2H_Datastore::LOC_MAX_LEN)? AM2H_Datastore::LOC_MAX_LEN-1 : parse.length();
-      for (int i=0; i < len; ++i){
-          loc[i]= parse.charAt(i);
-      }
-      loc[len]='\0';
-    }
-    
 };
 
 #endif

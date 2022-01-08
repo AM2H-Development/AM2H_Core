@@ -1,5 +1,4 @@
 #include "AM2H_Core.h"
-#include "include/AM2H_Datastore.h"
 
 #define _SERIALDEBUG_  // enable serial debugging
 
@@ -28,14 +27,15 @@ AM2H_Core* am2h_core{nullptr};
 AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server):plugins_(plugins),mqttClient_(mqttClient),server_(server){
   mqttClient.setBufferSize(2500);
   Wire.begin(CORE_SDA,CORE_SCL);
+  volatileSetupValues_.i2cMuxAddr=0;
   status_=""; // status container for debugging messages
   updateRequired_ = NO_UPDATE_REQUIRED; // semaphore for system updates
   connStatus_ = CONN_UNKNOWN;
 
-  String("192.168.178.10").toCharArray(persistentSetupValues_.mqttServer,MQTT_SERVER_LEN);
-  persistentSetupValues_.mqttPort = 1883;
-  String("myDevice12").toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
-  String("myHome").toCharArray(persistentSetupValues_.ns,NS_LEN);
+  String( MQTT::DEFAULT_SERVER ).toCharArray(persistentSetupValues_.mqttServer,MQTT_SERVER_LEN);
+  persistentSetupValues_.mqttPort = MQTT::DEFAULT_PORT;
+  String( MQTT::DEVICE ).toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
+  String( MQTT::NAMESPACE ).toCharArray(persistentSetupValues_.ns,NS_LEN);
   volatileSetupValues_.ssid="";
   volatileSetupValues_.pw="";
   volatileSetupValues_.sampleRate=0;
@@ -432,6 +432,9 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
       am2h_core->volatileSetupValues_.sampleRate = topicString.toInt();
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
     }
+    if ( tp.meas_ == "i2cMuxAddr" ){
+      am2h_core->volatileSetupValues_.i2cMuxAddr = AM2H_Helper::parse_hex<uint8_t>(topicString);
+    }
   } else {
       // send cfg message to Plugin
       int i=0;
@@ -509,4 +512,17 @@ MqttTopic AM2H_Core::parseMqttTopic(char* topic){
   }
 
   return MqttTopic(part[0],part[1],part[2],part[3],part[4],part[5]);
+}
+
+// ----------
+// ---------- Wire Utility Functions -----------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+
+void AM2H_Core::switchWire(uint32_t const addr) const {
+  if (volatileSetupValues_.i2cMuxAddr==0){return;}
+  uint8_t channel = (addr & 0x0F00) >> 8;
+  if (channel > 7) return;
+  Wire.beginTransmission(volatileSetupValues_.i2cMuxAddr);
+  Wire.write(1 << channel);
+  Wire.endTransmission();
 }

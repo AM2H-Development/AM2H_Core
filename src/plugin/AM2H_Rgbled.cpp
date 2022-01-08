@@ -1,5 +1,6 @@
 #include "AM2H_Rgbled.h"
 #include "AM2H_Core.h"
+#include "include/AM2H_Helper.h"
 #include <Wire.h>
 
 extern AM2H_Core* am2h_core;
@@ -10,6 +11,7 @@ void AM2H_Rgbled::loopPlugin(AM2H_Datastore& d){
     if ( (rgbled.timestamp+rgbled.time[rgbled.state]) < millis() ) {
         rgbled.state = (rgbled.state==State::ON) ? State::OFF : State::ON;
         if (rgbled.time[rgbled.state]==0){return;}
+        am2h_core->switchWire(d.sensor.rgbled.addr);
         Wire.beginTransmission(static_cast<uint8_t>(d.sensor.rgbled.addr));
         Wire.write(OUTPUT_REGISTER);
         Wire.write(rgbled.color[rgbled.state]);
@@ -90,6 +92,7 @@ void AM2H_Rgbled::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 }
 
 void AM2H_Rgbled::postConfig(AM2H_Datastore& d){
+    am2h_core->switchWire(d.sensor.rgbled.addr);
     Wire.beginTransmission(static_cast<uint8_t>(d.sensor.rgbled.addr));      //Init PCA9536 set register as an output
     Wire.write(CFG_REGISTER);
     Wire.write(0x00);

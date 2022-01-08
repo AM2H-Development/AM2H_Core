@@ -1,11 +1,13 @@
 #include "AM2H_Bme680.h"
 #include "AM2H_Core.h"
+#include "include/AM2H_Helper.h"
 #include "libs/BSEC_Software_Library/src/bsec.h"
 
 extern AM2H_Core* am2h_core;
 
 void AM2H_Bme680::loopPlugin(AM2H_Datastore& d){
     Bsec& bme680 = *d.sensor.bme680.bme680;
+    am2h_core->switchWire(d.sensor.bme680.addr);
     bme680.run();
 }
 
@@ -117,6 +119,7 @@ void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 void AM2H_Bme680::postConfig(AM2H_Datastore& d){
     Bsec& bme680 = *d.sensor.bme680.bme680;
 
+    am2h_core->switchWire(d.sensor.bme680.addr);
     bme680.begin(d.sensor.bme680.addr, Wire);
     AM2H_Core::debugMessage("AM2H_Bme680::postConfig()","begin() BSEC-Status:" + String(bme680.status) + " BME-Status" + String(bme680.bme680Status)+"\n");
     bme680.setConfig(BSEC_CONFIG_IAQ);

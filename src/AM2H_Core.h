@@ -1,6 +1,8 @@
 #ifndef AM2H_Core_h
 #define AM2H_Core_h
 #include "Arduino.h"
+#include "include/AM2H_Datastore.h"
+#include "include/AM2H_Helper.h"
 #include <Wire.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
@@ -24,7 +26,8 @@ struct PersistentSetupContainer {
 struct VolatileSetupContainer {
   String ssid;                // WLAN SSID
   String pw;                  // WLAN password
-  int sampleRate;             // Sample rate in seconds
+  int sampleRate;             // sample rate in seconds
+  uint8_t i2cMuxAddr;         // multiplexer address
 };
 
 struct Timers {
@@ -46,6 +49,8 @@ public:
   static void const debugMessage(const String& message);
   static bool const parse_debugMessage (const String message, String& newMessage);
   void loopMqtt();
+
+  void switchWire (uint32_t const addr) const;
 
 private:
   String lastCaller{""}; 

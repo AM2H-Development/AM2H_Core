@@ -11,6 +11,14 @@ byte constexpr CORE_SDA{2};  // I2C SDA
 byte constexpr CORE_RX{3};  // Serial RX
 byte constexpr CORE_DQ{2};  // Onewire
 
+// Mqtt and Device
+namespace MQTT {
+String const DEFAULT_SERVER {"192.168.178.10"};
+constexpr int DEFAULT_PORT {1883};
+String const DEVICE {"am2hDevice"};
+String const NAMESPACE {"myLocation"};
+}
+
 // I2C config
 byte constexpr TCAADDR{0x70}; // Multiplexer address
 
