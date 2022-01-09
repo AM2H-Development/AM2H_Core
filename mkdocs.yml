@@ -1,0 +1,6 @@
+site_name: AM2H_Core
+site_url: https://github.com/AM2H-Development/AM2H_Core
+nav:
+    - Home: index.md
+    - Abaut: about.md
+theme: readthedocs
