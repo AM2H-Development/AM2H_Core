@@ -26,6 +26,7 @@ void AM2H_Rgbled::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
         String config = "colorOn="+getColorName(rgbled.color[State::ON])+"&colorOff="+getColorName(rgbled.color[State::OFF])+"&timeOn="+String(rgbled.time[State::ON])+"&timeOff="+String(rgbled.time[State::OFF]);
         AM2H_Core::debugMessage("AM2H_Rgbled::timerPublish()","publishing to " + topic + "state: " + config);
         mqttClient.publish( (topic + "state").c_str() , config.c_str() );
+        am2h_core->loopMqtt();
     }
 }
 

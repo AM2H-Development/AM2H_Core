@@ -46,7 +46,7 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
         am2h_core->loopMqtt();
     }
 
-    if ( bme680.staticIaqAccuracy>=3 ) {
+    if ( bme680.staticIaqAccuracy>=1 ) {
         uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
         bme680.getState(bsecState);
         AM2H_Core::debugMessage("AM2H_Bme680::timerPublish()","saving IAQ\n");
@@ -58,16 +58,19 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
 void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
     AM2H_Core::debugMessage("AM2H_Bme680::config()","old config state {"+String(d.config,BIN)+"}\n");
     if (!d.initialized) {
-        String tempTopic = am2h_core->getConfigTopic()+t.srv_+"/"+String(t.id_)+"/setIAQ";
+        d.initialized=true;
+
+        String tempTopic = am2h_core->getFullStorageTopic(String(t.id_), t.srv_, "setIAQ");
         d.sensor.bme680.iaqConfigTopic = new char[tempTopic.length()];
         size_t i=0;
         for (auto c: tempTopic ){
             d.sensor.bme680.iaqConfigTopic[i++]=c;
         }
         d.sensor.bme680.iaqConfigTopic[i]='\0';
+        
+        am2h_core->subscribe(d.sensor.bme680.iaqConfigTopic);
         d.sensor.bme680.bme680 = new Bsec();
         d.sensor.bme680.iaqStateSetReady=false;
-        d.initialized=true;
     }
 
     if (t.meas_ == "addr") {
@@ -101,6 +104,7 @@ void AM2H_Bme680::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
             AM2H_Core::debugMessage("AM2H_Bme680::config()"," set!");
             set_iaq(d,p);
         }
+        am2h_core->unsubscribe(d.sensor.bme680.iaqConfigTopic);
         d.config |= Config::SET_5;
     }
     if ( d.config == Config::CHECK_TO_5 ){

@@ -2,22 +2,30 @@
 #define AM2H_Core_Constants_h
 
 // Pin Setup
-byte constexpr CORE_SCL{0}; // I2C SCL 
-byte constexpr CORE_ISR_PIN{0}; // Interrupt
+byte constexpr CORE_SCL{0}; // I2C SCL must be "0" for ESP8266
+byte constexpr CORE_SDA{2};  // I2C SDA must be "0" for ESP8266
+
+byte constexpr CORE_ISR_PIN{1}; // Interrupt
 uint32_t constexpr CORE_ISR_DEBOUNCE{500}; // debounce time in ms
-byte constexpr CORE_TX{1}; // Serial TX
+
+byte constexpr CORE_TX{1}; // Serial TX only active when SERIALDEBUG is enabled
+byte constexpr CORE_RX{3};  // Serial RX only active when SERIALDEBUG is enabled
+
 byte constexpr CORE_STATUS_LED{2}; // Internal LED (blue)
-byte constexpr CORE_SDA{2};  // I2C SDA
-byte constexpr CORE_RX{3};  // Serial RX
-byte constexpr CORE_DQ{2};  // Onewire
+byte constexpr CORE_DQ{3};  // Onewire
 
 // Mqtt and Device
 namespace MQTT {
-String const DEFAULT_SERVER {"192.168.178.10"};
-constexpr int DEFAULT_PORT {1883};
-String const DEVICE {"am2hDevice"};
-String const NAMESPACE {"myLocation"};
+    String const DEFAULT_SERVER {"192.168.178.10"};
+    constexpr int DEFAULT_PORT {1883};
+    String const DEVICE {"am2hDevice"};
+    String const NAMESPACE {"myLocation"};
 }
+
+namespace DebugLogger {
+    constexpr uint32_t LOGLEN{6000};
+    constexpr uint32_t SHORTBY{1000};
+} 
 
 // I2C config
 byte constexpr TCAADDR{0x70}; // Multiplexer address
@@ -67,7 +75,9 @@ byte constexpr LOC_LEN {32};
 // Properties
 
 String const DEVICE_CFG_TOPIC {"deviceCfg"};
-String const DEVICE_PROP_NAME {"dev"};
+String const DEVICE_PROP_NAME {"config"};
+String const STORAGE_PROP_NAME {"storage"};
+
 #define   DEVICE_ID_PROP_VAL "deviceId"
 #define WLAN_PROP_NAME "wlan"
 #define   SSID_PROP_VAL "ssid"

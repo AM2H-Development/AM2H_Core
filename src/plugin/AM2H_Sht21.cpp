@@ -21,7 +21,9 @@ void AM2H_Sht21::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const
         humidity += static_cast<float>(d.sensor.sht21.offsetHumidity) / 10.0;
     }
     mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
+    am2h_core->loopMqtt();
     mqttClient.publish( (topic + "humidity").c_str() , String( humidity ).c_str() );
+    am2h_core->loopMqtt();
 }
 
 void AM2H_Sht21::config(AM2H_Datastore& d, const MqttTopic& t, const String p){

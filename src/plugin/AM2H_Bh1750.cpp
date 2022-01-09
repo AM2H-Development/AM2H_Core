@@ -15,6 +15,7 @@ void AM2H_Bh1750::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
     }
     AM2H_Core::debugMessage("AM2H_Bh1750::timerPublish()","publishing to " + topic + "illuminance="+String(level));
     mqttClient.publish( (topic + "illuminance").c_str() , String( level ).c_str() );
+    am2h_core->loopMqtt();
 }
 
 void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){

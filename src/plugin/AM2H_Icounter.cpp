@@ -3,26 +3,29 @@
 #include "include/AM2H_Datastore.h"
 #include "include/AM2H_Helper.h"
 
+extern unsigned long lastImpulseMillis_G;
+extern AM2H_Core* am2h_core;
 
 void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    const uint32_t now = millis();
-    const uint32_t interval = now - d.sensor.icounter.millis;
-
     AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","publishing to " + topic);
 
-    mqttClient.publish((topic + "counter").c_str() ,String( calculateCounter(d) ).c_str());
-    mqttClient.publish((topic + "power").c_str() ,String( calculatePower(d, interval) ).c_str());
+    if ( (lastImpulseMillis_G + d.sensor.icounter.zeroLimit) < millis() ){
+        mqttClient.publish((topic + "power").c_str() ,"0");
+    }
 }
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     ++d.sensor.icounter.absCnt;
-    const uint32_t now = millis();
-    const uint32_t interval = now - d.sensor.icounter.millis;
-    d.sensor.icounter.millis = now;
+    const uint32_t interval = lastImpulseMillis_G - d.sensor.icounter.millis;
+    d.sensor.icounter.millis = lastImpulseMillis_G;
 
-    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","publishing to " + topic);
+    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","lastImpulseMillis_G is " + String(lastImpulseMillis_G) + " publishing to " + topic);
     mqttClient.publish((topic + "counter").c_str() ,String( calculateCounter(d) ).c_str());
+    am2h_core->loopMqtt();
     mqttClient.publish((topic + "power").c_str() ,String( calculatePower(d, interval) ).c_str());
+    am2h_core->loopMqtt();
+    mqttClient.publish(d.sensor.icounter.absCntTopic , String( d.sensor.icounter.absCnt ).c_str(), RETAINED);
+    am2h_core->loopMqtt();
 }
 
 double AM2H_Icounter::calculateCounter(AM2H_Datastore& d){
@@ -41,9 +44,25 @@ double AM2H_Icounter::calculatePower(AM2H_Datastore& d, const uint32_t interval)
 
 void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
     AM2H_Core::debugMessage("AM2H_Icounter::config()","old config state {"+String(d.config,BIN)+"}\n"+t.meas_+" : "+p);
+
+    if (!d.initialized) {
+        d.initialized=true;
+
+        String tempTopic = am2h_core->getFullStorageTopic(String(t.id_), t.srv_, "absCnt");
+        d.sensor.icounter.absCntTopic = new char[tempTopic.length()];
+        size_t i=0;
+        for (auto c: tempTopic ){
+            d.sensor.icounter.absCntTopic[i++]=c;
+        }
+        d.sensor.icounter.absCntTopic[i]='\0';
+        
+        am2h_core->subscribe(d.sensor.icounter.absCntTopic);
+    }
+
     if (t.meas_ == "absCnt") {
         d.sensor.icounter.absCnt=p.toInt();
         d.sensor.icounter.millis=0;
+        am2h_core->unsubscribe(d.sensor.icounter.absCntTopic);
         d.config |= Config::SET_0;
     }
     if (t.meas_ == "unitsPerTick") {

@@ -77,6 +77,7 @@ union Datastore {
         sint16 exponentPerMs; // 10^e
         sint16 zeroLimit;      // ms
         uint32_t millis;  // lastMillis ms
+        char* absCntTopic;
     } icounter;
 
     struct Bme680 {

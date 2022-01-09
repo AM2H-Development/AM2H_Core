@@ -90,6 +90,7 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, con
 
   AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish()","  Temperature = " + String(celsius) );
   mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
+  am2h_core->loopMqtt();
 }
 
 void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p){

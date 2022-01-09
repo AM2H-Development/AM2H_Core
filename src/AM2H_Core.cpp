@@ -1,10 +1,10 @@
 #include "AM2H_Core.h"
 
-#define _SERIALDEBUG_  // enable serial debugging
+#define _SERIALDEBUG_OFF  // enable serial debugging
 
-unsigned long lastImpulseMillis_G{0};
-unsigned long impulsesTotal_G{0};
-bool intAvailable_G{false}; // Interupt available?
+volatile unsigned long lastImpulseMillis_G{0};
+volatile unsigned long impulsesTotal_G{0};
+volatile bool intAvailable_G{false}; // Interupt available?
 
 WiFiClient mqttWifiClient;
 PubSubClient mqttClient(mqttWifiClient);
@@ -12,12 +12,9 @@ ESP8266WebServer server(80);
 
 AM2H_Datastore ds[20];
 
-void impulseISR()                                    // Interupt service routine
-{
-  if ( millis() - lastImpulseMillis_G >= CORE_ISR_DEBOUNCE )            // CORE_ISR_DEBOUNCE Entprellzeit
-  {
+void impulseISR(){                                    // Interupt service routine
+  if ( millis() - lastImpulseMillis_G >= CORE_ISR_DEBOUNCE ){            // CORE_ISR_DEBOUNCE Entprellzeit
     lastImpulseMillis_G = millis();                    // Zeit merken
-    ++impulsesTotal_G;
     intAvailable_G = true;                            // Daten zum Senden vorhanden
   }
 }
@@ -96,12 +93,13 @@ void AM2H_Core::loopPlugins(){
 
 void AM2H_Core::checkIntPublish(){
   if (isIntAvailable()) {
+    intAvailable_G=false;
+    ++impulsesTotal_G;
     for (int i=0; i < 20; ++i){
       if (auto p = ds[i].self){
         p->interruptPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ));
       }
     }
-    resetInt();
   }
 }
 
@@ -110,11 +108,11 @@ void AM2H_Core::checkTimerPublish(){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
         debugMessage("AM2H_Core::checkTimerPublish()","");
-        am2h_core->mqttClient_.publish((getConfigTopic()+RESET_PROP_NAME).c_str(), ESP.getResetReason().c_str(), RETAINED);
+        am2h_core->mqttClient_.publish((getStorageTopic()+RESET_PROP_NAME).c_str(), ESP.getResetReason().c_str(), RETAINED);
         loopMqtt();
-        am2h_core->mqttClient_.publish((getConfigTopic()+HEAP_PROP_NAME).c_str(), String(ESP.getFreeHeap()).c_str(), RETAINED);
+        am2h_core->mqttClient_.publish((getStorageTopic()+HEAP_PROP_NAME).c_str(), String(ESP.getFreeHeap()).c_str(), RETAINED);
         loopMqtt();
-        am2h_core->mqttClient_.publish((getConfigTopic()+RUN_PROP_NAME).c_str(), String(millis()).c_str(), RETAINED);
+        am2h_core->mqttClient_.publish((getStorageTopic()+RUN_PROP_NAME).c_str(), String(millis()).c_str(), RETAINED);
         loopMqtt();
 
         for (int i=0; i < 20; ++i){
@@ -201,7 +199,7 @@ void const AM2H_Core::debugMessage(const String& caller, const String& message) 
     am2h_core->lastCaller=caller;
   }
   if (parse_debugMessage(message, newMessage)) {am2h_core->lastCaller="";}
-  if (am2h_core->status_.length() > 2000) am2h_core->status_ = am2h_core->status_.substring(500);
+  if (am2h_core->status_.length() > DebugLogger::LOGLEN) am2h_core->status_ = am2h_core->status_.substring(DebugLogger::SHORTBY);
   am2h_core->status_ += newMessage;
 #ifdef _SERIALDEBUG_
   Serial.print(newMessage);
@@ -464,13 +462,33 @@ void AM2H_Core::mqttReconnect() {
   }
 }
 
+void AM2H_Core::subscribe(const char* topic){
+  debugMessage("AM2H_Core::subscribe()", "Subscribe storage topic " +  String(topic) );
+  mqttClient_.subscribe(topic);
+  mqttClient_.loop();
+}
+void AM2H_Core::unsubscribe(const char* topic){
+  debugMessage("AM2H_Core::unsubscribe()", "unsubscribe storage topic " +  String(topic) );
+  mqttClient_.unsubscribe(topic);
+  mqttClient_.loop();
+}
+
 const String AM2H_Core::getStatusTopic() {
-  return AM2H_Core::getConfigTopic() + STATUS_PROP_NAME;
+  return AM2H_Core::getStorageTopic() + STATUS_PROP_NAME;
 }
 
 const String AM2H_Core::getConfigTopic() {
   return am2h_core->getNamespace() + "/" + DEVICE_PROP_NAME + "/" + am2h_core->getDeviceId() + "/";
 }
+
+const String AM2H_Core::getStorageTopic() {
+  return am2h_core->getNamespace() + "/" + STORAGE_PROP_NAME + "/" + am2h_core->getDeviceId() + "/";
+}
+
+const String AM2H_Core::getFullStorageTopic(const String id, const String srv, const String meas){
+  return am2h_core->getNamespace() + "/" + STORAGE_PROP_NAME + "/" + am2h_core->getDeviceId() + "/" + id + "/" + srv + "/" + meas;
+}
+
 
 const String AM2H_Core::getDataTopic(const String loc, const String srv, const String id) {
   return am2h_core->getNamespace() + "/" + loc + "/" + srv + "/";
@@ -479,13 +497,11 @@ const String AM2H_Core::getDataTopic(const String loc, const String srv, const S
 
 const bool AM2H_Core::isIntAvailable() const {
     return intAvailable_G;
-  }
-void AM2H_Core::resetInt() {
-    intAvailable_G=false;
-  }
+}
+
 const unsigned long AM2H_Core::getLastImpulseMillis() const {
     return lastImpulseMillis_G;
-  }
+}
 
 MqttTopic AM2H_Core::parseMqttTopic(char* topic){
   int i{0};

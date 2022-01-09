@@ -90,6 +90,8 @@ public:
   // Getters/Setters:
   static const String getStatusTopic();
   static const String getConfigTopic();
+  static const String getStorageTopic();
+  static const String getFullStorageTopic(const String id, const String srv, const String meas);
   static const String getDataTopic(const String loc, const String srv, const String id);
 
   PubSubClient& getMqttClient() const { return mqttClient_; }
@@ -99,6 +101,9 @@ public:
   const char* getMQTTServer() const { return persistentSetupValues_.mqttServer; }
   const int getMQTTPort() const { return persistentSetupValues_.mqttPort; }
   const String getNamespace() const { return persistentSetupValues_.ns; }
+
+  void subscribe(const char* topic);
+  void unsubscribe(const char* topic);
 
   void setDeviceId(const String deviceId){
     deviceId.toCharArray(persistentSetupValues_.deviceId, DEVICE_ID_LEN);
