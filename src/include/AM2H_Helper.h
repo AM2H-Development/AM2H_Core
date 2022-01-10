@@ -18,6 +18,7 @@ namespace AM2H_Helper {
       return number;
     }
     void parse_location(char* loc, const String parse );
+    bool stringToBool(const String s);
 };
 
 #endif

@@ -27,6 +27,9 @@ void AM2H_Rgbled::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
         AM2H_Core::debugMessage("AM2H_Rgbled::timerPublish()","publishing to " + topic + "state: " + config);
         mqttClient.publish( (topic + "state").c_str() , config.c_str() );
         am2h_core->loopMqtt();
+    } else {
+        mqttClient.publish( (topic + "state").c_str() , "active=FALSE" );
+        am2h_core->loopMqtt();
     }
 }
 
@@ -70,12 +73,7 @@ void AM2H_Rgbled::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
         d.config |= Config::SET_5;
     }
     if (t.meas_ == "active") {
-        String uP = p;
-        uP.toUpperCase();
-        bool active{false};
-        active = (p == "TRUE" );
-        if (!active && (p.toInt() > 0)) { active=true; }
-        d.sensor.rgbled.active=active;
+        d.sensor.rgbled.active=AM2H_Helper::stringToBool(p);
         AM2H_Core::debugMessage("AM2H_Rgbled::config()","set active = "+String(d.sensor.rgbled.active ? "TRUE": "FALSE"));
         d.initialized=false;
         d.config |= Config::SET_6;
@@ -114,6 +112,7 @@ void AM2H_Rgbled::parseStateTopic(AM2H_Datastore& d,const String& p_origin){
     String key{};
     String value{};
     bool isKey{true};
+    bool isActive{true};
 
     for (auto c: p){
         if (c=='='){
@@ -126,6 +125,7 @@ void AM2H_Rgbled::parseStateTopic(AM2H_Datastore& d,const String& p_origin){
             if (key=="colorOff") { rgbled.color[State::OFF] = static_cast<uint8_t>(getColor(value)); }
             if (key=="timeOn") { rgbled.time[State::ON] = value.toInt(); }
             if (key=="timeOff") { rgbled.time[State::OFF] = value.toInt(); }
+            if (key=="active") { rgbled.active = AM2H_Helper::stringToBool(value); }            
             AM2H_Core::debugMessage("AM2H_Rgbled::parseStateTopic()","key:value = "+key+":"+value+"\n");
             key="";
             value="";
@@ -133,7 +133,7 @@ void AM2H_Rgbled::parseStateTopic(AM2H_Datastore& d,const String& p_origin){
         }
         if (isKey) { key+=c; } else { value+=c; }
     }
-    rgbled.active=true;
+    rgbled.active= isActive ? true : rgbled.active;
 }
 
 const AM2H_Rgbled::Color AM2H_Rgbled::getColor(const String& color){

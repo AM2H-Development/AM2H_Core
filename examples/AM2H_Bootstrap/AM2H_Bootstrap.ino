@@ -25,7 +25,7 @@
   home/dev/##esp01##/Ds18b20/##00..19##/offsetTemp  -> e.g. -11      (offset temperature -1.1 °C)
 
   For Sht21:
-  home/dev/##esp01##/Sht21/##00..19##/addr -> e.g. 0x01??          (set I2C channel not yet implemented)
+  home/dev/##esp01##/Sht21/##00..19##/addr -> e.g. 0x40            (set I2C channel only mux addr will be parsed)
   home/dev/##esp01##/Sht21/##00..19##/loc  -> e.g. livingRoom      (location of the sensor for mqtt publish)
   home/dev/##esp01##/Sht21/##00..19##/offsetTemp  -> e.g. -11      (offset temperature -1.1 °C)
   home/dev/##esp01##/Sht21/##00..19##/offsetHumidity -> e.g. -11   (offset temperature -1.1 °C)

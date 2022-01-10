@@ -33,7 +33,7 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   persistentSetupValues_.mqttPort = MQTT::DEFAULT_PORT;
   String( MQTT::DEVICE ).toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
   String( MQTT::NAMESPACE ).toCharArray(persistentSetupValues_.ns,NS_LEN);
-  volatileSetupValues_.ssid="";
+  volatileSetupValues_.ssid=WiFi.SSID();
   volatileSetupValues_.pw="";
   volatileSetupValues_.sampleRate=0;
 
@@ -51,6 +51,7 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
 AM2H_Core::AM2H_Core(AM2H_Plugin** plugins):AM2H_Core(plugins, mqttClient, server){};
 
 void AM2H_Core::setupCore(){
+  debugMessage("AM2H_Core::setupCore()","AM2H_Core Version = " + VERSION + "\n" );
   #ifdef _SERIALDEBUG_
     Serial.begin(115200);
     for (int i = 10; i > 0; i--) {
@@ -108,13 +109,7 @@ void AM2H_Core::checkTimerPublish(){
     if ( millis() > timer_.sendData ){
       timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
         debugMessage("AM2H_Core::checkTimerPublish()","");
-        am2h_core->mqttClient_.publish((getStorageTopic()+RESET_PROP_NAME).c_str(), ESP.getResetReason().c_str(), RETAINED);
-        loopMqtt();
-        am2h_core->mqttClient_.publish((getStorageTopic()+HEAP_PROP_NAME).c_str(), String(ESP.getFreeHeap()).c_str(), RETAINED);
-        loopMqtt();
-        am2h_core->mqttClient_.publish((getStorageTopic()+RUN_PROP_NAME).c_str(), String(millis()).c_str(), RETAINED);
-        loopMqtt();
-
+        publishDeviceStatus();
         for (int i=0; i < 20; ++i){
           if (auto p = ds[i].self){
             p->timerPublish( ds[i], mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ) );
@@ -412,15 +407,15 @@ void AM2H_Core::loopMqtt() {
 
 void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length) {
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
-  debugMessage("AM2H_Core::mqttCallback()", "ns:"+tp.ns_+" dev:"+tp.dev_+" loc:"+tp.loc_+" srv:"+tp.srv_+" id:"+String(tp.id_)+" meas:"+tp.meas_+"\n" );
+  debugMessage("AM2H_Core::mqttCallback()", "ns:"+tp.ns_+" dev:"+tp.dev_+" loc:"+tp.loc_+" srv:"+tp.srv_+" id:"+String(tp.id_)+" meas:"+tp.meas_ );
 
   String payloadString;
   for (int i = 0; i < length; i++) {
     payloadString += static_cast<char>(payload[i]);
   }
 
-  if ( tp.srv_ == DEVICE_CFG_TOPIC  ){
-    debugMessage("AM2H_Core::mqttCallback()", " config: " + payloadString);
+  if ( tp.srv_ == DEVICE_CFG_TOPIC && tp.id_ == 0xFF ){
+    debugMessage("AM2H_Core::mqttCallback()", " config: " + payloadString + "\n");
     if ( tp.meas_ == "sampleRate" ){
       am2h_core->volatileSetupValues_.sampleRate = payloadString.toInt();
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
@@ -445,10 +440,10 @@ void AM2H_Core::mqttReconnect() {
   if (timer_.mqttReconnect < millis()) {
     debugMessage("AM2H_Core::mqttReconnect()", "Attempting MQTT connection and unsubscribe topics. Wait for connection: " );
     mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
-
+    
     if ( mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL)) {
       debugMessage("AM2H_Core::mqttReconnect()", "connected\nPublish Status to " + getStatusTopic() );
-      mqttClient_.publish(getStatusTopic().c_str(), CONFIG_PROP_VAL, RETAINED);
+      publishConfigDeviceStatus();    
       if ( !(updateRequired_ & MQTT_UPDATE_REQUIRED) ) {
         debugMessage("AM2H_Core::mqttReconnect()", "Subscribe config-topic " +  getConfigTopic() );
         mqttClient_.subscribe((getConfigTopic() + "#").c_str());
@@ -471,6 +466,25 @@ void AM2H_Core::unsubscribe(const char* topic){
   debugMessage("AM2H_Core::unsubscribe()", "unsubscribe storage topic " +  String(topic) );
   mqttClient_.unsubscribe(topic);
   mqttClient_.loop();
+}
+
+void AM2H_Core::publishDeviceStatus(){
+  am2h_core->mqttClient_.publish((getStorageTopic()+HEAP_PROP_NAME).c_str(), String(ESP.getFreeHeap()).c_str(), RETAINED);
+  loopMqtt();
+  am2h_core->mqttClient_.publish((getStorageTopic()+RUN_PROP_NAME).c_str(), String(millis()).c_str(), RETAINED);
+  loopMqtt();
+}
+
+void AM2H_Core::publishConfigDeviceStatus(){
+  publishDeviceStatus();
+  mqttClient_.publish(getStatusTopic().c_str(), CONFIG_PROP_VAL, RETAINED);
+  loopMqtt();
+  am2h_core->mqttClient_.publish((getStorageTopic()+RESET_PROP_NAME).c_str(), ESP.getResetReason().c_str(), RETAINED);
+  loopMqtt();
+  am2h_core->mqttClient_.publish((getStorageTopic()+IPADDRESS_PROP_NAME).c_str(), WiFi.localIP().toString().c_str(), RETAINED);
+  loopMqtt();
+  am2h_core->mqttClient_.publish((getStorageTopic()+VERSION_PROP_NAME).c_str(), VERSION.c_str(), RETAINED);
+  loopMqtt();
 }
 
 const String AM2H_Core::getStatusTopic() {

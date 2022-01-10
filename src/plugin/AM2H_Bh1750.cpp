@@ -33,7 +33,7 @@ void AM2H_Bh1750::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
     }
     if (t.meas_ == "sensitivityAdjust") {
         d.sensor.bh1750.sensitivityAdjust=p.toInt();
-        if (d.sensor.bh1750.sensitivityAdjust<32) {d.sensor.bh1750.sensitivityAdjust=32;}
+        if (d.sensor.bh1750.sensitivityAdjust<32 || d.sensor.bh1750.sensitivityAdjust>254 ) {d.sensor.bh1750.sensitivityAdjust=69;}
         AM2H_Core::debugMessage("AM2H_Bh1750::config()","set sensitivityAdjust = "+String(d.sensor.bh1750.sensitivityAdjust));
         d.config |= Config::SET_2;
     }

@@ -74,7 +74,7 @@ byte constexpr LOC_LEN {32};
 
 // Properties
 
-String const DEVICE_CFG_TOPIC {"deviceCfg"};
+String const DEVICE_CFG_TOPIC {"core"};
 String const DEVICE_PROP_NAME {"config"};
 String const STORAGE_PROP_NAME {"storage"};
 
@@ -94,6 +94,8 @@ String const STATUS_PROP_NAME {"status"};
 String const RESET_PROP_NAME {"resetCause"};
 String const HEAP_PROP_NAME {"freeHeap"};
 String const RUN_PROP_NAME {"runningSince"};
+String const VERSION_PROP_NAME {"fwVersion"};
+String const IPADDRESS_PROP_NAME {"ipAddress"};
 #define   OFFLINE_PROP_VAL "offline"
 #define   CONFIG_PROP_VAL  "config"
 #define   ONLINE_PROP_VAL  "online"

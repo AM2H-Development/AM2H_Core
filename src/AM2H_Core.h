@@ -14,6 +14,8 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
+const String VERSION {"1.0.1"};
+
 void IRAM_ATTR impulseISR();
 
 struct PersistentSetupContainer {
@@ -70,6 +72,8 @@ private:
   void restartWlan(String ssid, String pw);
   void connectWlan(int timeout);
   void setupServer();
+  void publishDeviceStatus();
+  void publishConfigDeviceStatus();
   void loopServer();
   void checkUpdateRequired();
   void checkTimerPublish();
