@@ -63,7 +63,7 @@ void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p
 
     if (t.meas_ == "absCnt") {
         d.sensor.icounter.absCnt=p.toInt();
-        d.sensor.icounter.millis=UINT32_MAX;
+        d.sensor.icounter.millis=(UINT32_MAX/2);
         am2h_core->unsubscribe(d.sensor.icounter.absCntTopic);
         d.config |= Config::SET_0;
     }
