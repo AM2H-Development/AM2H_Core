@@ -1,6 +1,6 @@
 #include "AM2H_Core.h"
 
-// #define _SERIALDEBUG_OFF  // enable serial debugging
+// #define _SERIALDEBUG_  // enable serial debugging
 
 volatile unsigned long lastImpulseMillis_G{0};
 volatile unsigned long impulsesTotal_G{0};
@@ -441,10 +441,11 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
   }
 
   if ( tp.srv_ == DEVICE_CFG_TOPIC && tp.id_ == 0xFF ){
-    debugMessage("AM2H_Core::mqttCallback()", " config: " + payloadString + "\n");
+    // debugMessage("AM2H_Core::mqttCallback()", " config: " + payloadString + "\n");
     if ( tp.meas_ == "sampleRate" ){
       am2h_core->volatileSetupValues_.sampleRate = payloadString.toInt();
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
+      am2h_core->loopMqtt();
       debugMessage("AM2H_Core::mqttCallback()", "set sampleRate: " + String(am2h_core->volatileSetupValues_.sampleRate) + "\n");
     }
     if ( tp.meas_ == "i2cMuxAddr" ){
