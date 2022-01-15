@@ -29,7 +29,7 @@ all retained
 
 ```
 akm/config/d_100/-/core/sampleRate => 15
-[akm/config/d_100/-/core/muxAddr => 0x70]
+[akm/config/d_100/-/core/i2cMuxAddr => 0x70]
 ```
 
 ### Bme680 configuration
