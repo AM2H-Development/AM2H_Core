@@ -9,7 +9,8 @@ extern AM2H_Core* am2h_core;
 void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","publishing to " + topic);
 
-    if ( (lastImpulseMillis_G + d.sensor.icounter.zeroLimit) < millis() ){
+    const unsigned long timeout = (static_cast<unsigned long>(d.sensor.icounter.zeroLimit)*1000)+lastImpulseMillis_G;
+    if ( timeout < millis() ){
         mqttClient.publish((topic + "power").c_str() ,"0");
     }
 }
@@ -19,7 +20,7 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient
     const uint32_t interval = lastImpulseMillis_G - d.sensor.icounter.millis;
     d.sensor.icounter.millis = lastImpulseMillis_G;
 
-    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","lastImpulseMillis_G is " + String(lastImpulseMillis_G) + " publishing to " + topic);
+    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","interval is " + String(interval) + " publishing to " + topic);
     mqttClient.publish((topic + "counter").c_str() ,String( calculateCounter(d) ).c_str());
     am2h_core->loopMqtt();
     mqttClient.publish((topic + "power").c_str() ,String( calculatePower(d, interval) ).c_str());
@@ -34,7 +35,8 @@ double AM2H_Icounter::calculateCounter(AM2H_Datastore& d){
 
 double AM2H_Icounter::calculatePower(AM2H_Datastore& d, const uint32_t interval){
     AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()","Interval: " + String(interval) );
-    if ( interval > d.sensor.icounter.zeroLimit ){
+    const unsigned long timeout = (static_cast<unsigned long>(d.sensor.icounter.zeroLimit)*1000);
+    if ( interval > timeout ){
         return 0.;
     }
     const double power = 1. / (static_cast<double>(interval)/1000) * static_cast<double>(d.sensor.icounter.unitsPerMs) * pow(10., static_cast<double>(d.sensor.icounter.exponentPerMs));
