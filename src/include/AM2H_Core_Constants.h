@@ -53,11 +53,15 @@ int constexpr WLAN_TIMEOUT{20}; // Wlan timeout in s
 
 // HTTP Api
 char constexpr ENCODING_PLAIN[] {"text/plain; charset=UTF-8"};
+char constexpr ENCODING_HTML[] {"Content-Type: text/html; charset=utf-8"};
 char constexpr ENCODING_JSON[] {"application/json; charset=utf-8"};
 char constexpr HTTP_API_V1_SET[] {"/api/v1/set"};
 char constexpr HTTP_API_V1_GET[] {"/api/v1/get"};
 char constexpr HTTP_API_V1_RESTART[]  {"/api/v1/restart"};
 char constexpr HTTP_API_V1_STATUS[] {"/api/v1/status"};
+
+char constexpr HTTP_HEADER[] {"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>AM2H_Core</title></head><body>"};
+char constexpr HTTP_FOOTER[] {"</body></html>\n"};
 
 #define RETAINED true
 

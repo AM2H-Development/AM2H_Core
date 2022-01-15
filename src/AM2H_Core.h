@@ -14,7 +14,7 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
-const String VERSION {"1.0.1"};
+const String VERSION {"1.0.2"};
 
 void IRAM_ATTR impulseISR();
 
@@ -80,6 +80,7 @@ private:
   void checkIntPublish();
   void loopPlugins();
   static void handleRoot();
+  static const String getRootContent();
   static void handleRestart();
   static void handleStatus();
   static void handleNotFound();

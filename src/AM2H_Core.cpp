@@ -1,6 +1,6 @@
 #include "AM2H_Core.h"
 
-#define _SERIALDEBUG_OFF  // enable serial debugging
+// #define _SERIALDEBUG_OFF  // enable serial debugging
 
 volatile unsigned long lastImpulseMillis_G{0};
 volatile unsigned long impulsesTotal_G{0};
@@ -51,15 +51,19 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
 AM2H_Core::AM2H_Core(AM2H_Plugin** plugins):AM2H_Core(plugins, mqttClient, server){};
 
 void AM2H_Core::setupCore(){
-  debugMessage("AM2H_Core::setupCore()","AM2H_Core Version = " + VERSION + "\n" );
-  #ifdef _SERIALDEBUG_
     Serial.begin(115200);
-    for (int i = 10; i > 0; i--) {
-      Serial.print("Starting up - please wait ");
-      Serial.println(i);
+    debugMessage("AM2H_Core::setupCore()","AM2H_Core Version = " + VERSION + "\n" );
+    debugMessage("AM2H_Core::setupCore()","starting up");
+    Serial.print("AM2H_Core Version = " + VERSION + "\n");
+    Serial.print("Starting up - please wait ");
+    for (int i = 3; i > 0; --i) {
+      debugMessage("AM2H_Core::setupCore()",".");
+      Serial.print('.');
       delay(1000);
     }
-    Serial.println("OK...");
+    Serial.print("\nrunning!\n");
+  #ifndef _SERIALDEBUG_
+    Serial.end();
   #endif
 
   setupEEPROM();
@@ -173,6 +177,7 @@ void AM2H_Core::setupEEPROM() {
     debugMessage("AM2H_Core::setupEEPROM()","EEPROM size changed - EEPROM data zeroed - write default values\n");
     writeEEPROM();
   }
+  debugMessage("AM2H_Core::setupEEPROM()","ns: "+String(persistentSetupValues_.ns)+ ", deviceId:" + String(persistentSetupValues_.deviceId) + "\n");
 }
 
 void AM2H_Core::writeEEPROM() {
@@ -288,7 +293,26 @@ void AM2H_Core::handleRoot() {
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
     debugMessage("AM2H_Core::handleRoot()/args", am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + "\n");
   }
-  am2h_core->server_.send(200, ENCODING_PLAIN, "<h1>Debug-Log:</h1>\n<code>\n" + am2h_core->status_ + "\n</code>\n");
+  am2h_core->server_.send(200, ENCODING_HTML, getRootContent());
+}
+
+const String AM2H_Core::getRootContent(){
+  String content;
+  content += HTTP_HEADER;
+  content += "<h1>AM2H_Core</h1><p>device:" + String(am2h_core->persistentSetupValues_.deviceId) + "<br>release:" + String(VERSION) + "</p><ul>";
+  content += "<li><a href=\"/api/v1/status\">show status logs</a></li>";
+  content += "<li><a href=\"/api/v1/get\">show device info</a></li>";
+  content += "<li><a href=\"/api/v1/restart\">restart device</a></li>";
+  content += "<li><setting up device:<br><br><form action=\"/api/v1/set\" method=\"get\">";
+  content += "<label for=\"ns\">namespace:</label><input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\"" + String(NS_LEN) + "\"><br><br>";
+  content += "<label for=\"deviceId\">deviceId:</label><input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\"" + String(DEVICE_ID_LEN) + "\"><br><br>";
+  content += "<label for=\"ssid\">ssid:</label><input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"" + String(SSID_LEN) + "\"><br><br>";
+  content += "<label for=\"pw\">(wlan) pw:</label><input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"" + String(PW_LEN) + "\"><br><br>";
+  content += "<label for=\"mqttServer\">MQTT Server (hostname or IP):</label><input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\"" + String(MQTT_SERVER_LEN) + "\"><br><br>";
+  content += "<label for=\"mqttPort\">MQTT port:</label><input type=\"text\" id=\"mqttPort\" name=\"mqttPort\"><br><br>";
+  content += "<input type=\"submit\" value=\"Submit\"></form></li></ul>";
+  content += HTTP_FOOTER;
+  return content;
 }
 
 void AM2H_Core::handleRestart() {
@@ -336,6 +360,7 @@ void AM2H_Core::handleApiSetRequest(){
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
     auto a = am2h_core->server_.argName(i);
     auto v = am2h_core->server_.arg(i);
+    if (v.length()<1){ continue;}
     content += " " + a + ": " + v + "\n";
 
     if ( a == "deviceId" || a == "deviceid" ){
