@@ -102,7 +102,7 @@ String const VERSION_PROP_NAME {"fwVersion"};
 String const IPADDRESS_PROP_NAME {"ipAddress"};
 #define   OFFLINE_PROP_VAL "offline"
 #define   CONFIG_PROP_VAL  "config"
-#define   ONLINE_PROP_VAL  "online"
+#define   ONLINE_PROP_VAL  "running"
 #define MESSAGE_PROP_NAME "message"
 #define ERROR_PROP_NAME "error"
 

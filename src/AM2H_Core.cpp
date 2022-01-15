@@ -445,9 +445,11 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
     if ( tp.meas_ == "sampleRate" ){
       am2h_core->volatileSetupValues_.sampleRate = payloadString.toInt();
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
+      debugMessage("AM2H_Core::mqttCallback()", "set sampleRate: " + String(am2h_core->volatileSetupValues_.sampleRate) + "\n");
     }
     if ( tp.meas_ == "i2cMuxAddr" ){
       am2h_core->volatileSetupValues_.i2cMuxAddr = AM2H_Helper::parse_hex<uint8_t>(payloadString);
+      debugMessage("AM2H_Core::mqttCallback()", "set i2cMuxAddr: " + String(am2h_core->volatileSetupValues_.i2cMuxAddr) + "\n");
     }
   } else {
       // send cfg message to Plugin
