@@ -1,5 +1,5 @@
 // AM2H Bootstrap
-// Version 1.0.1 - 2021/05/25
+// Version 1.0.1 - 2022/01/10
 //
 
 /* API-Beschreibung:
