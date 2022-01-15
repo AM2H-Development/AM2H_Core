@@ -92,6 +92,7 @@ void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p
     if ( d.config == Config::CHECK_TO_6 ){
         // d.plugin = plugin_;
         d.self = this;
+        pinMode(CORE_ISR_PIN, INPUT_PULLUP);
         AM2H_Core::debugMessage("AM2H_Icounter::config()","finished, new config state {"+String(d.config,BIN)+"}");
     } else {
         d.self=nullptr;
