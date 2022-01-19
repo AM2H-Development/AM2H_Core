@@ -433,7 +433,7 @@ void AM2H_Core::loopMqtt() {
 
 void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length) {
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
-  debugMessage("AM2H_Core::mqttCallback()", "ns:"+tp.ns_+" dev:"+tp.dev_+" loc:"+tp.loc_+" srv:"+tp.srv_+" id:"+String(tp.id_)+" meas:"+tp.meas_ );
+  debugMessage("AM2H_Core::mqttCallback()", "ns:"+tp.ns_+" dev:"+tp.dev_+" loc:"+tp.loc_+" srv:"+tp.srv_+" id:"+String(tp.id_)+" meas:"+tp.meas_ +"\n");
 
   String payloadString;
   for (int i = 0; i < length; i++) {
