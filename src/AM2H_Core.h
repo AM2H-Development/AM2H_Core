@@ -14,7 +14,7 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
-const String VERSION {"1.0.5"};
+const String VERSION {"1.0.6"};
 
 void IRAM_ATTR impulseISR();
 
@@ -28,8 +28,9 @@ struct PersistentSetupContainer {
 struct VolatileSetupContainer {
   String ssid;                // WLAN SSID
   String pw;                  // WLAN password
-  int sampleRate;             // sample rate in seconds
+  uint8_t sampleRate;             // sample rate in seconds
   uint8_t i2cMuxAddr;         // multiplexer address
+  String nickname;            // nickname for device
 };
 
 struct Timers {
@@ -46,12 +47,10 @@ public:
   void setupCore();
   void loopCore();
   static MqttTopic parseMqttTopic(char* topic);
-
   static void const debugMessage(const String& caller, const String& message);
   static void const debugMessage(const String& message);
   static bool const parse_debugMessage (const String message, String& newMessage);
   void loopMqtt();
-
   void switchWire (uint32_t const addr) const;
 
 private:
@@ -106,6 +105,7 @@ public:
   const char* getMQTTServer() const { return persistentSetupValues_.mqttServer; }
   const int getMQTTPort() const { return persistentSetupValues_.mqttPort; }
   const String getNamespace() const { return persistentSetupValues_.ns; }
+  const String getNickname() const { return volatileSetupValues_.nickname; }
 
   void subscribe(const char* topic);
   void unsubscribe(const char* topic);

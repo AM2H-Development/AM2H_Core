@@ -12,23 +12,26 @@ ESP8266WebServer server(80);
 
 AM2H_Datastore ds[20];
 
-void impulseISR(){                                    // Interupt service routine
-  if ( millis() - lastImpulseMillis_G >= CORE_ISR_DEBOUNCE ){            // CORE_ISR_DEBOUNCE Entprellzeit
-    lastImpulseMillis_G = millis();                    // Zeit merken
-    intAvailable_G = true;                            // Daten zum Senden vorhanden
+// Interupt service routine
+void impulseISR(){
+  if ( millis() - lastImpulseMillis_G >= CORE_ISR_DEBOUNCE ){
+    lastImpulseMillis_G = millis();
+    intAvailable_G = true;
   }
 }
 
 AM2H_Core* am2h_core{nullptr};
 
+AM2H_Core::AM2H_Core(AM2H_Plugin** plugins):AM2H_Core(plugins, mqttClient, server){};
+
 AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server):plugins_(plugins),mqttClient_(mqttClient),server_(server){
   mqttClient.setBufferSize(2500);
   Wire.begin(CORE_SDA,CORE_SCL);
   volatileSetupValues_.i2cMuxAddr=0;
-  status_=""; // status container for debugging messages
+  volatileSetupValues_.nickname="";
+  status_=""; // initialize container for debugging messages
   updateRequired_ = NO_UPDATE_REQUIRED; // semaphore for system updates
   connStatus_ = CONN_UNKNOWN;
-
   String( MQTT::DEFAULT_SERVER ).toCharArray(persistentSetupValues_.mqttServer,MQTT_SERVER_LEN);
   persistentSetupValues_.mqttPort = MQTT::DEFAULT_PORT;
   String( MQTT::DEVICE ).toCharArray(persistentSetupValues_.deviceId,DEVICE_ID_LEN);
@@ -36,7 +39,6 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   volatileSetupValues_.ssid=WiFi.SSID();
   volatileSetupValues_.pw="";
   volatileSetupValues_.sampleRate=0;
-
   timer_.espRestart=0;
   timer_.mqttReconnect=0;
   timer_.wlanReconnect=0;
@@ -47,8 +49,6 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
   am2h_core= this;
 }
-
-AM2H_Core::AM2H_Core(AM2H_Plugin** plugins):AM2H_Core(plugins, mqttClient, server){};
 
 void AM2H_Core::setupCore(){
     Serial.begin(115200);
@@ -83,7 +83,6 @@ void AM2H_Core::loopCore(){
   loopServer();
   loopMqtt();
   checkUpdateRequired();
-
   checkTimerPublish();
   checkIntPublish();
   loopPlugins();
@@ -152,13 +151,11 @@ void AM2H_Core::checkUpdateRequired() {
       pinMode(CORE_STATUS_LED, INPUT_PULLUP);
     }
   }
-
   if ( (timer_.wlanReconnect > 0) && (millis() > timer_.wlanReconnect) ) {
     debugMessage("AM2H_Core::checkUpdateRequired()","Proceed WLAN reconnect! " + getSSID() + " : " + getPW());
     timer_.wlanReconnect = 0;
     restartWlan(getSSID(), getPW());
   }
-
   if ( (timer_.espRestart > 0) && (millis() > timer_.espRestart) ) {
     ESP.restart();
   }
@@ -206,6 +203,7 @@ void const AM2H_Core::debugMessage(const String& caller, const String& message) 
   Serial.print(newMessage);
 #endif
 }
+
 void const AM2H_Core::debugMessage(const String& message) {
   debugMessage(String(millis()), message);
 }
@@ -331,15 +329,6 @@ void AM2H_Core::handleStatus() {
 }
 
 void AM2H_Core::handleApiGetRequest() {
-/*
-{
-  "deviceId":"myDevice9.123456789.123456789.12",
-  "ssid":"ssid56789.123456789.123456789.12", "pw":"...",
-  "mqttServer":"server-mh.fritz.box.123456789.123456789.123456789.",
-  "mqttPort":1883,
-  "ns":"ns345678"
-}
-*/
   String content = "{\n\"deviceId\":\"" + am2h_core->getDeviceId() + "\",\n";
   content += "\"ssid\":\"" + am2h_core->getSSID() + "\",\n\"pw\":\"********\",\n";
   content += "\"mqttServer\":\"" + String(am2h_core->getMQTTServer()) + "\",\n";
@@ -365,26 +354,20 @@ void AM2H_Core::handleApiSetRequest(){
     content += " " + a + ": " + v + "\n";
 
     if ( a == "deviceId" || a == "deviceid" ){
-      debugMessage( "am2h_core->setDeviceId(" + v + ")\n" );
       am2h_core->setDeviceId(v);
     }
-
     if ( a == "ssid" ){
       am2h_core->setSSID(v);
     }
-
     if ( a == "pw" ){
       am2h_core->setPW(v);
     }
-
     if ( a == "mqttServer" || a == "mqttserver" ){
       am2h_core->setMQTTServer(v);
     }
-
     if ( a == "mqttPort" || a == "mqttport" ){
       am2h_core->setMQTTPort(v);
     }
-
     if ( a == "ns" ){
       am2h_core->setNamespace(v);
     }
@@ -451,6 +434,10 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
     if ( tp.meas_ == "i2cMuxAddr" ){
       am2h_core->volatileSetupValues_.i2cMuxAddr = AM2H_Helper::parse_hex<uint8_t>(payloadString);
       debugMessage("AM2H_Core::mqttCallback()", "set i2cMuxAddr: " + String(am2h_core->volatileSetupValues_.i2cMuxAddr) + "\n");
+    }
+    if ( tp.meas_ == "nickname" ){
+      am2h_core->volatileSetupValues_.nickname = payloadString;
+      debugMessage("AM2H_Core::mqttCallback()", "set nickname: " + String(am2h_core->volatileSetupValues_.nickname) + "\n");
     }
   } else {
       // send cfg message to Plugin
@@ -535,7 +522,6 @@ const String AM2H_Core::getFullStorageTopic(const String id, const String srv, c
 
 const String AM2H_Core::getDataTopic(const String loc, const String srv, const String id) {
   return am2h_core->getNamespace() + "/" + loc + "/" + srv + "/";
-  // return am2h_core->getNamespace() + "/" + loc + "/" + am2h_core->getDeviceId() + "/" + srv + "/" + id + "/";
 }
 
 const bool AM2H_Core::isIntAvailable() const {
