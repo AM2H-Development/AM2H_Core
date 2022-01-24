@@ -298,17 +298,18 @@ void AM2H_Core::handleRoot() {
 const String AM2H_Core::getRootContent(){
   String content;
   content += HTTP_HEADER;
-  content += "<h1>AM2H_Core</h1><p>device:" + String(am2h_core->persistentSetupValues_.deviceId) + "<br>fwVersion:" + String(VERSION) + "</p><ul>";
+  content += "<h1>AM2H_Core</h1><p>deviceId: <b>" + String(am2h_core->persistentSetupValues_.deviceId) + "</b><br/>nickname: <b>" + String(am2h_core->volatileSetupValues_.nickname);
+  content += "</b><br/>fwVersion: <b>" + String(VERSION) + "</b></p><ul>";
   content += "<li><a href=\"/api/v1/status\">show status logs</a></li>";
   content += "<li><a href=\"/api/v1/get\">show device info</a></li>";
   content += "<li><a href=\"/api/v1/restart\">restart device</a></li>";
   content += "<li>device settings:<br><br><form action=\"/api/v1/set\" method=\"get\">";
-  content += "<input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\"" + String(NS_LEN) + "\"><label for=\"ns\">&nbsp;namespace</label><br><br>";
-  content += "<input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\"" + String(DEVICE_ID_LEN) + "\"><label for=\"deviceId\">&nbsp;deviceId</label><br><br>";
-  content += "<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"" + String(SSID_LEN) + "\"><label for=\"ssid\">&nbsp;SSID</label><br><br>";
-  content += "<input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"" + String(PW_LEN) + "\"><label for=\"pw\">&nbsp;WLAN pw</label><br><br>";
-  content += "<input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\"" + String(MQTT_SERVER_LEN) + "\"><label for=\"mqttServer\">&nbsp;MQTT Server (hostname or IP)</label><br><br>";
-  content += "<input type=\"text\" id=\"mqttPort\" name=\"mqttPort\"><label for=\"mqttPort\">&nbsp;MQTT port</label><br><br>";
+  content += "<input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\"" + String(DEVICE_ID_LEN) + "\"><label for=\"deviceId\">&nbsp;deviceId</label><br/><br/>";
+  content += "<input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\"" + String(NS_LEN) + "\"><label for=\"ns\">&nbsp;namespace</label><br/><br/>";
+  content += "<input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\"" + String(MQTT_SERVER_LEN) + "\"><label for=\"mqttServer\">&nbsp;MQTT Server (hostname or IP)</label><br/><br/>";
+  content += "<input type=\"text\" id=\"mqttPort\" name=\"mqttPort\"><label for=\"mqttPort\">&nbsp;MQTT port</label><br/><br/>";
+  content += "<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"" + String(SSID_LEN) + "\"><label for=\"ssid\">&nbsp;SSID</label><br/><br/>";
+  content += "<input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"" + String(PW_LEN) + "\"><label for=\"pw\">&nbsp;WLAN pw</label><br/><br/>";
   content += "<input type=\"submit\" value=\"Submit\"></form></li></ul>";
   content += HTTP_FOOTER;
   return content;

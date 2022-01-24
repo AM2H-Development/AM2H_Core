@@ -88,8 +88,11 @@ void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p
         d.config |= Config::SET_5;
     }
     if (t.meas_ == "loc") {
-        AM2H_Helper::parse_location(d.loc,p);
-        d.config |= Config::SET_6;
+        d.config &= ~Config::SET_6;
+            if (p.length()>0) {
+            AM2H_Helper::parse_location(d.loc,p);
+            d.config |= Config::SET_6;
+        }
     }
     if ( d.config == Config::CHECK_TO_6 ){
         // d.plugin = plugin_;

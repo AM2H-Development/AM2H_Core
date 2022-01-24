@@ -35,9 +35,12 @@ void AM2H_Sht21::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
         d.config |= Config::SET_0;
     }
     if (t.meas_ == "loc") {
-        AM2H_Helper::parse_location(d.loc,p);
-        AM2H_Core::debugMessage("AM2H_Sht21::config()","set loc = "+String(d.loc));
-        d.config |= Config::SET_1;
+        d.config &= ~Config::SET_1;
+        if (p.length()>0) {
+            AM2H_Helper::parse_location(d.loc,p);
+            AM2H_Core::debugMessage("AM2H_Sht21::config()","set loc = "+String(d.loc));
+            d.config |= Config::SET_1;
+        }
     }
     if (t.meas_ == "offsetTemp") {
         d.sensor.sht21.offsetTemp=p.toInt();

@@ -100,15 +100,18 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
     AM2H_Core::debugMessage("AM2H_Ds18b20::config()","set addr = 0x");
     for (int i=0; i < 8; ++i){
       d.sensor.ds18b20.addr[i]=strtol(p.substring(i*2,(i*2)+2).c_str(), nullptr,16);
-      if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("0"); }
+      if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("AM2H_Ds18b20::config()","0"); }
       AM2H_Core::debugMessage("AM2H_Ds18b20::config()",String(d.sensor.ds18b20.addr[i],HEX));
     }
     d.config |= Config::SET_0;
   }
   if (t.meas_ == "loc") {
-    AM2H_Helper::parse_location(d.loc,p);
-    AM2H_Core::debugMessage("AM2H_Ds18b20::config()","set loc = "+String(d.loc));
-    d.config |= Config::SET_1;
+    d.config &= ~Config::SET_1;
+    if (p.length()>0) {
+      AM2H_Helper::parse_location(d.loc,p);
+      AM2H_Core::debugMessage("AM2H_Ds18b20::config()","set loc = "+String(d.loc));
+      d.config |= Config::SET_1;
+    }
   }
   if (t.meas_ == "offsetTemp") {
     d.sensor.ds18b20.offsetTemp=p.toInt();
