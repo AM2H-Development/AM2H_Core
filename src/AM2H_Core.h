@@ -14,7 +14,7 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
-const String VERSION {"1.0.7"};
+const String VERSION {"1.0.8"};
 
 void IRAM_ATTR impulseISR();
 
