@@ -1,3 +1,23 @@
+# Hardware documentation
+
+### RJ45 Pinout
+
+| PIN | Description | Function |
+| ----------- | ----------- | ----------- |
+| 1 | GND | Power Supply
+| 2 | VIN | Power Supply
+| 3 | RX (3) | Onwire Data |
+| 4 | TX (1) | Interrupt |
+| 5 | GND | Power Supply |
+| 6 | 3V3 | Power Supply |
+| 7 | SCL (0) | I2C Serial Clock|
+| 8 | SDA (2) | I2C Serial Data |
+
+Module is equipped with an AMS1117 3.3V Voltage Regulator. Consider limitations for the line regulation within the range of 1.5V ≤ (VIN - VOUT) ≤ 12 V. The dropout voltage is around 1.5 Volt, it is recommended to power the module with 5 Volt. Power supply provides no additional protection circuit.
+
+
+![alt text](https://raw.githubusercontent.com/AM2H-Development/AM2H_Core/main/docs/assets/AM2H_RJ45_Pinout.png)
+
 # AM2H_Core documentation
 
 ## REST API 
@@ -72,9 +92,14 @@ akm/config/d_100/2/Rgbled/setState => ... // same as akm/firstFloor/signal/state
 
 ```
 
+### DS18B20 configuration
 
-SDA brown
-SCL green
-3V3 yellow
-GND white
+all retained
+
+```
+akm/config/d_100/3/Ds18b20/addr => 28ffd059051603cc
+akm/config/d_100/3/Ds18b20/loc => firstFloor
+akm/config/d_100/3/Ds18b20/offsetTemp => 0 // in 0.1 °C
+```
+
 
