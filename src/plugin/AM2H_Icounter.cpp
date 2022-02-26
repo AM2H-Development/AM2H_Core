@@ -12,13 +12,18 @@ void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, co
     const unsigned long timeout = (static_cast<unsigned long>(d.sensor.icounter.zeroLimit)*1000)+lastImpulseMillis_G;
     if ( timeout < millis() ){
         mqttClient.publish((topic + "power").c_str() ,"0");
+        AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","done...");
     }
 }
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    const uint32_t del = 50 - (millis() - lastImpulseMillis_G);
+    const uint32_t del = 30 - (millis() - lastImpulseMillis_G);
+    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","Delay: "+ String(del) + " state:"+String(digitalRead(CORE_ISR_PIN)));
     delay(del);
-    if (digitalRead(CORE_ISR_PIN)==0) return;
+    if (digitalRead(CORE_ISR_PIN)==0){
+        AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","skipped...");
+        return;
+    }
 
     ++d.sensor.icounter.absCnt;
     const uint32_t interval = lastImpulseMillis_G - d.sensor.icounter.millis;
