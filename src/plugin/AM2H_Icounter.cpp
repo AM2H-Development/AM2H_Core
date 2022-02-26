@@ -17,12 +17,13 @@ void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, co
 }
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    const uint32_t del = 30 - (millis() - lastImpulseMillis_G);
+    constexpr uint32_t MAX_DEL{30};
+    const uint32_t del = MAX_DEL - (millis() - lastImpulseMillis_G);
     AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","Delay: "+ String(del) + " state:"+String(digitalRead(CORE_ISR_PIN)));
-    if (del<30) {
+    if (del<=MAX_DEL) {
         delay(del);
     }
-    if (digitalRead(CORE_ISR_PIN)==0){
+    if (digitalRead(CORE_ISR_PIN)==1){
         AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","skipped...");
         return;
     }

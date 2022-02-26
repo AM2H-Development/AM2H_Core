@@ -46,7 +46,7 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
 
   pinMode(CORE_STATUS_LED, OUTPUT);
   pinMode(CORE_ISR_PIN, INPUT_PULLUP);
-  attachInterrupt(CORE_ISR_PIN, impulseISR, RISING);
+  attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
   am2h_core= this;
 }
 
