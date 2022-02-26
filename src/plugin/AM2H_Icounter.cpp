@@ -17,9 +17,7 @@ void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, co
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
     const uint32_t del = 50 - (millis() - lastImpulseMillis_G);
-    am2h_core->loopMqtt();
     delay(del);
-    am2h_core->loopMqtt();
     if (digitalRead(CORE_ISR_PIN)==0) return;
 
     ++d.sensor.icounter.absCnt;
