@@ -14,7 +14,7 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
-const String VERSION {"1.0.9"};
+const String VERSION {"1.0.10"};
 
 void IRAM_ATTR impulseISR();
 
@@ -34,10 +34,10 @@ struct VolatileSetupContainer {
 };
 
 struct Timers {
-  unsigned long wlanReconnect; // non-blocking timer for Wlan reconnect
-  unsigned long mqttReconnect; // non-blocking timer for Mqtt reconnect
-  unsigned long espRestart;    // non-blocking timer for ESP.restart();
-  unsigned long sendData;      // non-blocking timer for sending data by Mqtt;
+  unsigned long wlanReconnect{0}; // non-blocking timer for Wlan reconnect
+  unsigned long mqttReconnect{0}; // non-blocking timer for Mqtt reconnect
+  unsigned long espRestart{0};    // non-blocking timer for ESP.restart();
+  unsigned long sendData{0};      // non-blocking timer for sending data by Mqtt;
 };
 
 class AM2H_Core {

@@ -110,8 +110,8 @@ void AM2H_Core::checkIntPublish(){
 
 void AM2H_Core::checkTimerPublish(){
   if (volatileSetupValues_.sampleRate>0){
-    if ( millis() > timer_.sendData ){
-      timer_.sendData = millis() + volatileSetupValues_.sampleRate*1000;
+    if ( millis() - timer_.sendData > volatileSetupValues_.sampleRate*1000 ) { 
+      timer_.sendData += volatileSetupValues_.sampleRate*1000;
         debugMessage("AM2H_Core::checkTimerPublish()","");
         publishDeviceStatus();
         for (int i=0; i < 20; ++i){
