@@ -102,6 +102,42 @@ akm/config/d_100/0/Bme680/offsetPressure => 0 // in 0.1 hPa
 akm/storage/d_100/0/Bme680/setIAQ => 0 // only first time
 ```
 
+error codes:
+```
+    BSEC_OK = 0,                                    /*!< Function execution successful */
+    BSEC_E_DOSTEPS_INVALIDINPUT = -1,               /*!< Input (physical) sensor id passed to bsec_do_steps() is not in the valid range or not valid for requested virtual sensor */
+    BSEC_E_DOSTEPS_VALUELIMITS = -2,                /*!< Value of input (physical) sensor signal passed to bsec_do_steps() is not in the valid range */
+    BSEC_E_DOSTEPS_DUPLICATEINPUT = -6,             /*!< Duplicate input (physical) sensor ids passed as input to bsec_do_steps() */
+    BSEC_I_DOSTEPS_NOOUTPUTSRETURNABLE = 2,         /*!< No memory allocated to hold return values from bsec_do_steps(), i.e., n_outputs == 0 */
+    BSEC_W_DOSTEPS_EXCESSOUTPUTS = 3,               /*!< Not enough memory allocated to hold return values from bsec_do_steps(), i.e., n_outputs < maximum number of requested output (virtual) sensors */
+    BSEC_W_DOSTEPS_TSINTRADIFFOUTOFRANGE = 4,       /*!< Duplicate timestamps passed to bsec_do_steps() */
+    BSEC_E_SU_WRONGDATARATE = -10,                  /*!< The sample_rate of the requested output (virtual) sensor passed to bsec_update_subscription() is zero */
+    BSEC_E_SU_SAMPLERATELIMITS = -12,               /*!< The sample_rate of the requested output (virtual) sensor passed to bsec_update_subscription() does not match with the sampling rate allowed for that sensor */
+    BSEC_E_SU_DUPLICATEGATE = -13,                  /*!< Duplicate output (virtual) sensor ids requested through bsec_update_subscription() */
+    BSEC_E_SU_INVALIDSAMPLERATE = -14,              /*!< The sample_rate of the requested output (virtual) sensor passed to bsec_update_subscription() does not fall within the global minimum and maximum sampling rates  */
+    BSEC_E_SU_GATECOUNTEXCEEDSARRAY = -15,          /*!< Not enough memory allocated to hold returned input (physical) sensor data from bsec_update_subscription(), i.e., n_required_sensor_settings < #BSEC_MAX_PHYSICAL_SENSOR */
+    BSEC_E_SU_SAMPLINTVLINTEGERMULT = -16,          /*!< The sample_rate of the requested output (virtual) sensor passed to bsec_update_subscription() is not correct */
+    BSEC_E_SU_MULTGASSAMPLINTVL = -17,              /*!< The sample_rate of the requested output (virtual), which requires the gas sensor, is not equal to the sample_rate that the gas sensor is being operated */
+    BSEC_E_SU_HIGHHEATERONDURATION = -18,           /*!< The duration of one measurement is longer than the requested sampling interval */
+    BSEC_W_SU_UNKNOWNOUTPUTGATE = 10,               /*!< Output (virtual) sensor id passed to bsec_update_subscription() is not in the valid range; e.g., n_requested_virtual_sensors > actual number of output (virtual) sensors requested */
+    BSEC_W_SU_MODINNOULP = 11,                      /*!< ULP plus can not be requested in non-ulp mode */ /*MOD_ONLY*/
+    BSEC_I_SU_SUBSCRIBEDOUTPUTGATES = 12,           /*!< No output (virtual) sensor data were requested via bsec_update_subscription() */
+    BSEC_E_PARSE_SECTIONEXCEEDSWORKBUFFER = -32,    /*!< n_work_buffer_size passed to bsec_set_[configuration/state]() not sufficient */
+    BSEC_E_CONFIG_FAIL = -33,                       /*!< Configuration failed */
+    BSEC_E_CONFIG_VERSIONMISMATCH = -34,            /*!< Version encoded in serialized_[settings/state] passed to bsec_set_[configuration/state]() does not match with current version */
+    BSEC_E_CONFIG_FEATUREMISMATCH = -35,            /*!< Enabled features encoded in serialized_[settings/state] passed to bsec_set_[configuration/state]() does not match with current library implementation */
+    BSEC_E_CONFIG_CRCMISMATCH = -36,                /*!< serialized_[settings/state] passed to bsec_set_[configuration/state]() is corrupted */
+    BSEC_E_CONFIG_EMPTY = -37,                      /*!< n_serialized_[settings/state] passed to bsec_set_[configuration/state]() is to short to be valid */
+    BSEC_E_CONFIG_INSUFFICIENTWORKBUFFER = -38,     /*!< Provided work_buffer is not large enough to hold the desired string */
+    BSEC_E_CONFIG_INVALIDSTRINGSIZE = -40,          /*!< String size encoded in configuration/state strings passed to bsec_set_[configuration/state]() does not match with the actual string size n_serialized_[settings/state] passed to these functions */
+    BSEC_E_CONFIG_INSUFFICIENTBUFFER = -41,         /*!< String buffer insufficient to hold serialized data from BSEC library */
+    BSEC_E_SET_INVALIDCHANNELIDENTIFIER = -100,     /*!< Internal error code, size of work buffer in setConfig must be set to BSEC_MAX_WORKBUFFER_SIZE */
+    BSEC_E_SET_INVALIDLENGTH = -104,                /*!< Internal error code */
+    BSEC_W_SC_CALL_TIMING_VIOLATION = 100,          /*!< Difference between actual and defined sampling intervals of bsec_sensor_control() greater than allowed */
+    BSEC_W_SC_MODEXCEEDULPTIMELIMIT = 101,          /*!< ULP plus is not allowed because an ULP measurement just took or will take place */ /*MOD_ONLY*/
+    BSEC_W_SC_MODINSUFFICIENTWAITTIME = 102         /*!< ULP plus is not allowed because not sufficient time passed since last ULP plus */ /*MOD_ONLY*/
+```
+
 ### Bh1750 / (BH1721) configuration
 
 all retained

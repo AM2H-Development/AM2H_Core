@@ -14,7 +14,13 @@ void AM2H_Bh1750::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
         level = lightMeter.readLightLevel();
     }
     AM2H_Core::debugMessage("AM2H_Bh1750::timerPublish()","publishing to " + topic + "illuminance="+String(level));
-    mqttClient.publish( (topic + "illuminance").c_str() , String( level ).c_str() );
+    char error[] = "1";
+    if ( level > -5. ) {
+        error[0] = '0';
+        mqttClient.publish( (topic + "illuminance").c_str() , String( level ).c_str() );
+        am2h_core->loopMqtt();
+    }
+    mqttClient.publish( (topic + ERROR_CODE).c_str(), error );
     am2h_core->loopMqtt();
 }
 

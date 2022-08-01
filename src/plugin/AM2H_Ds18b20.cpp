@@ -89,7 +89,13 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, con
   celsius += static_cast<float>(d.sensor.ds18b20.offsetTemp) / 10.0;
 
   AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish()","  Temperature = " + String(celsius) );
-  mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
+  char error[] = "1";
+  if (celsius<= 128. && celsius >= -55.) {
+    error[0] = '0';
+    mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
+    am2h_core->loopMqtt();
+  }
+  mqttClient.publish( (topic + ERROR_CODE).c_str() , error );
   am2h_core->loopMqtt();
 }
 

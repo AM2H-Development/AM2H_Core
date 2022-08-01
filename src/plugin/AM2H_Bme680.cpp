@@ -15,43 +15,51 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
     Bsec& bme680 = *d.sensor.bme680.bme680;
     AM2H_Core::debugMessage("AM2H_Bme680::timerPublish()","publishing to " + topic);
 
-    mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( static_cast<float>(d.sensor.bme680.offsetTemp) / 10.0)).c_str() );
+    mqttClient.publish( (topic + ERROR_CODE).c_str() , String(bme680.bme680Status).c_str() );
     am2h_core->loopMqtt();
 
-    mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity+ ( static_cast<float>(d.sensor.bme680.offsetHumidity) / 10.0) ).c_str() );
-    am2h_core->loopMqtt();
-
-    mqttClient.publish( (topic + "pressure").c_str() , String( bme680.pressure/100. + ( static_cast<float>(d.sensor.bme680.offsetPressure) / 10.0) ).c_str() );
-    am2h_core->loopMqtt();
-
-    mqttClient.publish( (topic + "co2Accuracy").c_str() , String( bme680.co2Accuracy ).c_str() );    
-    am2h_core->loopMqtt();
-
-    if ( bme680.co2Accuracy>=1 ) {
-        mqttClient.publish( (topic + "co2Equivalent").c_str() , String( bme680.co2Equivalent ).c_str() );
+    if ( bme680.bme680Status == BSEC_OK ) {
+        mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( static_cast<float>(d.sensor.bme680.offsetTemp) / 10.0)).c_str() );
         am2h_core->loopMqtt();
-    }
 
-    mqttClient.publish( (topic + "iaqAccuracy").c_str() , String( bme680.iaqAccuracy ).c_str() );
-    am2h_core->loopMqtt();
-    if ( bme680.iaqAccuracy>=1 ) {
-        mqttClient.publish( (topic + "iaq").c_str() , String( bme680.iaq ).c_str() );
+        mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( static_cast<float>(d.sensor.bme680.offsetTemp) / 10.0)).c_str() );
         am2h_core->loopMqtt();
-    }
 
-    mqttClient.publish( (topic + "staticIaqAccuracy").c_str() , String( bme680.staticIaqAccuracy ).c_str() );
-    am2h_core->loopMqtt();
-    if ( bme680.staticIaqAccuracy>=1 ) {
-        mqttClient.publish( (topic + "staticIaq").c_str() , String( bme680.staticIaq ).c_str() );
+        mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity+ ( static_cast<float>(d.sensor.bme680.offsetHumidity) / 10.0) ).c_str() );
         am2h_core->loopMqtt();
-    }
 
-    if ( bme680.staticIaqAccuracy>=1 ) {
-        uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
-        bme680.getState(bsecState);
-        AM2H_Core::debugMessage("AM2H_Bme680::timerPublish()","saving IAQ\n");
-        mqttClient.publish( d.sensor.bme680.iaqConfigTopic , bsecState, BSEC_MAX_STATE_BLOB_SIZE, true );
+        mqttClient.publish( (topic + "pressure").c_str() , String( bme680.pressure/100. + ( static_cast<float>(d.sensor.bme680.offsetPressure) / 10.0) ).c_str() );
         am2h_core->loopMqtt();
+
+        mqttClient.publish( (topic + "co2Accuracy").c_str() , String( bme680.co2Accuracy ).c_str() );    
+        am2h_core->loopMqtt();
+
+        if ( bme680.co2Accuracy>=1 ) {
+            mqttClient.publish( (topic + "co2Equivalent").c_str() , String( bme680.co2Equivalent ).c_str() );
+            am2h_core->loopMqtt();
+        }
+
+        mqttClient.publish( (topic + "iaqAccuracy").c_str() , String( bme680.iaqAccuracy ).c_str() );
+        am2h_core->loopMqtt();
+        if ( bme680.iaqAccuracy>=1 ) {
+            mqttClient.publish( (topic + "iaq").c_str() , String( bme680.iaq ).c_str() );
+            am2h_core->loopMqtt();
+        }
+
+        mqttClient.publish( (topic + "staticIaqAccuracy").c_str() , String( bme680.staticIaqAccuracy ).c_str() );
+        am2h_core->loopMqtt();
+        if ( bme680.staticIaqAccuracy>=1 ) {
+            mqttClient.publish( (topic + "staticIaq").c_str() , String( bme680.staticIaq ).c_str() );
+            am2h_core->loopMqtt();
+        }
+
+        if ( bme680.staticIaqAccuracy>=1 ) {
+            uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] {0};
+            bme680.getState(bsecState);
+            AM2H_Core::debugMessage("AM2H_Bme680::timerPublish()","saving IAQ\n");
+            mqttClient.publish( d.sensor.bme680.iaqConfigTopic , bsecState, BSEC_MAX_STATE_BLOB_SIZE, true );
+            am2h_core->loopMqtt();
+        }
     }
 }
 

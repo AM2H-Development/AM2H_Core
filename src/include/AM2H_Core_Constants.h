@@ -105,5 +105,5 @@ String const IPADDRESS_PROP_NAME {"ipAddress"};
 #define   ONLINE_PROP_VAL  "running"
 #define MESSAGE_PROP_NAME "message"
 #define ERROR_PROP_NAME "error"
-
+String const ERROR_CODE {"errorCode"};
 #endif

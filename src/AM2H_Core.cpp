@@ -53,6 +53,8 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
 void AM2H_Core::setupCore(){
     Serial.begin(115200);
     debugMessage("AM2H_Core::setupCore()","AM2H_Core Version = " + VERSION + "\n" );
+    debugMessage("AM2H_Core::setupCore()","ESP8266 MAC = " + WiFi.macAddress() + "\n" );
+    debugMessage("AM2H_Core::setupCore()","ESP8266 RestartCause = " + ESP.getResetReason() + "\n" );
     debugMessage("AM2H_Core::setupCore()","starting up");
     Serial.print("AM2H_Core Version = " + VERSION + "\n");
     Serial.print("Starting up - please wait ");
@@ -299,7 +301,8 @@ const String AM2H_Core::getRootContent(){
   String content;
   content += HTTP_HEADER;
   content += "<h1>AM2H_Core</h1><p>deviceId: <b>" + String(am2h_core->persistentSetupValues_.deviceId) + "</b><br/>nickname: <b>" + String(am2h_core->volatileSetupValues_.nickname);
-  content += "</b><br/>fwVersion: <b>" + String(VERSION) + "</b></p><ul>";
+  content += "</b><br/>fwVersion: <b>" + String(VERSION);
+  content += "</b><br/>MAC: <b>" + WiFi.macAddress() + "</b></p><ul>";
   content += "<li><a href=\"/api/v1/status\">show status logs</a></li>";
   content += "<li><a href=\"/api/v1/get\">show device info</a></li>";
   content += "<li><a href=\"/api/v1/restart\">restart device</a></li>";
@@ -331,6 +334,8 @@ void AM2H_Core::handleStatus() {
 
 void AM2H_Core::handleApiGetRequest() {
   String content = "{\n\"deviceId\":\"" + am2h_core->getDeviceId() + "\",\n";
+  content += "\"nickname\":\"" + am2h_core->getNickname() + "\",\n";
+  content += "\"MAC\":\"" + WiFi.macAddress() + "\",\n";
   content += "\"ssid\":\"" + am2h_core->getSSID() + "\",\n\"pw\":\"********\",\n";
   content += "\"mqttServer\":\"" + String(am2h_core->getMQTTServer()) + "\",\n";
   content += "\"mqttPort\":\"" + String(am2h_core->getMQTTPort()) + "\",\n";

@@ -11,18 +11,21 @@ void AM2H_Sht21::setupPlugin(){
 }
 
 void AM2H_Sht21::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    AM2H_Core::debugMessage("AM2H_Sht21::timerPublish()","publishing ...");
     am2h_core->switchWire(d.sensor.sht21.addr);
     float celsius = sht21.getTemperature();
     float humidity = sht21.getHumidity();
-
+    AM2H_Core::debugMessage("AM2H_Sht21::timerPublish()","publishing " + topic + String(celsius) + " / " + String (humidity));
+    char error[] = "1";
     if ( (celsius != -46.85) && (humidity != -6.0 ) ) { // if sensor reading is valid calculate offsets
+        error[0] = '0';
         celsius += static_cast<float>(d.sensor.sht21.offsetTemp) / 10.0;
         humidity += static_cast<float>(d.sensor.sht21.offsetHumidity) / 10.0;
+        mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
+        am2h_core->loopMqtt();
+        mqttClient.publish( (topic + "humidity").c_str() , String( humidity ).c_str() );
+        am2h_core->loopMqtt();
     }
-    mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
-    am2h_core->loopMqtt();
-    mqttClient.publish( (topic + "humidity").c_str() , String( humidity ).c_str() );
+    mqttClient.publish( (topic + ERROR_CODE).c_str() , error );
     am2h_core->loopMqtt();
 }
 
