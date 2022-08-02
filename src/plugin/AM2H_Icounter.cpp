@@ -10,10 +10,12 @@ void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, co
     AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","publishing to " + topic);
 
     const unsigned long timeout = (static_cast<unsigned long>(d.sensor.icounter.zeroLimit)*1000)+lastImpulseMillis_G;
-    if ( timeout < millis() ){
+    if ( timeout < millis() ) {
         mqttClient.publish((topic + "power").c_str() ,"0");
         AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","done...");
     }
+    mqttClient.publish((topic + "last").c_str() , String( calculateLast(d) ).c_str());
+    am2h_core->loopMqtt();
 }
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
@@ -32,6 +34,9 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient
     const uint32_t interval = lastImpulseMillis_G - d.sensor.icounter.millis;
     d.sensor.icounter.millis = lastImpulseMillis_G;
 
+    d.sensor.icounter.lastTimestamps[d.sensor.icounter.lastTimestampsPointer++]=lastImpulseMillis_G;
+    if ( d.sensor.icounter.lastTimestampsPointer > COUNTER_MAX_BUFFER ) { d.sensor.icounter.lastTimestampsPointer=0; }
+
     AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","interval is " + String(interval) + " publishing to " + topic);
     mqttClient.publish((topic + "counter").c_str() ,String( calculateCounter(d) ).c_str());
     am2h_core->loopMqtt();
@@ -39,6 +44,16 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient
     am2h_core->loopMqtt();
     mqttClient.publish(d.sensor.icounter.absCntTopic , String( d.sensor.icounter.absCnt ).c_str(), RETAINED);
     am2h_core->loopMqtt();
+}
+
+double AM2H_Icounter::calculateLast(AM2H_Datastore& d){
+    uint32_t ticks{0};
+    for (uint8_t i; i < COUNTER_MAX_BUFFER; ++i){
+        if ( d.sensor.icounter.lastTimestamps[i] > (millis() - COUNTER_LAST_DURATION) ) {
+            ticks++;
+        }
+    }
+    return ticks * d.sensor.icounter.unitsPerTick * pow (10., d.sensor.icounter.exponentPerTick);
 }
 
 double AM2H_Icounter::calculateCounter(AM2H_Datastore& d){
@@ -61,6 +76,10 @@ void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p
 
     if (!d.initialized) {
         d.initialized=true;
+        d.sensor.icounter.lastTimestampsPointer=0;
+        for (uint8_t i = 0; i< COUNTER_MAX_BUFFER; ++i){
+            d.sensor.icounter.lastTimestamps[i]=0;
+        }
 
         String tempTopic = am2h_core->getFullStorageTopic(String(t.id_), t.srv_, "absCnt");
         d.sensor.icounter.absCntTopic = new char[tempTopic.length()];

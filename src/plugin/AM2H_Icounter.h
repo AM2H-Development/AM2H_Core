@@ -13,6 +13,7 @@ public:
 private:
     double calculatePower(AM2H_Datastore& d, const uint32_t interval);
     double calculateCounter(AM2H_Datastore& d);    
+    double calculateLast(AM2H_Datastore& d);
 };
 
 #endif

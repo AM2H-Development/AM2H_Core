@@ -14,6 +14,11 @@ byte constexpr CORE_RX{3};  // Serial RX only active when SERIALDEBUG is enabled
 byte constexpr CORE_STATUS_LED{2}; // Internal LED (blue)
 byte constexpr CORE_DQ{3};  // Onewire
 
+// Counter
+constexpr uint32_t ONE_MINUTE {1000*60};
+constexpr uint8_t COUNTER_MAX_BUFFER {50};
+constexpr uint32_t COUNTER_LAST_DURATION {ONE_MINUTE *30};
+
 // Mqtt and Device
 namespace MQTT {
     String const DEFAULT_SERVER {"192.168.178.10"};

@@ -1,5 +1,6 @@
 #ifndef AM2H_Datastore_h
 #define AM2H_Datastore_h
+#include "include/AM2H_Core_Constants.h"
 // #include "Arduino.h"
 // #include <plugin/AM2H_Plugin.h>
 #include "bsec.h"
@@ -78,6 +79,8 @@ union Datastore {
         sint16 zeroLimit;      // ms
         uint32_t millis;  // lastMillis ms
         char* absCntTopic;
+        unsigned long lastTimestamps[COUNTER_MAX_BUFFER]; // ring buffer for last counts
+        uint8_t lastTimestampsPointer;
     } icounter;
 
     struct Bme680 {
