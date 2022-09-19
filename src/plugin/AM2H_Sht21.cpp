@@ -24,6 +24,8 @@ void AM2H_Sht21::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const
         am2h_core->loopMqtt();
         mqttClient.publish( (topic + "humidity").c_str() , String( humidity ).c_str() );
         am2h_core->loopMqtt();
+    } else {
+        i2cReset();
     }
     mqttClient.publish( (topic + ERROR_CODE).c_str() , error );
     am2h_core->loopMqtt();
@@ -65,6 +67,9 @@ void AM2H_Sht21::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
 }
 
 void AM2H_Sht21::tcaselect(uint8_t i){
+    Wire.beginTransmission(TCAADDR);
+    Wire.write(0);
+    Wire.endTransmission();
     if (i > 7) return;
     Wire.beginTransmission(TCAADDR);
     Wire.write(1 << i);
@@ -84,4 +89,47 @@ void AM2H_Sht21::scan() {
             }
         }
     }
+}
+
+void AM2H_Sht21::i2cReset() {
+    pinMode(CORE_SDA, INPUT_PULLUP); // Make SDA (data) and SCL (clock) pins Inputs with pullup.
+    pinMode(CORE_SCL, INPUT_PULLUP);
+
+    delay(500);
+    boolean SCL_LOW;
+    boolean SDA_LOW = (digitalRead(CORE_SDA) == LOW);  // vi. Check SDA input.
+    int clockCount = 20; // > 2x9 clock
+
+    while (SDA_LOW && (clockCount > 0)) { //  vii. If SDA is Low,
+        clockCount--;
+        // Note: I2C bus is open collector so do NOT drive SCL or SDA high.
+        pinMode(CORE_SCL, INPUT); // release SCL pullup so that when made output it will be LOW
+        pinMode(CORE_SCL, OUTPUT); // then clock SCL Low
+        delayMicroseconds(10); //  for >5us
+        pinMode(CORE_SCL, INPUT); // release SCL LOW
+        pinMode(CORE_SCL, INPUT_PULLUP); // turn on pullup resistors again
+        // do not force high as slave may be holding it low for clock stretching.
+        delayMicroseconds(10); //  for >5us
+        // The >5us is so that even the slowest I2C devices are handled.
+        SCL_LOW = (digitalRead(CORE_SCL) == LOW); // Check if SCL is Low.
+        int counter = 20;
+        while (SCL_LOW && (counter > 0)) {  //  loop waiting for SCL to become High only wait 2sec.
+            counter--;
+            delay(100);
+            SCL_LOW = (digitalRead(CORE_SCL) == LOW);
+        }
+        SDA_LOW = (digitalRead(CORE_SDA) == LOW); //   and check SDA input again and loop
+    }
+
+    // else pull SDA line low for Start or Repeated Start
+    pinMode(CORE_SDA, INPUT); // remove pullup.
+    pinMode(CORE_SDA, OUTPUT);  // and then make it LOW i.e. send an I2C Start or Repeated start control.
+    // When there is only one I2C master a Start or Repeat Start has the same function as a Stop and clears the bus.
+    /// A Repeat Start is a Start occurring after a Start with no intervening Stop.
+    delayMicroseconds(10); // wait >5us
+    pinMode(CORE_SDA, INPUT); // remove output low
+    pinMode(CORE_SDA, INPUT_PULLUP); // and make SDA high i.e. send I2C STOP control.
+    delayMicroseconds(10); // x. wait >5us
+    pinMode(CORE_SDA, INPUT); // and reset pins as tri-state inputs which is the default state on reset
+    pinMode(CORE_SCL, INPUT);
 }

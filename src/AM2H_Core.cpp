@@ -64,12 +64,14 @@ void AM2H_Core::setupCore(){
       delay(1000);
     }
     Serial.print("\nrunning!\n");
+    setupEEPROM();
+    Serial.print("ns: "+String(persistentSetupValues_.ns)+ ", deviceId:" + String(persistentSetupValues_.deviceId) + "\n");
+
   #ifndef _SERIALDEBUG_
     Serial.flush();
     Serial.end();
   #endif
 
-  setupEEPROM();
   setupWlan();
   setupServer();
   setupMqtt();

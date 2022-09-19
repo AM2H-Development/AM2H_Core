@@ -15,6 +15,7 @@ private:
     SHT21 sht21;
     void tcaselect(uint8_t i);
     void scan();
+    void i2cReset();
 };
 
 #endif
