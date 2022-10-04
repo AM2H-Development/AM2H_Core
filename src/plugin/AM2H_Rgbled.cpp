@@ -5,7 +5,7 @@
 
 extern AM2H_Core* am2h_core;
 
-void AM2H_Rgbled::loopPlugin(AM2H_Datastore& d){
+void AM2H_Rgbled::loopPlugin(AM2H_Datastore& d, const uint8_t index){
     auto& rgbled=d.sensor.rgbled;
     if (!rgbled.active) {return;}
     if ( (rgbled.timestamp+rgbled.time[rgbled.state]) < millis() ) {
@@ -20,11 +20,11 @@ void AM2H_Rgbled::loopPlugin(AM2H_Datastore& d){
     }
 }
 
-void AM2H_Rgbled::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
+void AM2H_Rgbled::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
     const auto& rgbled=d.sensor.rgbled;
     if (rgbled.active){
         String config = "colorOn="+getColorName(rgbled.color[State::ON])+"&colorOff="+getColorName(rgbled.color[State::OFF])+"&timeOn="+String(rgbled.time[State::ON])+"&timeOff="+String(rgbled.time[State::OFF]);
-        AM2H_Core::debugMessage("AM2H_Rgbled::timerPublish()","publishing to " + topic + "state: " + config);
+        AM2H_Core::debugMessageNl("AM2H_Rgbled::timerPublish()","publishing to " + topic + "state: " + config, DebugLogger::INFO);
         mqttClient.publish( (topic + "state").c_str() , config.c_str() );
         am2h_core->loopMqtt();
     } else {
@@ -34,49 +34,49 @@ void AM2H_Rgbled::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
 }
 
 void AM2H_Rgbled::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
-    AM2H_Core::debugMessage("AM2H_Rgbled::config()","old config state {"+String(d.config,BIN)+"}\n");
+    AM2H_Core::debugMessageNl("AM2H_Rgbled::config()","old config state {"+String(d.config,BIN)+"}", DebugLogger::INFO);
     if ( d.initialized && (t.meas_ == "setState") ) {
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set state\n");
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set state", DebugLogger::INFO);
         parseStateTopic(d,p);
-        timerPublish(d, am2h_core->getMqttClient(), am2h_core->getDataTopic(d.loc,getSrv(),String(t.id_)) );
+        timerPublish(d, am2h_core->getMqttClient(), am2h_core->getDataTopic(d.loc,getSrv(),String(t.id_)),0 );
         return;
     }
     if (t.meas_ == "addr") {
         d.sensor.bh1750.addr= AM2H_Helper::parse_hex<uint32_t>(p);
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set addr = 0x"+String(d.sensor.bh1750.addr,HEX)+"\n");
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set addr = 0x"+String(d.sensor.bh1750.addr,HEX), DebugLogger::INFO);
         d.config |= Config::SET_0;
     }
     if (t.meas_ == "loc") {
         d.config &= ~Config::SET_1;
         if (p.length()>0) {
             AM2H_Helper::parse_location(d.loc,p);
-            AM2H_Core::debugMessage("AM2H_Rgbled::config()","set loc = "+String(d.loc)+"\n");
+            AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set loc = "+String(d.loc), DebugLogger::INFO);
             d.config |= Config::SET_1;
         }
     }
     if (t.meas_ == "colorOn") {
         d.sensor.rgbled.color[State::ON]=static_cast<uint8_t>(getColor(p));
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set colorOn = "+String(d.sensor.rgbled.color[State::ON]));
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set colorOn = "+String(d.sensor.rgbled.color[State::ON]), DebugLogger::INFO);
         d.config |= Config::SET_2;
     }
     if (t.meas_ == "colorOff") {
         d.sensor.rgbled.color[State::OFF]=static_cast<uint8_t>(getColor(p));
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set colorOff = "+String(d.sensor.rgbled.color[State::OFF]));
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set colorOff = "+String(d.sensor.rgbled.color[State::OFF]), DebugLogger::INFO);
         d.config |= Config::SET_3;
     }
     if (t.meas_ == "timeOn") {
         d.sensor.rgbled.time[State::ON]= p.toInt();
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set timeOn = "+String(d.sensor.rgbled.time[State::ON]));
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set timeOn = "+String(d.sensor.rgbled.time[State::ON]), DebugLogger::INFO);
         d.config |= Config::SET_4;
     }
     if (t.meas_ == "timeOff") {
         d.sensor.rgbled.time[State::OFF]= p.toInt();
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set timeOff = "+String(d.sensor.rgbled.time[State::OFF]));
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set timeOff = "+String(d.sensor.rgbled.time[State::OFF]), DebugLogger::INFO);
         d.config |= Config::SET_5;
     }
     if (t.meas_ == "active") {
         d.sensor.rgbled.active=AM2H_Helper::stringToBool(p);
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","set active = "+String(d.sensor.rgbled.active ? "TRUE": "FALSE"));
+        AM2H_Core::debugMessage("AM2H_Rgbled::config()"," set active = "+String(d.sensor.rgbled.active ? "TRUE": "FALSE"), DebugLogger::INFO);
         d.initialized=false;
         d.config |= Config::SET_6;
     }
@@ -86,7 +86,7 @@ void AM2H_Rgbled::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
             postConfig(d);
             d.initialized=true;
         }
-        AM2H_Core::debugMessage("AM2H_Rgbled::config()","finished, new config state {"+String(d.config,BIN)+"}\n");
+        AM2H_Core::debugMessageNl("AM2H_Rgbled::config()","finished, new config state {"+String(d.config,BIN)+"}", DebugLogger::INFO);
     } else {
         d.self=nullptr;
     }
@@ -128,7 +128,7 @@ void AM2H_Rgbled::parseStateTopic(AM2H_Datastore& d,const String& p_origin){
             if (key=="timeOn") { rgbled.time[State::ON] = value.toInt(); }
             if (key=="timeOff") { rgbled.time[State::OFF] = value.toInt(); }
             if (key=="active") { rgbled.active = AM2H_Helper::stringToBool(value); }            
-            AM2H_Core::debugMessage("AM2H_Rgbled::parseStateTopic()","key:value = "+key+":"+value+"\n");
+            AM2H_Core::debugMessage("AM2H_Rgbled::parseStateTopic()","key:value = "+key+":"+value, DebugLogger::INFO);
             key="";
             value="";
             continue;

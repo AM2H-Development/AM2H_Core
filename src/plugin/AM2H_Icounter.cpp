@@ -6,27 +6,27 @@
 extern unsigned long lastImpulseMillis_G;
 extern AM2H_Core* am2h_core;
 
-void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
-    AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","publishing to " + topic);
+void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
+    AM2H_Core::debugMessageNl("AM2H_Icounter::timerPublish()","publishing to " + topic, DebugLogger::INFO);
 
     const unsigned long timeout = (static_cast<unsigned long>(d.sensor.icounter.zeroLimit)*1000)+lastImpulseMillis_G;
     if ( timeout < millis() ) {
         mqttClient.publish((topic + "power").c_str() ,"0");
-        AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","done...");
+        AM2H_Core::debugMessage("AM2H_Icounter::timerPublish()","done...", DebugLogger::INFO);
     }
     mqttClient.publish((topic + "last").c_str() , String( calculateLast(d) ).c_str());
     am2h_core->loopMqtt();
 }
 
-void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic){
+void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
     constexpr uint32_t MAX_DEL{30};
     const uint32_t del = MAX_DEL - (millis() - lastImpulseMillis_G);
-    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","Delay: "+ String(del) + " state:"+String(digitalRead(CORE_ISR_PIN)));
+    AM2H_Core::debugMessageNl("AM2H_Icounter::interruptPublish()","Delay: "+ String(del) + " state:"+String(digitalRead(CORE_ISR_PIN)), DebugLogger::INFO);
     if (del<=MAX_DEL) {
         delay(del);
     }
     if (digitalRead(CORE_ISR_PIN)==1){
-        AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","skipped...");
+        AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","skipped, ISR_PIN not high after delay...", DebugLogger::ERROR);
         return;
     }
 
@@ -37,7 +37,7 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient
     d.sensor.icounter.lastTimestamps[d.sensor.icounter.lastTimestampsPointer++]=lastImpulseMillis_G;
     if ( d.sensor.icounter.lastTimestampsPointer > COUNTER_MAX_BUFFER ) { d.sensor.icounter.lastTimestampsPointer=0; }
 
-    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","interval is " + String(interval) + " publishing to " + topic);
+    AM2H_Core::debugMessage("AM2H_Icounter::interruptPublish()","interval is " + String(interval) + " publishing to " + topic, DebugLogger::INFO);
     mqttClient.publish((topic + "counter").c_str() ,String( calculateCounter(d) ).c_str());
     am2h_core->loopMqtt();
     mqttClient.publish((topic + "power").c_str() ,String( calculatePower(d, interval) ).c_str());
@@ -61,18 +61,18 @@ double AM2H_Icounter::calculateCounter(AM2H_Datastore& d){
 }
 
 double AM2H_Icounter::calculatePower(AM2H_Datastore& d, const uint32_t interval){
-    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()","Interval: " + String(interval) );
+    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()","Interval: " + String(interval), DebugLogger::INFO);
     const unsigned long timeout = (static_cast<unsigned long>(d.sensor.icounter.zeroLimit)*1000);
     if ( interval > timeout ){
         return 0.;
     }
     const double power = 1. / (static_cast<double>(interval)/1000) * static_cast<double>(d.sensor.icounter.unitsPerMs) * pow(10., static_cast<double>(d.sensor.icounter.exponentPerMs));
-    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()"," power: " + String(power) );
+    AM2H_Core::debugMessage("AM2H_Icounter::calculatePower()"," power: " + String(power), DebugLogger::INFO);
     return  power;
 }
 
 void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
-    AM2H_Core::debugMessage("AM2H_Icounter::config()","old config state {"+String(d.config,BIN)+"}\n"+t.meas_+" : "+p);
+    AM2H_Core::debugMessageNl("AM2H_Icounter::config()","old config state {"+String(d.config,BIN)+"}\n"+t.meas_+" : "+p, DebugLogger::INFO);
 
     if (!d.initialized) {
         d.initialized=true;
@@ -129,7 +129,7 @@ void AM2H_Icounter::config(AM2H_Datastore& d, const MqttTopic& t, const String p
         // d.plugin = plugin_;
         d.self = this;
         pinMode(CORE_ISR_PIN, INPUT_PULLUP);
-        AM2H_Core::debugMessage("AM2H_Icounter::config()","finished, new config state {"+String(d.config,BIN)+"}");
+        AM2H_Core::debugMessageNl("AM2H_Icounter::config()","finished, new config state {"+String(d.config,BIN)+"}", DebugLogger::INFO);
     } else {
         d.self=nullptr;
         // d.active = false;

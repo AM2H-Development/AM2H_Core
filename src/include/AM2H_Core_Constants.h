@@ -30,6 +30,8 @@ namespace MQTT {
 namespace DebugLogger {
     constexpr uint32_t LOGLEN{6000};
     constexpr uint32_t SHORTBY{1000};
+    constexpr bool ERROR{false};
+    constexpr bool INFO{true};
 } 
 
 // I2C config

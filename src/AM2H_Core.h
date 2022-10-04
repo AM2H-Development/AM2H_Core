@@ -14,7 +14,7 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
-const String VERSION {"1.1.1"};
+const String VERSION {"1.2.0"};
 
 void IRAM_ATTR impulseISR();
 
@@ -47,18 +47,23 @@ public:
   void setupCore();
   void loopCore();
   static MqttTopic parseMqttTopic(char* topic);
-  static void const debugMessage(const String& caller, const String& message);
-  static void const debugMessage(const String& message);
+  // static void const debugMessage(const String& caller, const String& message);
+  // static void const debugMessage(const String& message);
+  // static void const debugMessage(const String& message, const bool info);
+  static void const debugMessage(const String& caller, const String& message, const bool newline, const bool info);
+  static void const debugMessage(const String& caller, const String& message, const bool info){debugMessage(caller, message, false, info);};
+  static void const debugMessageNl(const String& caller, const String& message, const bool info){debugMessage(caller, message, true, info);};
   static bool const parse_debugMessage (const String message, String& newMessage);
   void loopMqtt();
-  void switchWire (uint32_t const addr) const;
+  void switchWire(uint32_t const addr) const;
+  void i2cReset() const;
 
 private:
-  String lastCaller{""}; 
+  String lastCaller[2] = {"",""}; 
   AM2H_Plugin** plugins_;
   PubSubClient& mqttClient_;
   ESP8266WebServer& server_;
-  String status_;
+  String status_[2];
   byte updateRequired_;
   byte connStatus_;
   PersistentSetupContainer persistentSetupValues_;
@@ -89,6 +94,8 @@ private:
   void setupMqtt();
   static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
   void mqttReconnect();
+  void scan() const;
+  static const uint8_t getDebugIndex(const bool info);
 
 public:
   // Getters/Setters:
