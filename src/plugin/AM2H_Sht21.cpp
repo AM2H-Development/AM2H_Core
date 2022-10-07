@@ -20,7 +20,7 @@ void AM2H_Sht21::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const
         mqttClient.publish( (topic + "humidity").c_str() , String( humidity ).c_str() );
         am2h_core->loopMqtt();
     } else {
-        AM2H_Core::debugMessage("AM2H_Sht21::timerPublish()","Error " + String(error), DebugLogger::ERROR);
+        AM2H_Core::debugMessage("AM2H_Sht21::timerPublish()","Error " + String(celsius) + "|"  + String(humidity), DebugLogger::ERROR);
         am2h_core->i2cReset();
     }
     mqttClient.publish( (topic + ERROR_CODE + "_" + String(index)).c_str(), error );

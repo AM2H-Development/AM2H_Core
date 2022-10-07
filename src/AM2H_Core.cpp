@@ -602,6 +602,7 @@ void AM2H_Core::switchWire(uint32_t const addr) const {
 }
 
 void AM2H_Core::i2cReset() const {
+    AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","start", DebugLogger::ERROR);
     pinMode(CORE_SDA, INPUT_PULLUP); // Make SDA (data) and SCL (clock) pins Inputs with pullup.
     pinMode(CORE_SCL, INPUT_PULLUP);
 
@@ -642,4 +643,5 @@ void AM2H_Core::i2cReset() const {
     delayMicroseconds(10); // x. wait >5us
     pinMode(CORE_SDA, INPUT); // and reset pins as tri-state inputs which is the default state on reset
     pinMode(CORE_SCL, INPUT);
+    AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","end", DebugLogger::ERROR);
 }
