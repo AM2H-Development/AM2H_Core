@@ -61,7 +61,7 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
             am2h_core->loopMqtt();
         }
     } else {
-        AM2H_Core::debugMessage("AM2H_Bme680::timerPublish()","Error " + String(bme680.bme680Status), DebugLogger::ERROR);
+        AM2H_Core::debugMessage("AM2H_Bme680::timerPublish("+String(index)+")","Error " + String(bme680.bme680Status), DebugLogger::ERROR);
         am2h_core->i2cReset();
     }
 }

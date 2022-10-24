@@ -19,7 +19,7 @@ void AM2H_Bh1750::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
         mqttClient.publish( (topic + "illuminance").c_str() , String( level ).c_str() );
         am2h_core->loopMqtt();
     } else {
-        AM2H_Core::debugMessage("AM2H_Bh1750::timerPublish()","Error " + String(error), DebugLogger::ERROR);
+        AM2H_Core::debugMessage("AM2H_Bh1750::timerPublish("+String(index)+")","Error " + String(error), DebugLogger::ERROR);
         am2h_core->i2cReset();
     }
     

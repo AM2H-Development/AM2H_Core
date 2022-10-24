@@ -101,7 +101,7 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, con
       if (d.length()==1) { d= "0"+d;}
       error += d;
     }
-    AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish()", error, DebugLogger::ERROR);
+    AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish("+String(index)+")", error, DebugLogger::ERROR);
   }
 
   mqttClient.publish( (topic + ERROR_CODE + "_" + String(index)).c_str() , error );
