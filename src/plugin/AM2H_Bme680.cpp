@@ -22,9 +22,6 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, cons
         mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( static_cast<float>(d.sensor.bme680.offsetTemp) / 10.0)).c_str() );
         am2h_core->loopMqtt();
 
-        mqttClient.publish( (topic + "temperature").c_str() , String( bme680.temperature+( static_cast<float>(d.sensor.bme680.offsetTemp) / 10.0)).c_str() );
-        am2h_core->loopMqtt();
-
         mqttClient.publish( (topic + "humidity").c_str() , String( bme680.humidity+ ( static_cast<float>(d.sensor.bme680.offsetHumidity) / 10.0) ).c_str() );
         am2h_core->loopMqtt();
 
