@@ -20,7 +20,7 @@ String AM2H_I2ctester::getHtmlTabContent() {
             scan();
             break;
         case 'a':
-            readAddress();
+            setSlaveAdress();
             break;
         //case 'd':
             //  readData();
@@ -33,40 +33,21 @@ String AM2H_I2ctester::getHtmlTabContent() {
             break;
     }
 
-    String header = "Serial to I2C <br />=====================<br />";
-    header += "Slave Address: " + String(slave_addr,HEX) + "<br />";
-
-    header += "Data to send: ";
-    for ( uint8_t i=0; i < data_length; i++ ) {
-        if ( i % 8 == 0 && i != 0 ) {
-            header += "<br />      ";
-        }
-        if(data[i] < 16) {
-            header += '0';
-        }
-        header += String(data[i], HEX);
-    }
-    header += "<br />Number of Bytes to read: " + String(nbrBytes);
-    header += "<br />---------------------<br />";
-    header += "z = Scan I2C address<br />";
+    String header = "<b>I2C Debugger V1.0</b><br />=====================<br />";
+    header += "Slave Address: 0x" + String(slave_addr,HEX) + "<br />";
+    header += "---------------------<br />";
+    header += "z = Scan I2C addresses<br />";
     header += "a = Set slave address as DEC [a address]<br />";
     //Serial.println("d = Set data to send as HEX [d 00 FF ..]");
     header += "s = Send data as HEX [s 00 FF ..]<br />";
     header += "r = Read number of Bytes [r nbrBytes]<br /><br />";
-
-    header += "<br />";
     header += "<form action=\"#\" method=\"post\">";
     header += "<label for=\"qry\">&nbsp;Action</label>&nbsp;";
-    header += "<input type=\"text\" id=\"qry\" name=\"qry\" value=\"" + parseParams("qry") + "\" maxlength=\"16\">";
+    header += "<input type=\"text\" id=\"qry\" name=\"qry\" value=\"" + parseParams("qry") + "\" maxlength=\"16\" autofocus>";
     header += "<input type=\"submit\" value=\"Submit\"></form><br />";
 
-
     return header + output;
-
 }
-
-// Helpers
-// // //
 
 String AM2H_I2ctester::parseParams(const String qry) {
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
@@ -115,14 +96,14 @@ void AM2H_I2ctester::scan() {
     output += "Scan completed.<br />";
 }
 
-void AM2H_I2ctester::readAddress() {
+void AM2H_I2ctester::setSlaveAdress() {
     uint8_t c;
     int tmp = 0;
     while (true) {
         c = pop(instream);
         if(isDigit(c)) {
             tmp = tmp * 10 + (c - '0');
-            output += c;
+            // output += (char) c;
         } else if (c == 27) {
             return;
         } else if (isControl(c)) {
@@ -132,7 +113,7 @@ void AM2H_I2ctester::readAddress() {
 
     if (tmp > 0 && tmp < 128) {
         slave_addr = tmp;
-        output += "Slave address: " + String(slave_addr,HEX) + "<br />";
+        output += "Set slave address: " + String(slave_addr,HEX) + "<br />";
     } else {
         output += "<b>Slave address not set! Only values in the range 1-127 are allowed</b><br />";
     }
@@ -146,7 +127,6 @@ bool AM2H_I2ctester::readData() {
     uint8_t c; // character read from serial
 
     output += "Parsed data: ";
-
     while(true) {
         c = pop(instream);
         if (c == 27) {

@@ -26,7 +26,7 @@ private:
     char pop(String & instream);
     void tcaselect(uint8_t i);
     void scan();
-    void readAddress();
+    void setSlaveAdress();
     bool readData();
     void sendI2C(uint8_t *data, uint8_t len);
     void readI2C();
