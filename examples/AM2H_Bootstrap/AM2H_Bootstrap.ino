@@ -51,6 +51,7 @@
 #include <plugin/AM2H_Bh1750.h>
 #include <plugin/AM2H_Icounter.h>
 #include <plugin/AM2H_Rgbled.h>
+#include <plugin/AM2H_I2ctester.h>
 
 AM2H_Ds18b20 ds18b20("Ds18b20","tempsense");
 AM2H_Sht21 sht21("Sht21","envsense");
@@ -58,8 +59,9 @@ AM2H_Bme680 bme680("Bme680","envsense");
 AM2H_Bh1750 bh1750("Bh1750","envsense");
 AM2H_Icounter icounter("Icounter","countflowsense");
 AM2H_Rgbled rgbled("Rgbled","signal");
+AM2H_I2ctester i2ctester("I2ctester","debug");
 
-AM2H_Plugin* plugins[] {&ds18b20, &sht21, &bme680, &bh1750, &icounter, &rgbled, nullptr};
+AM2H_Plugin* plugins[] {&ds18b20, &sht21, &bme680, &bh1750, &icounter, &rgbled, &i2ctester, nullptr};
 AM2H_Core core(plugins);
 
 // ----------

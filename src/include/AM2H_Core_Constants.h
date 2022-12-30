@@ -66,6 +66,7 @@ char constexpr HTTP_API_V1_SET[] {"/api/v1/set"};
 char constexpr HTTP_API_V1_GET[] {"/api/v1/get"};
 char constexpr HTTP_API_V1_RESTART[]  {"/api/v1/restart"};
 char constexpr HTTP_API_V1_STATUS[] {"/api/v1/status"};
+char constexpr HTTP_API_V1_PLUGIN[] {"/api/v1/plugin/"};
 
 char constexpr HTTP_HEADER[] {"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>AM2H_Core</title><style>h1{color:blue;font-family:sans-serif;} body{color:grey;font-family: monospace;}</style></head><body>"};
 char constexpr HTTP_FOOTER[] {"</body></html>\n"};

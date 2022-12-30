@@ -57,12 +57,12 @@ public:
   void loopMqtt();
   void switchWire(uint32_t const addr) const;
   void i2cReset() const;
+  ESP8266WebServer& server_;
 
 private:
   String lastCaller[2] = {"",""}; 
   AM2H_Plugin** plugins_;
   PubSubClient& mqttClient_;
-  ESP8266WebServer& server_;
   String status_[2];
   byte updateRequired_;
   byte connStatus_;
@@ -88,9 +88,9 @@ private:
   static void handleRestart();
   static void handleStatus();
   static void handleNotFound();
-  static void handleApiRequest();
   static void handleApiGetRequest();
   static void handleApiSetRequest();
+  static void handlePlugin(const int id);
   void setupMqtt();
   static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
   void mqttReconnect();

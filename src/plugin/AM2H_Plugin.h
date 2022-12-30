@@ -20,6 +20,8 @@ class AM2H_Plugin{
     virtual void postConfig(AM2H_Datastore& d){};
     virtual void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){};
     virtual void interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){};
+    virtual String getHtmlTabName(){return plugin_;};
+    virtual String getHtmlTabContent(){return "<p>" + plugin_ + "</p>";};
 
     const String getSrv() const { return srv_; }
     const String getPlugin() const { return plugin_; }

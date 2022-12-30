@@ -295,6 +295,7 @@ void AM2H_Core::setupServer() {
   server_.on(HTTP_API_V1_GET, handleApiGetRequest);
   server_.on(HTTP_API_V1_RESTART, handleRestart);
   server_.on(HTTP_API_V1_STATUS, handleStatus);
+  // server_.on(HTTP_API_V1_PLUGIN, handlePlugin);
   server_.onNotFound(handleNotFound);
   server_.begin();
 }
@@ -328,6 +329,12 @@ const String AM2H_Core::getRootContent(){
   content += "<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"" + String(SSID_LEN) + "\"><label for=\"ssid\">&nbsp;SSID</label><br/><br/>";
   content += "<input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"" + String(PW_LEN) + "\"><label for=\"pw\">&nbsp;WLAN pw</label><br/><br/>";
   content += "<input type=\"submit\" value=\"Submit\"></form></li></ul>";
+  int i=-1;
+  content += "<ul>";
+  while ( auto p = am2h_core->plugins_[++i] ){
+    content += "<li><a href=\"/api/v1/plugin/" + String(i) + "/\">" + p->getHtmlTabName() + "</a></li>";
+  }
+  content += "</ul>";
   content += HTTP_FOOTER;
   return content;
 }
@@ -347,6 +354,24 @@ void AM2H_Core::handleStatus() {
   content += am2h_core->status_[getDebugIndex(DebugLogger::INFO)];
   content += "\"}";
   am2h_core->server_.send(200, ENCODING_JSON, content);
+}
+
+void AM2H_Core::handlePlugin(const int id) {
+  int max_plugin=0;
+  while ( auto p = am2h_core->plugins_[max_plugin++] ){}
+  --max_plugin;
+
+  String content;
+  content += HTTP_HEADER;
+  content += "<h1><a href=\"/\">AM2H_Core</a></h1><p>deviceId: <b>" + String(am2h_core->persistentSetupValues_.deviceId) + "</b><br/>nickname: <b>" + String(am2h_core->volatileSetupValues_.nickname);
+  content += "</b><br/>fwVersion: <b>" + String(VERSION);
+  content += "</b><br/>MAC: <b>" + WiFi.macAddress() + "</b></p>";
+  if ( (id>=0) && (id<max_plugin) ){
+    debugMessage("AM2H_Core::handlePlugin()","id in range", DebugLogger::INFO);
+    content += am2h_core->plugins_[id]->getHtmlTabContent();
+  }
+  content += HTTP_FOOTER;
+  am2h_core->server_.send(200, ENCODING_HTML, content);
 }
 
 void AM2H_Core::handleApiGetRequest() {
@@ -400,6 +425,24 @@ void AM2H_Core::handleApiSetRequest(){
 }
 
 void AM2H_Core::handleNotFound() {
+  // Check HTTP_API_V1_PLUGIN
+  int len = String(HTTP_API_V1_PLUGIN).length();
+  String uri = am2h_core->server_.uri().substring(0,len);
+  if (uri.equalsIgnoreCase(HTTP_API_V1_PLUGIN)) {
+    String id;
+    uri = am2h_core->server_.uri().substring(len);
+    for (int i=0; i< uri.length(); ++i){
+      char d = uri.charAt(i);
+      if (d=='/') break;
+      id += d;
+    }
+    int id_int = id.toInt();
+    debugMessage("AM2H_Core::handleNotFound()","plugin router-> id="+id, DebugLogger::INFO);
+    handlePlugin(id_int);
+    return;
+  }
+
+  // Handle 404
   String content = "File Not Found\n\n";
   content += "URI: ";
   content += am2h_core->server_.uri();
