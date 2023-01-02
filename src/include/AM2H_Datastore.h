@@ -107,6 +107,13 @@ union Datastore {
         uint32_t timestamp;
         uint8_t state;
     } rgbled;
+
+    struct Pcf8574 {
+        uint32_t addr;
+        uint8_t ioMask;  // 0=output, 1=input
+        uint8_t outNegate;  // 0=no, 1=yes
+        uint8_t reg; // in/out setting 0=OFF, 1=ON
+    } pcf8574;
 };
 
 class AM2H_Datastore {
