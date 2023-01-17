@@ -101,13 +101,13 @@ void AM2H_Core::loopPlugins(){
 
 void AM2H_Core::checkIntPublish(){
   if (isIntAvailable()) {
-    intAvailable_G=false;
     ++impulsesTotal_G;
     for (int i=0; i < 20; ++i){
       if (auto p = ds[i].self){
         p->interruptPublish( ds[i],mqttClient_, getDataTopic( ds[i].loc, ds[i].self->getSrv(), String(i) ), i);
       }
     }
+    intAvailable_G=false;
   }
 }
 

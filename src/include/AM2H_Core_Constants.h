@@ -6,13 +6,21 @@ byte constexpr CORE_SCL{0}; // I2C SCL must be "0" for ESP8266
 byte constexpr CORE_SDA{2};  // I2C SDA must be "0" for ESP8266
 
 byte constexpr CORE_ISR_PIN{1}; // Interrupt
-uint32_t constexpr CORE_ISR_DEBOUNCE{500}; // debounce time in ms
+uint32_t constexpr CORE_ISR_DEBOUNCE{50}; // debounce time in ms
 
 byte constexpr CORE_TX{1}; // Serial TX only active when SERIALDEBUG is enabled
 byte constexpr CORE_RX{3};  // Serial RX only active when SERIALDEBUG is enabled
 
 byte constexpr CORE_STATUS_LED{2}; // Internal LED (blue)
 byte constexpr CORE_DQ{3};  // Onewire
+
+// Icounter
+constexpr uint32_t ICOUNTER_MIN_IMPULSE_TIME_MS{30};
+constexpr uint32_t ICOUNTER_MIN_IMPULSE_RATE_MS{500};
+
+// Pcf8574
+uint32_t constexpr PCF8574_MIN_RATE_MS{200}; // must be bigger than PCF8574_WAIT_READ_MS
+uint32_t constexpr PCF8574_WAIT_READ_MS{15}; // must be smaller than PCF8574_MIN_RATE_MS
 
 // Counter
 constexpr uint32_t ONE_MINUTE {1000*60};

@@ -4,10 +4,6 @@
 #include "include/AM2H_MqttTopic.h"
 #include "include/AM2H_Datastore.h"
 
-// Colors
-
-
-
 class AM2H_Pcf8574 : public AM2H_Plugin {
 public:
     AM2H_Pcf8574(const char* plugin, const char* srv): AM2H_Plugin(plugin,srv){};
@@ -19,8 +15,8 @@ public:
 private:
     void updateReg(AM2H_Datastore& d);
     void readReg(AM2H_Datastore& d);
-    void processStateTopic(AM2H_Datastore& d,const String& p);
-    void processSetTopic(AM2H_Datastore& d,const String& p);
+    void processSetStateTopic(AM2H_Datastore& d,const String& p);
+    void processSetPortTopic(AM2H_Datastore& d,const String& p); 
 };
 
 #endif

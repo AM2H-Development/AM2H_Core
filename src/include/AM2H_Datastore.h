@@ -109,10 +109,9 @@ union Datastore {
     } rgbled;
 
     struct Pcf8574 {
-        uint32_t addr;
-        uint8_t ioMask;  // 0=output, 1=input
-        uint8_t outNegate;  // 0=no, 1=yes
-        uint8_t reg; // in/out setting 0=OFF, 1=ON
+        uint32_t addr;  // I2C address
+        uint8_t ioMask; // 1=output, 0=input
+        uint8_t reg;    // native io-register state 0=GND, 1=VCC
     } pcf8574;
 };
 

@@ -19,10 +19,9 @@ void AM2H_Icounter::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, co
 }
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
-    constexpr uint32_t MAX_DEL{30};
-    const uint32_t del = MAX_DEL - (millis() - lastImpulseMillis_G);
+    const uint32_t del = ICOUNTER_MIN_IMPULSE_TIME_MS - (millis() - lastImpulseMillis_G);
     AM2H_Core::debugMessageNl("AM2H_Icounter::interruptPublish()","Delay: "+ String(del) + " state:"+String(digitalRead(CORE_ISR_PIN)), DebugLogger::INFO);
-    if (del<=MAX_DEL) {
+    if (del<=ICOUNTER_MIN_IMPULSE_TIME_MS) {
         delay(del);
     }
     if (digitalRead(CORE_ISR_PIN)==1){
@@ -44,6 +43,11 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient
     am2h_core->loopMqtt();
     mqttClient.publish(d.sensor.icounter.absCntTopic , String( d.sensor.icounter.absCnt ).c_str(), RETAINED);
     am2h_core->loopMqtt();
+
+    const uint32_t del2 = ICOUNTER_MIN_IMPULSE_RATE_MS - (millis() - lastImpulseMillis_G);
+    if (del2<=ICOUNTER_MIN_IMPULSE_RATE_MS) {
+        delay(del2);
+    }
 }
 
 double AM2H_Icounter::calculateLast(AM2H_Datastore& d){
