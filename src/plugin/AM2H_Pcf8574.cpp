@@ -86,7 +86,7 @@ void AM2H_Pcf8574::updateReg(AM2H_Datastore& d){
     am2h_core->switchWire(d.sensor.pcf8574.addr);
     Wire.beginTransmission(static_cast<uint8_t>(d.sensor.pcf8574.addr));
     uint8_t out = d.sensor.pcf8574.reg | ~d.sensor.pcf8574.ioMask;
-    AM2H_Core::debugMessage("AM2H_Pcf8574::updateReg()","sending " + String(out), DebugLogger::ERROR);
+    AM2H_Core::debugMessage("AM2H_Pcf8574::updateReg()","sending " + String(out), DebugLogger::INFO);
     Wire.write(d.sensor.pcf8574.reg | ~d.sensor.pcf8574.ioMask);
     if ( Wire.endTransmission() != 0 ) {
         AM2H_Core::debugMessage("AM2H_Pcf8574::updateReg()","error while transmitting", DebugLogger::ERROR);
