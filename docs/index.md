@@ -1,4 +1,4 @@
-# Hardware documentation
+# Hardware documentation (V1.3.1)
 
 AM2H modules are connected by standard 8 pin RJ45 network cables. Every AM2H ESP Wifi modul could be connected to selected sensors depending on the software configuration.
 
