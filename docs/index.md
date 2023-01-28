@@ -200,7 +200,7 @@ all retained
 ```
 akm/config/d_100/0/Pcf8574/addr => 0x20 / 0x0120
 akm/config/d_100/0/Pcf8574/loc => office
-akm/config/d_106/0/Pcf8574/ioMask => 0, DEC [1 = output, 0 = input] 
+akm/config/d_106/0/Pcf8574/ioMask => 0 [1 = output, 0 = input] 
 akm/config/d_106/0/Pcf8574/reg => 0 [native register state 0=GND, 1 = VCC]
 ```
 
