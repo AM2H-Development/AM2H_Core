@@ -79,6 +79,12 @@ all HTTP/GET
 ```
 ## MQTT configuration
 
+All MQTT topics are case sensitve and must be send retained
+
+```
+##namespace##/config/##deviceNumber##/##plugin##/##00..19##/##topic##
+```
+
 ### Core config
 
 all retained
@@ -86,6 +92,20 @@ all retained
 ```
 akm/config/d_100/-/core/sampleRate => 15
 [akm/config/d_100/-/core/i2cMuxAddr => 0x70]
+```
+
+### Icounter
+
+all retained
+
+```
+akm/config/d_100/0/Icounter/absCnt => e.g. 112345
+akm/config/d_100/0/Icounter/unitsPerTick => e.g. 1
+akm/config/d_100/0/Icounter/exponentPerTick  => e.g. 0   (10^X)
+akm/config/d_100/0/Icounter/unitsPerMs => e.g. 1
+akm/config/d_100/0/Icounter/exponentPerMs  => e.g. 0   (10^X)
+akm/config/d_100/0/Icounter/zeroLimit  => e.g. 100
+akm/config/d_100/0/Icounter/loc  => e.g. gasMeter      (location of the sensor for mqtt publish)
 ```
 
 ### Bme680 configuration
@@ -164,7 +184,7 @@ akm/config/d_100/2/Rgbled/setState => ... // same as akm/firstFloor/signal/state
 
 ```
 
-### DS18B20 configuration
+### Ds18b20 configuration
 
 all retained
 
@@ -173,5 +193,21 @@ akm/config/d_100/3/Ds18b20/addr => 28ffd059051603cc
 akm/config/d_100/3/Ds18b20/loc => firstFloor
 akm/config/d_100/3/Ds18b20/offsetTemp => 0 // in 0.1 °C
 ```
+### Pcf8574 configuration
+
+all retained
+
+```
+akm/config/d_100/0/Pcf8574/addr => 0x20 / 0x0120
+akm/config/d_100/0/Pcf8574/loc => office
+akm/config/d_106/0/Pcf8574/ioMask => 0, DEC [1 = output, 0 = input] 
+akm/config/d_106/0/Pcf8574/reg => 0 [native register state 0=GND, 1 = VCC]
+```
+
+
+
+
+
+
 
 
