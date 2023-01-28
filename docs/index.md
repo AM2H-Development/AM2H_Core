@@ -177,8 +177,8 @@ akm/config/d_100/2/Rgbled/addr => 0x41 / 0x0341
 akm/config/d_100/2/Rgbled/loc => firstFloor
 akm/config/d_100/2/Rgbled/timeOn => 1000 // in ms
 akm/config/d_100/2/Rgbled/timeOff => 1000 // in ms
-akm/config/d_100/2/Rgbled/colorOn => RED // one of [WHITE, FUCHSIA, AQUA, BLUE, YELLOW, RED, GREEN, BLACK] (case insensitive)
-akm/config/d_100/2/Rgbled/colorOff => RED // one of [WHITE, FUCHSIA, AQUA, BLUE, YELLOW, RED, GREEN, BLACK] (case insensitive)
+akm/config/d_100/2/Rgbled/colorOn => RED // one of [WHITE, FUCHSIA, AQUA, BLUE, YELLOW, RED, GREEN, BLACK]
+akm/config/d_100/2/Rgbled/colorOff => RED // one of [WHITE, FUCHSIA, AQUA, BLUE, YELLOW, RED, GREEN, BLACK]
 akm/config/d_100/2/Rgbled/active => TRUE or >0 / FALSE or 0
 akm/config/d_100/2/Rgbled/setState => ... // same as akm/firstFloor/signal/state + &active=TRUE/FALSE
 
