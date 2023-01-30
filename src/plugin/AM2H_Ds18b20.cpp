@@ -7,42 +7,7 @@
 extern AM2H_Core* am2h_core;
 
 void AM2H_Ds18b20::setupPlugin(){
-  AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()","scanning for DS18xxx devices:\n", DebugLogger::INFO);
-
-  byte i;
-  byte addr[8];
-  ows.reset();
-  ows.reset_search();
-  delay (250);
-
-  while ( ows.search(addr) ) {
-    delay (250);
-
-    AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()","ID = ", DebugLogger::INFO);
-    for( i = 0; i < 8; i++) {
-      if ( addr[i] <=0xF ) { AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()","0", DebugLogger::INFO); }
-      AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()",String(addr[i], HEX), DebugLogger::INFO);
-    }
-
-    if (OneWire::crc8(addr, 7) != addr[7]) {
-      AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()"," CRC is not valid!\n", DebugLogger::ERROR);
-      return;
-    }
-
-    switch (addr[0]) {
-      case 0x10:
-        AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()"," Chip = DS18S20", DebugLogger::INFO);
-        break;
-      case 0x28:
-        AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()"," Chip = DS18B20", DebugLogger::INFO);
-        break;
-      case 0x22:
-        AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()"," Chip = DS1822", DebugLogger::INFO);
-        break;
-      default:
-        AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()"," Device is not a DS18x20 family device.", DebugLogger::ERROR);
-    }
-  }
+ 
 }
 
 void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
@@ -61,7 +26,7 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, con
   ows.reset();
   ows.select( d.sensor.ds18b20.addr );
   ows.write(0x44, 1);        // start conversion, with parasite power on at the end
-  delay(1000);
+  am2h_core->wait(1000);
   ows.reset();
   ows.select( d.sensor.ds18b20.addr );
   ows.write(0xBE);         // Read Scratchpad
@@ -140,4 +105,83 @@ void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
   } else {
       d.self=nullptr;
   }
+}
+
+
+String AM2H_Ds18b20::getHtmlTabContent() {
+  AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()","scanning for DS18xxx devices:\n", DebugLogger::INFO);
+  String output{"<b>18B20 Scanner V1.0</b><br />=====================<br />"};
+  
+  uint8_t i;
+  uint8_t addr[8];
+  uint8_t type_s{0};
+  uint8_t data[12];
+  float celsius;
+
+  ows.reset();
+  ows.reset_search();
+  am2h_core->wait(250);
+
+  while ( ows.search(addr) ) {
+    output += "ID = ";
+    for( i = 0; i < 8; i++) {
+      if ( addr[i] <=0xF ) { output +="0"; }
+      output += String(addr[i], HEX);
+    }
+
+    if (OneWire::crc8(addr, 7) != addr[7]) {
+      output += " CRC is not valid!<br />";
+      break;
+    }
+
+    ows.reset();
+    ows.select( addr );
+    ows.write(0x44, 1);        // start conversion, with parasite power on at the end
+    am2h_core->wait(1000);
+    ows.reset();
+    ows.select( addr );
+    ows.write(0xBE);         // Read Scratchpad
+
+    for ( i = 0; i < 9; i++) { // we need 9 bytes
+      data[i] = ows.read();
+    }
+
+    int16_t raw = (data[1] << 8) | data[0];
+
+    switch (addr[0]) {
+      case 0x10:
+        output +=" Chip = DS18S20";
+        type_s=1;
+        break;
+      case 0x28:
+        output +=" Chip = DS18B20";
+        type_s=0;
+        break;
+      case 0x22:
+        output +=" Chip = DS1822";
+        type_s=0;
+        break;
+      default:
+        output +=" Device is not a DS18x20 family device.<br />";
+        type_s=2;
+    }
+
+    if (type_s==1) {
+      raw = raw << 3; // 9 bit resolution default
+      if (data[7] == 0x10) {
+        raw = (raw & 0xFFF0) + 12 - data[6];
+      }
+    } else if(type_s==0) {
+      byte cfg = (data[4] & 0x60);
+      // at lower res, the low bits are undefined, so let's zero them
+      if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
+      else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
+      else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+      //// default is 12 bit resolution, 750 ms conversion time
+    } else {
+      break;
+    }
+    output += " Temp= " + String(celsius = static_cast<float>(raw) / 16.0) + "<br />";
+    }
+  return output;
 }

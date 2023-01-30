@@ -68,7 +68,7 @@ int constexpr WLAN_TIMEOUT{20}; // Wlan timeout in s
 
 // HTTP Api
 char constexpr ENCODING_PLAIN[] {"text/plain; charset=UTF-8"};
-char constexpr ENCODING_HTML[] {"Content-Type: text/html; charset=utf-8"};
+char constexpr ENCODING_HTML[] {"text/html; charset=utf-8"};
 char constexpr ENCODING_JSON[] {"application/json; charset=utf-8"};
 char constexpr HTTP_API_V1_SET[] {"/api/v1/set"};
 char constexpr HTTP_API_V1_GET[] {"/api/v1/get"};

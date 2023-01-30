@@ -16,20 +16,25 @@ public:
 
 private:
     uint8_t slave_addr = 0x01;
+    uint8_t mux_addr   = 0x00;
+    uint8_t mux_ch     = 0x00;    
     uint8_t data[128];
     uint8_t data_length = 0;
-    uint8_t nbrBytes = 0;
     String instream{};
-    String output{"I2C Tester<br />---"};
+    String output{""};
 
     String parseParams(const String id);
+    uint8_t parseNumber();
     char pop(String & instream);
     void tcaselect(uint8_t i);
     void scan();
     void setSlaveAdress();
-    bool readData();
+    void setMuxAdress();
+    void setChAdress();
+    bool parseData();
     void sendI2C(uint8_t *data, uint8_t len);
     void readI2C();
+    String printHex(uint8_t const num);
 };
 
 #endif

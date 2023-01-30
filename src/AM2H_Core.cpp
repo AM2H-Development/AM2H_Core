@@ -82,6 +82,16 @@ void AM2H_Core::setupCore(){
   }
 }
 
+void AM2H_Core::wait(uint32_t const del_millis){
+  uint32_t now = millis();
+  do {
+    loopMqtt();
+    loopPlugins();
+    checkTimerPublish();
+    checkIntPublish();
+  } while(millis()-now < del_millis);
+}
+
 void AM2H_Core::loopCore(){
   loopServer();
   loopMqtt();
@@ -499,7 +509,7 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
     if ( tp.meas_ == "i2cMuxAddr" ){
       am2h_core->volatileSetupValues_.i2cMuxAddr = AM2H_Helper::parse_hex<uint8_t>(payloadString);
       debugMessageNl("AM2H_Core::mqttCallback()", "set i2cMuxAddr: " + String(am2h_core->volatileSetupValues_.i2cMuxAddr) + "\n", DebugLogger::INFO);
-      am2h_core->scan();
+      //am2h_core->scan();
     }
     if ( tp.meas_ == "nickname" ){
       am2h_core->volatileSetupValues_.nickname = payloadString;
@@ -634,7 +644,6 @@ void AM2H_Core::scan() const{
     }
 }
 
-
 void AM2H_Core::switchWire(uint32_t const addr) const {
   if (volatileSetupValues_.i2cMuxAddr==0){return;}
   uint8_t channel = (addr & 0x0F00) >> 8;
@@ -644,12 +653,12 @@ void AM2H_Core::switchWire(uint32_t const addr) const {
   Wire.endTransmission();
 }
 
-void AM2H_Core::i2cReset() const {
+void AM2H_Core::i2cReset() {
     AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","start", DebugLogger::ERROR);
     pinMode(CORE_SDA, INPUT_PULLUP); // Make SDA (data) and SCL (clock) pins Inputs with pullup.
     pinMode(CORE_SCL, INPUT_PULLUP);
 
-    delay(500);
+    wait(500);
     boolean SCL_LOW;
     boolean SDA_LOW = (digitalRead(CORE_SDA) == LOW);  // vi. Check SDA input.
     int clockCount = 20; // > 2x9 clock
@@ -669,7 +678,7 @@ void AM2H_Core::i2cReset() const {
         int counter = 20;
         while (SCL_LOW && (counter > 0)) {  //  loop waiting for SCL to become High only wait 2sec.
             counter--;
-            delay(100);
+            wait(100);
             SCL_LOW = (digitalRead(CORE_SCL) == LOW);
         }
         SDA_LOW = (digitalRead(CORE_SDA) == LOW); //   and check SDA input again and loop

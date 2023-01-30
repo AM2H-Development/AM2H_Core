@@ -12,6 +12,8 @@ public:
     void setupPlugin() override;
     void config(AM2H_Datastore& d, const MqttTopic& t, const String p) override;
     void timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index) override;
+    String getHtmlTabContent() override;
+
 protected:
     OneWire ows;
 };

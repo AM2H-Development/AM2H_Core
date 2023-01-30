@@ -14,7 +14,7 @@
 #include "libs/OneWire/OneWire.h"
 #include "bsec.h"
 
-const String VERSION {"1.3.1"};
+const String VERSION {"1.4.0"};
 
 void IRAM_ATTR impulseISR();
 
@@ -46,6 +46,7 @@ public:
   AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
   void setupCore();
   void loopCore();
+  void wait(uint32_t const del_millis);
   static MqttTopic parseMqttTopic(char* topic);
   // static void const debugMessage(const String& caller, const String& message);
   // static void const debugMessage(const String& message);
@@ -56,7 +57,7 @@ public:
   static bool const parse_debugMessage (const String message, String& newMessage);
   void loopMqtt();
   void switchWire(uint32_t const addr) const;
-  void i2cReset() const;
+  void i2cReset();
   ESP8266WebServer& server_;
 
 private:
