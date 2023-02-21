@@ -20,6 +20,10 @@
 			"initializer_list": "cpp",
 			"ranges": "cpp",
 			"*.txt": "cpp"
-		}
+		},
+		"arduino.useArduinoCli": true,
+		"arduino.ignoreBoards": [
+
+		]
 	}
 }
