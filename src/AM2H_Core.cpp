@@ -282,7 +282,7 @@ void AM2H_Core::connectWlan(int timeout) {
     timeout--;
     debugMessage("AM2H_Core::connectWlan()",".", DebugLogger::INFO);
   }
-  digitalWrite(CORE_STATUS_LED,LOW);
+  digitalWrite(CORE_STATUS_LED,HIGH);
 
   if (timeout == 0) {
     WiFi.mode(WIFI_AP);
@@ -654,7 +654,9 @@ void AM2H_Core::switchWire(uint32_t const addr) const {
 }
 
 void AM2H_Core::i2cReset() {
+    /*
     AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","start", DebugLogger::ERROR);
+
     pinMode(CORE_SDA, INPUT_PULLUP); // Make SDA (data) and SCL (clock) pins Inputs with pullup.
     pinMode(CORE_SCL, INPUT_PULLUP);
 
@@ -696,4 +698,5 @@ void AM2H_Core::i2cReset() {
     pinMode(CORE_SDA, INPUT); // and reset pins as tri-state inputs which is the default state on reset
     pinMode(CORE_SCL, INPUT);
     AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","end", DebugLogger::ERROR);
+    */
 }
