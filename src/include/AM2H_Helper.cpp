@@ -22,7 +22,7 @@ namespace AM2H_Helper {
   String formatBinary8(uint8_t num){
     String s{};
     for (uint8_t i=0; i<8; ++i){
-      if (num & 1 == 0) {
+      if ((num & 1) == 0) {
         s="0"+s;
       } else s="1"+s;
       num = num >> 1;
