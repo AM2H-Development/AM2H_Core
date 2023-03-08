@@ -18,4 +18,16 @@ namespace AM2H_Helper {
     if (!active && (s.toInt() > 0)) { active=true; }
     return active;
   }
+
+  String formatBinary8(uint8_t num){
+    String s{};
+    for (uint8_t i=0; i<8; ++i){
+      if (num & 1 == 0) {
+        s="0"+s;
+      } else s="1"+s;
+      num = num >> 1;
+    }
+    return s;
+  }
+
 };
