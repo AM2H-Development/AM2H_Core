@@ -19,7 +19,7 @@ namespace AM2H_Helper {
     }
     void parse_location(char* loc, const String parse );
     bool stringToBool(const String s);
-    String formatBinary8(uint8_t num);
+    void formatBinary8(String& str, uint8_t num);
 };
 
 #endif
