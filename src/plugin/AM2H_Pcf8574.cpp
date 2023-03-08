@@ -148,7 +148,7 @@ void AM2H_Pcf8574::processSetPortTopic(AM2H_Datastore& d,const String& p_origin)
             isKey=true;
             if ( key.equalsIgnoreCase("port") ) {
                 const long t_port = value.toInt();
-                if ( (t_port >= 0) && (t_port < 7) ) { port=t_port;}
+                if ( (t_port >= 0) && (t_port =< 7) ) { port=t_port;}
             }
             if ( key.equalsIgnoreCase("state") ) {
                 if ( value.equalsIgnoreCase("1") ) {
