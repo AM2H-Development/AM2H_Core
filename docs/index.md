@@ -192,6 +192,7 @@ all retained
 akm/config/d_100/3/Ds18b20/addr => 28ffd059051603cc
 akm/config/d_100/3/Ds18b20/loc => firstFloor
 akm/config/d_100/3/Ds18b20/offsetTemp => 0 // in 0.1 °C
+
 ```
 ### Pcf8574 configuration
 
@@ -201,13 +202,9 @@ all retained
 akm/config/d_100/0/Pcf8574/addr => 0x20 / 0x0120
 akm/config/d_100/0/Pcf8574/loc => office
 akm/config/d_106/0/Pcf8574/ioMask => 0 [1 = output, 0 = input] 
-akm/config/d_106/0/Pcf8574/reg => 0 [native register state 0=GND, 1 = VCC]
+akm/config/d_106/0/Pcf8574/reg => 0 [startup register state 0=GND, 1 = VCC]
+akm/config/d_106/0/Pcf8574/setPort => port=[0..7]&state=[0..1] [set state of port to 0=GND, 1 = VCC]
+akm/config/d_106/0/Pcf8574/setState => ioMask=[0..255]&reg=[0..255] [set ioMask (optional) and/or reg (optional) to specific values 0=GND, 1 = VCC]
+
 ```
-
-
-
-
-
-
-
-
+The ioMask defines the state of the output ports (filter for setState and setPort) in decimal. E. g. if you want to set the lower 4 bits as input and the upper 4 bits as output, send .../ioMask with the payload of 240.
