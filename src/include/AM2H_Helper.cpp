@@ -19,7 +19,7 @@ namespace AM2H_Helper {
     return active;
   }
 
-  char[] formatBinary8(uint8_t num){
+  char* formatBinary8(uint8_t num){
     char s[9];
     s[9]='\0';
     for (uint8_t i=0; i<8; ++i){
