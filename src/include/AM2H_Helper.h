@@ -19,6 +19,16 @@ namespace AM2H_Helper {
     }
     void parse_location(char* loc, const String parse );
     bool stringToBool(const String s);
+    String formatBinary8(u8_t num){
+      String s{};
+      for (uint8_t i=0; i<8; ++i){
+        if (num & 1 == 0) {
+          s="0"+s;
+        } else s="1"+s;
+        num = num >> 1;
+      }
+      return s;
+    }
 };
 
 #endif

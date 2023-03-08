@@ -12,7 +12,7 @@ void AM2H_Pcf8574::loopPlugin(AM2H_Datastore& d, const uint8_t index){
 
 void AM2H_Pcf8574::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
     const auto& pcf8574=d.sensor.pcf8574;
-    String config = "ioMask="+String(pcf8574.ioMask,BIN)+"&reg="+String(pcf8574.reg,BIN);
+    String config = "ioMask="+AM2H_Helper::formatBinary8(pcf8574.ioMask)+"&reg="+AM2H_Helper::formatBinary8(pcf8574.reg);
     AM2H_Core::debugMessageNl("AM2H_Pcf8574::timerPublish()","publishing to " + topic + "state: " + config, DebugLogger::INFO);
     mqttClient.publish( (topic + "state").c_str() , config.c_str() );
     am2h_core->loopMqtt();
@@ -48,12 +48,12 @@ void AM2H_Pcf8574::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
     }
     if (t.meas_ == "ioMask") {
         d.sensor.pcf8574.ioMask=p.toInt();
-        AM2H_Core::debugMessage("AM2H_Pcf8574::config()"," set ioMask = "+String(d.sensor.pcf8574.ioMask,BIN), DebugLogger::INFO);
+        AM2H_Core::debugMessage("AM2H_Pcf8574::config()"," set ioMask = "+AM2H_Helper::formatBinary8(d.sensor.pcf8574.ioMask), DebugLogger::INFO);
         d.config |= Config::SET_2;
     }
     if (t.meas_ == "reg") { // must be native
         d.sensor.pcf8574.reg=p.toInt();
-        AM2H_Core::debugMessage("AM2H_Pcf8574::config()"," set reg = "+String(d.sensor.pcf8574.reg,BIN), DebugLogger::INFO);
+        AM2H_Core::debugMessage("AM2H_Pcf8574::config()"," set reg = "+AM2H_Helper::formatBinary8(d.sensor.pcf8574.reg), DebugLogger::INFO);
         d.config |= Config::SET_3;
     }
     if ( d.config == Config::CHECK_TO_3 ){
@@ -77,7 +77,7 @@ void AM2H_Pcf8574::config(AM2H_Datastore& d, const MqttTopic& t, const String p)
     if ( d.initialized && (t.meas_ == "setPort")) {
         processSetPortTopic(d,p);
         updateReg(d);
-        AM2H_Core::debugMessage("AM2H_Pcf8574::config()","setPort reg = "+String(d.sensor.pcf8574.reg,BIN), DebugLogger::INFO);
+        AM2H_Core::debugMessage("AM2H_Pcf8574::config()","setPort reg = "+AM2H_Helper::formatBinary8(d.sensor.pcf8574.reg), DebugLogger::INFO);
         timerPublish(d, am2h_core->getMqttClient(), am2h_core->getDataTopic(d.loc,getSrv(),String(t.id_)),0 );
     }
 }
