@@ -20,12 +20,9 @@ namespace AM2H_Helper {
   }
 
   String formatBinary8(uint8_t num){
-    String s{};
+    char s[8];
     for (uint8_t i=0; i<8; ++i){
-      if ((num & 1) == 0) {
-        s="0"+s;
-      } else s="1"+s;
-      num = num >> 1;
+      s[i] = ((num>>(7-i) & 1) == 0) ? '0':'1';
     }
     return s;
   }
