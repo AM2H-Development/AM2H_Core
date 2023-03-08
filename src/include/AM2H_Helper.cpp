@@ -20,12 +20,10 @@ namespace AM2H_Helper {
   }
 
   void formatBinary8(String& str, uint8_t num){
-    char s[9];
-    s[9]='\0';
+    str = ".1234567";
     for (uint8_t i=0; i<8; ++i){
-      s[i] = ((num>>(7-i) & 1) == 0) ? '0':'1';
+      str.setCharAt(i, ((num>>(7-i) & 1) == 0) ? '0':'1');
     }
-    str=s;
   }
 
 };
