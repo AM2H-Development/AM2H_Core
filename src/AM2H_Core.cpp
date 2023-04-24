@@ -26,7 +26,6 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins):AM2H_Core(plugins, mqttClient, serve
 
 AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server):plugins_(plugins),mqttClient_(mqttClient),server_(server){
   mqttClient.setBufferSize(2500);
-  Wire.begin(CORE_SDA,CORE_SCL);
   volatileSetupValues_.i2cMuxAddr=0;
   volatileSetupValues_.nickname="";
   status_[DebugLogger::ERROR]="";
@@ -44,10 +43,6 @@ AM2H_Core::AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266Web
   timer_.mqttReconnect=0;
   timer_.wlanReconnect=0;
   timer_.sendData=0;
-
-  pinMode(CORE_STATUS_LED, OUTPUT);
-  pinMode(CORE_ISR_PIN, INPUT_PULLUP);
-  attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
   am2h_core= this;
 }
 
@@ -71,9 +66,15 @@ void AM2H_Core::setupCore(){
     Serial.end();
   #endif
 
+  pinMode(CORE_STATUS_LED, OUTPUT);
+
   setupWlan();
   setupServer();
   setupMqtt();
+  setupWire();
+
+  pinMode(CORE_ISR_PIN, INPUT_PULLUP);
+  attachInterrupt(CORE_ISR_PIN, impulseISR, FALLING);
 
   int i=0;
   while ( auto p = plugins_[i++] ){
@@ -282,7 +283,7 @@ void AM2H_Core::connectWlan(int timeout) {
     timeout--;
     debugMessage("AM2H_Core::connectWlan()",".", DebugLogger::INFO);
   }
-  digitalWrite(CORE_STATUS_LED,HIGH);
+  digitalWrite(CORE_STATUS_LED,LOW);
 
   if (timeout == 0) {
     WiFi.mode(WIFI_AP);
@@ -628,6 +629,9 @@ MqttTopic AM2H_Core::parseMqttTopic(char* topic){
 // ----------
 // ---------- Wire Utility Functions -----------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
+void AM2H_Core::setupWire() {
+  Wire.begin(CORE_SDA,CORE_SCL);
+}
 
 void AM2H_Core::scan() const{
     for (uint8_t t=0; t<8 ; ++t) {

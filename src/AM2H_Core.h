@@ -74,6 +74,7 @@ private:
   void setupEEPROM();
   void writeEEPROM();
   void setupWlan();
+  void setupWire();
   void restartWlan(String ssid, String pw);
   void connectWlan(int timeout);
   void setupServer();
