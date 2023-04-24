@@ -1,7 +1,7 @@
 #include "AM2H_Bme680.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Helper.h"
-#include "libs/BSEC_Software_Library/src/bsec.h"
+// #include "include/AM2H_Helper.h"
+// #include "libs/BSEC_Software_Library/src/bsec.h"
 
 extern AM2H_Core* am2h_core;
 

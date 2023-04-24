@@ -1,9 +1,9 @@
 #ifndef AM2H_Rgbled_h
 #define AM2H_Rgbled_h
-#include "libs/BH1750/BH1750.h"
+#include <BH1750.h>
 #include "AM2H_Plugin.h"
-#include "include/AM2H_MqttTopic.h"
-#include "include/AM2H_Datastore.h"
+#include <AM2H_MqttTopic.h>
+#include <AM2H_Datastore.h>
 
 // Colors
 

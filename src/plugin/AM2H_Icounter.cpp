@@ -1,7 +1,7 @@
 #include "AM2H_Icounter.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Datastore.h"
-#include "include/AM2H_Helper.h"
+// #include "include/AM2H_Datastore.h"
+// #include "include/AM2H_Helper.h"
 
 extern unsigned long lastImpulseMillis_G;
 extern AM2H_Core* am2h_core;
@@ -52,7 +52,7 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore& d, PubSubClient& mqttClient
 
 double AM2H_Icounter::calculateLast(AM2H_Datastore& d){
     uint32_t ticks{0};
-    for (uint8_t i; i < COUNTER_MAX_BUFFER; ++i){
+    for (uint8_t i=0; i < COUNTER_MAX_BUFFER; ++i){
         if ( d.sensor.icounter.lastTimestamps[i] > (millis() - COUNTER_LAST_DURATION) ) {
             ticks++;
         }

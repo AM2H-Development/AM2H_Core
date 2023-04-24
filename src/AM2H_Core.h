@@ -1,20 +1,20 @@
 #ifndef AM2H_Core_h
 #define AM2H_Core_h
-#include "Arduino.h"
-#include "include/AM2H_Datastore.h"
-#include "include/AM2H_Helper.h"
+#include <Arduino.h>
+#include <AM2H_Datastore.h>
+#include <AM2H_Helper.h>
 #include <Wire.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
-#include <libs/PubSubClient/PubSubClient.h>
-#include <libs/ESP_EEPROM/ESP_EEPROM.h>
-#include "include/AM2H_Core_Constants.h"
-#include "include/AM2H_MqttTopic.h"
+#include <PubSubClient.h>
+#include <ESP_EEPROM.h>
+#include <AM2H_Core_Constants.h>
+#include <AM2H_MqttTopic.h>
 #include "plugin/AM2H_Plugin.h"
-#include "libs/OneWire/OneWire.h"
+#include <OneWire.h>
 #include "bsec.h"
 
-const String VERSION {"1.4.2"};
+const String VERSION {"1.5.0"};
 
 void IRAM_ATTR impulseISR();
 
@@ -44,13 +44,11 @@ class AM2H_Core {
 public:
   AM2H_Core(AM2H_Plugin** plugins);
   AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
+
   void setupCore();
   void loopCore();
   void wait(uint32_t const del_millis);
   static MqttTopic parseMqttTopic(char* topic);
-  // static void const debugMessage(const String& caller, const String& message);
-  // static void const debugMessage(const String& message);
-  // static void const debugMessage(const String& message, const bool info);
   static void const debugMessage(const String& caller, const String& message, const bool newline, const bool info);
   static void const debugMessage(const String& caller, const String& message, const bool info){debugMessage(caller, message, false, info);};
   static void const debugMessageNl(const String& caller, const String& message, const bool info){debugMessage(caller, message, true, info);};
@@ -58,12 +56,14 @@ public:
   void loopMqtt();
   void switchWire(uint32_t const addr) const;
   void i2cReset();
-  ESP8266WebServer& server_;
 
 private:
   String lastCaller[2] = {"",""}; 
   AM2H_Plugin** plugins_;
   PubSubClient& mqttClient_;
+public:
+  ESP8266WebServer& server_;
+private:
   String status_[2];
   byte updateRequired_;
   byte connStatus_;

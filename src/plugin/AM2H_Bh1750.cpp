@@ -1,7 +1,7 @@
 #include "AM2H_Bh1750.h"
-#include "include/AM2H_Helper.h"
-#include "AM2H_Core.h"
-#include "libs/BH1750/BH1750.h"
+#include <AM2H_Helper.h>
+#include <AM2H_Core.h>
+#include <BH1750.h>
 #include <Wire.h>
 
 extern AM2H_Core* am2h_core;

@@ -1,10 +1,10 @@
 #ifndef AM2H_Ds18b20_h
 #define AM2H_Ds18b20_h
-#include "libs/OneWire/OneWire.h"
+#include <OneWire.h>
 #include "AM2H_Plugin.h"
-#include "include/AM2H_MqttTopic.h"
-#include "include/AM2H_Datastore.h"
-#include "include/AM2H_Core_Constants.h"
+#include <AM2H_MqttTopic.h>
+#include <AM2H_Datastore.h>
+#include <AM2H_Core_Constants.h>
 
 class AM2H_Ds18b20 : public AM2H_Plugin {
 public:

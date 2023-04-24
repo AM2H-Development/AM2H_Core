@@ -44,6 +44,7 @@
   home/dev/##esp01##/Icounter/##00..19##/loc  -> e.g. gasMeter      (location of the sensor for mqtt publish)
 
 */
+#include <Arduino.h>
 #include <AM2H_Core.h>
 #include <plugin/AM2H_Ds18b20.h>
 #include <plugin/AM2H_Sht21.h>
@@ -54,16 +55,18 @@
 #include <plugin/AM2H_I2ctester.h>
 #include <plugin/AM2H_Pcf8574.h>
 
-AM2H_Ds18b20 ds18b20("Ds18b20","tempsense");
-AM2H_Sht21 sht21("Sht21","envsense");
-AM2H_Bme680 bme680("Bme680","envsense");
-AM2H_Bh1750 bh1750("Bh1750","envsense");
-AM2H_Icounter icounter("Icounter","countflowsense");
-AM2H_Rgbled rgbled("Rgbled","signal");
+//AM2H_Ds18b20 ds18b20("Ds18b20","tempsense");
+//AM2H_Sht21 sht21("Sht21","envsense");
+//AM2H_Bme680 bme680("Bme680","envsense");
+//AM2H_Bh1750 bh1750("Bh1750","envsense");
+//AM2H_Icounter icounter("Icounter","countflowsense");
+//AM2H_Rgbled rgbled("Rgbled","signal");
 AM2H_I2ctester i2ctester("I2ctester","debug");
-AM2H_Pcf8574 pcf8574("Pcf8574","signal");
+//AM2H_Pcf8574 pcf8574("Pcf8574","signal");
 
-AM2H_Plugin* plugins[] {&ds18b20, &sht21, &bme680, &bh1750, &icounter, &rgbled, &i2ctester, &pcf8574, nullptr};
+//AM2H_Plugin* plugins[] {&ds18b20, &sht21, &bme680, &bh1750, &icounter, &rgbled, &i2ctester, &pcf8574, nullptr};
+AM2H_Plugin* plugins[] {&i2ctester, nullptr};
+
 AM2H_Core core(plugins);
 
 // ----------

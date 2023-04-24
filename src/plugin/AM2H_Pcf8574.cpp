@@ -1,7 +1,7 @@
 #include "AM2H_Pcf8574.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Helper.h"
-#include <Wire.h>
+// #include "include/AM2H_Helper.h"
+// #include <Wire.h>
 
 static_assert( PCF8574_MIN_RATE_MS > PCF8574_WAIT_READ_MS, "PCF8574_MIN_RATE_MS must be bigger than PCF8574_WAIT_READ_MS");
 
@@ -108,7 +108,7 @@ void AM2H_Pcf8574::updateReg(AM2H_Datastore& d){
 void AM2H_Pcf8574::readReg(AM2H_Datastore& d){
     am2h_core->switchWire(d.sensor.pcf8574.addr);
     uint8_t num_bytes{0};
-    num_bytes = Wire.requestFrom(static_cast<uint8_t>(d.sensor.pcf8574.addr),1);
+    num_bytes = Wire.requestFrom(static_cast<uint8_t>(d.sensor.pcf8574.addr),(uint8_t) 1);
     if ( num_bytes != 1 ) {
         AM2H_Core::debugMessage("AM2H_Pcf8574::readReg","error while receiving", DebugLogger::ERROR);
         return;
@@ -142,7 +142,7 @@ void AM2H_Pcf8574::processSetStateTopic(AM2H_Datastore& d,const String& p_origin
 }
 
 void AM2H_Pcf8574::processSetPortTopic(AM2H_Datastore& d,const String& p_origin){
-    auto& pcf8574=d.sensor.pcf8574;
+    // auto& pcf8574=d.sensor.pcf8574;
     String p=p_origin+"&";
     String key{};
     String value{};

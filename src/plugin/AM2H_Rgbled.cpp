@@ -1,7 +1,7 @@
 #include "AM2H_Rgbled.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Helper.h"
-#include <Wire.h>
+// #include "include/AM2H_Helper.h"
+// #include <Wire.h>
 
 extern AM2H_Core* am2h_core;
 

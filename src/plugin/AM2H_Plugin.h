@@ -4,12 +4,11 @@
 #include "Arduino.h"
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
-#include <libs/PubSubClient/PubSubClient.h>
-#include <libs/ESP_EEPROM/ESP_EEPROM.h>
-#include "include/AM2H_Core_Constants.h"
-#include "include/AM2H_Datastore.h"
-#include "include/AM2H_MqttTopic.h"
-// #include "include/AM2H_Helper.h"
+#include <PubSubClient.h>
+#include <ESP_EEPROM.h>
+#include <AM2H_Core_Constants.h>
+#include <AM2H_Datastore.h>
+#include <AM2H_MqttTopic.h>
 
 class AM2H_Plugin{
   public:

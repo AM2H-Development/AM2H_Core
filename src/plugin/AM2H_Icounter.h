@@ -1,8 +1,8 @@
 #ifndef AM2H_Icounter_h
 #define AM2H_Icounter_h
 #include "AM2H_Plugin.h"
-#include "include/AM2H_MqttTopic.h"
-#include "include/AM2H_Datastore.h"
+#include <AM2H_MqttTopic.h>
+#include <AM2H_Datastore.h>
 
 class AM2H_Icounter : public AM2H_Plugin {
 public:

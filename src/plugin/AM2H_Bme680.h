@@ -1,9 +1,9 @@
 #ifndef AM2H_Bme680_h
 #define AM2H_Bme680_h
 #include "AM2H_Plugin.h"
-#include "include/AM2H_MqttTopic.h"
-#include "include/AM2H_Datastore.h"
-#include "libs/BSEC_Software_Library/src/bsec.h"
+#include <AM2H_MqttTopic.h>
+#include <AM2H_Datastore.h>
+#include <bsec.h>
 
 class AM2H_Bme680 : public AM2H_Plugin {
 public:
@@ -20,7 +20,7 @@ private:
     // uint16_t stateUpdateCounter {0};
 
     constexpr static uint8_t BSEC_CONFIG_IAQ[2048] { // BSEC_MAX_WORKBUFFER_SIZE
-        #include "libs/BSEC_Software_Library/src/config/generic_33v_3s_4d/bsec_iaq.txt"
+        #include "../../lib/BSEC_Software_Library/src/config/generic_33v_3s_4d/bsec_iaq.txt"
     };
 
     constexpr static uint32_t STATE_SAVE_PERIOD {360 * 60 * 1000}; // 360 minutes - 4 times a day

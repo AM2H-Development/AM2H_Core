@@ -1,7 +1,7 @@
 #include "AM2H_Ds18b20.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Helper.h"
-#include "libs/OneWire/OneWire.h"
+// #include "include/AM2H_Helper.h"
+// #include "libs/OneWire/OneWire.h"
 
 
 extern AM2H_Core* am2h_core;

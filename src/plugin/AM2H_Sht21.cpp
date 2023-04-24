@@ -1,7 +1,7 @@
 #include "AM2H_Sht21.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Helper.h"
-#include "libs/SHT21/SHT21.h"
+// #include "include/AM2H_Helper.h"
+// #include "libs/SHT21/SHT21.h"
 
 extern AM2H_Core* am2h_core;
 

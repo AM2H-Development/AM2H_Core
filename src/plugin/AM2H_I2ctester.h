@@ -1,8 +1,8 @@
 #ifndef AM2H_I2ctester_h
 #define AM2H_I2Ctester_h
 #include "AM2H_Plugin.h"
-#include "include/AM2H_MqttTopic.h"
-#include "include/AM2H_Datastore.h"
+//#include <AM2H_MqttTopic.h>
+//#include <AM2H_Datastore.h>
 
 #define TCAADDR 0x70
 

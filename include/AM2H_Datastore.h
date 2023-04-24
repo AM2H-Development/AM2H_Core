@@ -1,8 +1,8 @@
 #ifndef AM2H_Datastore_h
 #define AM2H_Datastore_h
-#include "include/AM2H_Core_Constants.h"
-// #include "Arduino.h"
-// #include <plugin/AM2H_Plugin.h>
+#include <Arduino.h>
+#include <AM2H_Core_Constants.h>
+
 #include "bsec.h"
 
 class AM2H_Plugin;

@@ -1,14 +1,10 @@
 #include "AM2H_I2ctester.h"
 #include "AM2H_Core.h"
-#include "include/AM2H_Helper.h"
 
 extern AM2H_Core* am2h_core;
 
-void AM2H_I2ctester::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
-}
-
-void AM2H_I2ctester::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
-}
+void AM2H_I2ctester::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){}
+void AM2H_I2ctester::config(AM2H_Datastore& d, const MqttTopic& t, const String p){}
 
 String AM2H_I2ctester::getHtmlTabContent() {
     instream = parseParams("qry");
@@ -82,7 +78,7 @@ void AM2H_I2ctester::tcaselect(uint8_t i) {
 }
 
 void AM2H_I2ctester::scan() {
-    for (uint8_t t = 0; t < 7; t++) {
+    for (uint8_t t = 0; t < 8; t++) {
         uint8_t mux = (mux_addr>0)?mux_addr:TCAADDR;
         tcaselect(t);
 

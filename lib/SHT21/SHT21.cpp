@@ -20,7 +20,7 @@
 
 #include <Wire.h>
 #include "SHT21.h"
-#include "include/AM2H_Core_Constants.h"
+// #include <AM2H_Core_Constants.h>
 
 SHT21::SHT21 () {}
 

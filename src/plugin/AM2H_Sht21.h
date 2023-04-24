@@ -1,9 +1,9 @@
 #ifndef AM2H_Sht21_h
 #define AM2H_Sht21_h
 #include "AM2H_Plugin.h"
-#include "include/AM2H_MqttTopic.h"
-#include "include/AM2H_Datastore.h"
-#include "libs/SHT21/SHT21.h"
+#include <AM2H_MqttTopic.h>
+#include <AM2H_Datastore.h>
+#include <SHT21.h>
 
 class AM2H_Sht21 : public AM2H_Plugin {
 public:

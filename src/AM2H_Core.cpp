@@ -368,7 +368,7 @@ void AM2H_Core::handleStatus() {
 
 void AM2H_Core::handlePlugin(const int id) {
   int max_plugin=0;
-  while ( auto p = am2h_core->plugins_[max_plugin++] ){}
+  while ( am2h_core->plugins_[max_plugin++] ){}
   --max_plugin;
 
   String content;
@@ -441,7 +441,7 @@ void AM2H_Core::handleNotFound() {
   if (uri.equalsIgnoreCase(HTTP_API_V1_PLUGIN)) {
     String id;
     uri = am2h_core->server_.uri().substring(len);
-    for (int i=0; i< uri.length(); ++i){
+    for (unsigned int i=0; i< uri.length(); ++i){
       char d = uri.charAt(i);
       if (d=='/') break;
       id += d;
@@ -494,7 +494,7 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
   debugMessage("AM2H_Core::mqttCallback()", "ns:"+tp.ns_+" dev:"+tp.dev_+" loc:"+tp.loc_+" srv:"+tp.srv_+" id:"+String(tp.id_)+" meas:"+tp.meas_ +"\n", DebugLogger::INFO);
 
   String payloadString;
-  for (int i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     payloadString += static_cast<char>(payload[i]);
   }
 
