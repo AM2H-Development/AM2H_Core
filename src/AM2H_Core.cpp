@@ -206,6 +206,8 @@ const uint8_t AM2H_Core::getDebugIndex(const bool info){
 }
 
 void const AM2H_Core::debugMessage(const String& caller, const String& message, const bool newline, const bool info) {
+  return;
+  
   String newMessage;
   
   if (info==DebugLogger::INFO) {
