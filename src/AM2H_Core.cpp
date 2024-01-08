@@ -1,6 +1,7 @@
 #include "AM2H_Core.h"
 
 // #define _SERIALDEBUG_  // enable serial debugging
+#define _NOLOGGING_ // disable logging
 
 volatile unsigned long lastImpulseMillis_G{0};
 volatile unsigned long impulsesTotal_G{0};
@@ -205,32 +206,37 @@ const uint8_t AM2H_Core::getDebugIndex(const bool info){
   return (info==DebugLogger::INFO)?0:1;
 }
 
-void const AM2H_Core::debugMessage(const String& caller, const String& message, const bool newline, const bool info) {
+void const AM2H_Core::debugMessage(const String& caller, const String& message, const bool newline, const bool infoOrError) {
+#ifdef _NOLOGGING_  
   return;
+#endif
   
   String newMessage;
   
-  if (info==DebugLogger::INFO) {
+  if (infoOrError==DebugLogger::INFO) {
     am2h_core->lastCaller[getDebugIndex(DebugLogger::ERROR)]="";
   }
 
   if (newline) {
-    am2h_core->lastCaller[getDebugIndex(info)]="";
+    am2h_core->lastCaller[getDebugIndex(infoOrError)]="";
   }
 
-  if ( am2h_core->lastCaller[getDebugIndex(info)] != caller ){
+  if ( am2h_core->lastCaller[getDebugIndex(infoOrError)] != caller ){
     newMessage+="\n["+String(millis()/1000.,3);
     newMessage+="] [H:"+String(ESP.getFreeHeap());
     newMessage+="] "+caller+" -> ";
-    am2h_core->lastCaller[getDebugIndex(info)]=caller;
+    am2h_core->lastCaller[getDebugIndex(infoOrError)]=caller;
   } else {
-    if (info==DebugLogger::ERROR) { return;}
+    if (infoOrError==DebugLogger::ERROR) { return;}
   }
 
-  if (parse_debugMessage(message, newMessage)) {am2h_core->lastCaller[getDebugIndex(info)]="";}
+  if (parse_debugMessage(message, newMessage)) {am2h_core->lastCaller[getDebugIndex(infoOrError)]="";}
 
-  if (am2h_core->status_[getDebugIndex(info)].length() > DebugLogger::LOGLEN) am2h_core->status_[getDebugIndex(info)] = am2h_core->status_[getDebugIndex(info)].substring(DebugLogger::SHORTBY);
-  am2h_core->status_[getDebugIndex(info)] += newMessage;
+  if (am2h_core->status_[getDebugIndex(infoOrError)].length() > DebugLogger::LOGLEN) {
+    am2h_core->status_[getDebugIndex(infoOrError)] = am2h_core->status_[getDebugIndex(infoOrError)].substring(DebugLogger::SHORTBY);
+  }
+
+  am2h_core->status_[getDebugIndex(infoOrError)] += newMessage;
   
 #ifdef _SERIALDEBUG_
   Serial.print(newMessage);
@@ -362,9 +368,13 @@ void AM2H_Core::handleRestart() {
 void AM2H_Core::handleStatus() {
   String content = "{\"statusError\":\"";
   content += am2h_core->status_[getDebugIndex(DebugLogger::ERROR)];
-  content += "\"}\n";
+  content += "\",\"statusErrorLength\":";
+  content += am2h_core->status_[getDebugIndex(DebugLogger::ERROR)].length();
+  content +="}\n";
   content += "{\"statusInfo\":\"";
   content += am2h_core->status_[getDebugIndex(DebugLogger::INFO)];
+  content += "\",\"statusInfoLength\":";
+  content += am2h_core->status_[getDebugIndex(DebugLogger::INFO)].length();
   content += "\"}";
   am2h_core->server_.send(200, ENCODING_JSON, content);
 }
@@ -532,24 +542,36 @@ void AM2H_Core::mqttCallback(char* topic, uint8_t* payload, unsigned int length)
 }
 
 void AM2H_Core::mqttReconnect() {
-  if (timer_.mqttReconnect < millis()) {
-    debugMessage("AM2H_Core::mqttReconnect()", "Attempting MQTT connection and unsubscribe topics. Wait for connection: ", DebugLogger::INFO);
-    mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
-    
-    if ( mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL)) {
-      debugMessage("AM2H_Core::mqttReconnect()", "connected\nPublish Status to " + getStatusTopic(), DebugLogger::INFO);
-      publishConfigDeviceStatus();    
-      if ( !(updateRequired_ & MQTT_UPDATE_REQUIRED) ) {
-        debugMessage("AM2H_Core::mqttReconnect()", "Subscribe config-topic " +  getConfigTopic(), DebugLogger::INFO);
-        mqttClient_.subscribe((getConfigTopic() + "#").c_str());
-      }
-      connStatus_ = MQTT_CLIENT_CONNECTED;
-    } else {
-      debugMessage("AM2H_Core::mqttReconnect()", "failed with error code " + String(mqttClient_.state()) + " trying again in 1 second\n", DebugLogger::ERROR );
-      timer_.mqttReconnect = millis() + 1000;
-      connStatus_ = WLAN_CONNECTED;
+  if (timer_.mqttReconnect > millis()) return;
+
+  debugMessage("AM2H_Core::mqttReconnect()", "Attempting MQTT connection and unsubscribe topics. Wait for connection:\n", DebugLogger::INFO);
+  mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
+  
+  if ( mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL)) {
+    debugMessage("AM2H_Core::mqttReconnect()", "connected\nPublish Status to " + getStatusTopic(), DebugLogger::INFO);
+    publishConfigDeviceStatus();    
+    if ( !(updateRequired_ & MQTT_UPDATE_REQUIRED) ) {
+      debugMessage("AM2H_Core::mqttReconnect()", "Subscribe config-topic " +  getConfigTopic(), DebugLogger::INFO);
+      mqttClient_.subscribe((getConfigTopic() + "#").c_str());
     }
+    connStatus_ = MQTT_CLIENT_CONNECTED;
+  } else {
+    debugMessage("AM2H_Core::mqttReconnect()", "failed with error code " + String(mqttClient_.state()) + " trying again in 5 seconds\n", DebugLogger::ERROR );
+    timer_.mqttReconnect = millis() + 5000;
+    connStatus_ = WLAN_CONNECTED;
+
+    pinMode(CORE_STATUS_LED, OUTPUT);
+    digitalWrite(CORE_STATUS_LED,LOW);
+    delay(150);
+    digitalWrite(CORE_STATUS_LED,HIGH);
+    delay(150);
+    digitalWrite(CORE_STATUS_LED,LOW);
+    delay(150);
+    digitalWrite(CORE_STATUS_LED,HIGH);
+    delay(150);
+    digitalWrite(CORE_STATUS_LED,LOW);
   }
+
 }
 
 void AM2H_Core::subscribe(const char* topic){
