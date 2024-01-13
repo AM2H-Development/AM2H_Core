@@ -243,9 +243,13 @@ void const AM2H_Core::debugMessage(const String &caller, const String &message, 
   return;
 #endif
 
-  if (millis() > LOG_INFO_THRESHOLD && infoOrError == DebugLogger::INFO)
+  if (millis() > am2h_core->thershold && infoOrError == DebugLogger::INFO)
   {
     return;
+  }
+
+  if (infoOrError == DebugLogger::ERROR) {
+    am2h_core->thershold=millis()+LOG_INFO_THRESHOLD;
   }
 
   am2h_core->logbook[am2h_core->logpos].ts = millis();
@@ -395,6 +399,7 @@ void AM2H_Core::handleRestart()
 
 void AM2H_Core::handleStatus()
 {
+  am2h_core->thershold=millis()+LOG_INFO_THRESHOLD;
   String content = F("{\"statusLog\":\"\n");
 
   auto logpos = am2h_core->logpos;

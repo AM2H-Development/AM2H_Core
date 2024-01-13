@@ -73,6 +73,7 @@ public:
 private:
   LogEntry logbook[LOG_LENGTH];
   uint8_t logpos{0};
+  uint32_t thershold{LOG_INFO_THRESHOLD};
   byte updateRequired_;
   byte connStatus_;
   PersistentSetupContainer persistentSetupValues_;
