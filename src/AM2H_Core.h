@@ -14,7 +14,7 @@
 #include <OneWire.h>
 #include "bsec.h"
 
-const String VERSION {"1.6.1"};
+#define VERSION "1.7.0"
 
 void IRAM_ATTR impulseISR();
 
@@ -28,16 +28,24 @@ struct PersistentSetupContainer {
 struct VolatileSetupContainer {
   String ssid;                // WLAN SSID
   String pw;                  // WLAN password
-  uint8_t sampleRate;             // sample rate in seconds
+  uint8_t sampleRate;         // sample rate in seconds
   uint8_t i2cMuxAddr;         // multiplexer address
   String nickname;            // nickname for device
 };
 
 struct Timers {
-  unsigned long wlanReconnect{0}; // non-blocking timer for Wlan reconnect
-  unsigned long mqttReconnect{0}; // non-blocking timer for Mqtt reconnect
-  unsigned long espRestart{0};    // non-blocking timer for ESP.restart();
-  unsigned long sendData{0};      // non-blocking timer for sending data by Mqtt;
+  uint32_t wlanReconnect{0}; // non-blocking timer for Wlan reconnect
+  uint32_t mqttReconnect{0}; // non-blocking timer for Mqtt reconnect
+  uint32_t espRestart{0};    // non-blocking timer for ESP.restart();
+  uint32_t sendData{0};      // non-blocking timer for sending data by Mqtt;
+};
+
+struct LogEntry {
+  bool error{false};
+  uint32_t ts{0};
+  char caller[LOG_CALLER_LENGTH]="-";
+  char message[LOG_MESSAGE_LENGTH]="-";
+  uint16_t freeHeap=0;
 };
 
 class AM2H_Core {
@@ -58,13 +66,13 @@ public:
   void i2cReset();
 
 private:
-  String lastCaller[2] = {"",""}; 
   AM2H_Plugin** plugins_;
   PubSubClient& mqttClient_;
 public:
   ESP8266WebServer& server_;
 private:
-  String status_[2];
+  LogEntry logbook[LOG_LENGTH];
+  uint8_t logpos{0};
   byte updateRequired_;
   byte connStatus_;
   PersistentSetupContainer persistentSetupValues_;
@@ -72,7 +80,7 @@ private:
   Timers timer_;
 
   void setupEEPROM();
-  void writeEEPROM();
+  bool writeEEPROM();
   void setupWlan();
   void setupWire();
   void restartWlan(String ssid, String pw);
@@ -97,7 +105,6 @@ private:
   static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
   void mqttReconnect();
   void scan() const;
-  static const uint8_t getDebugIndex(const bool info);
 
 public:
   // Getters/Setters:
@@ -154,8 +161,7 @@ public:
   }
 
   const bool isIntAvailable() const;
-  void resetInt();
-  const unsigned long getLastImpulseMillis() const;
+  const uint32_t getLastImpulseMillis() const;
 };
 
 #endif

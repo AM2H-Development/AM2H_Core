@@ -3,115 +3,151 @@
 // #include "include/AM2H_Helper.h"
 // #include "libs/OneWire/OneWire.h"
 
+extern AM2H_Core *am2h_core;
 
-extern AM2H_Core* am2h_core;
-
-void AM2H_Ds18b20::setupPlugin(){
- 
+void AM2H_Ds18b20::setupPlugin()
+{
 }
 
-void AM2H_Ds18b20::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){
-  AM2H_Core::debugMessageNl("AM2H_Ds18b20::timerPublish()","publishing to " + topic + ": addr = ", DebugLogger::INFO);
+void AM2H_Ds18b20::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index)
+{
+  const auto CALLER = F("Ds18b20::tp()");
+  String message = F("publishing to ") + topic + F(" addr=");
 
-  byte i;
-  byte type_s = ( d.sensor.ds18b20.addr[0] == 0x10 ) ? 1 : 0;
+  byte type_s = (d.sensor.ds18b20.addr[0] == 0x10) ? 1 : 0;
   byte data[12];
   float celsius;
 
-  for( i = 0; i < 8; i++) {
-    if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish()","0", DebugLogger::INFO); }
-    AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish()",String(d.sensor.ds18b20.addr[i], HEX), DebugLogger::INFO);
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    if (d.sensor.ds18b20.addr[i] <= 0xF)
+    {
+      message += "0";
+    }
+    message += String(d.sensor.ds18b20.addr[i], HEX);
   }
 
   ows.reset();
-  ows.select( d.sensor.ds18b20.addr );
-  ows.write(0x44, 1);        // start conversion, with parasite power on at the end
+  ows.select(d.sensor.ds18b20.addr);
+  ows.write(0x44, 1); // start conversion, with parasite power on at the end
   am2h_core->wait(1000);
   ows.reset();
-  ows.select( d.sensor.ds18b20.addr );
-  ows.write(0xBE);         // Read Scratchpad
+  ows.select(d.sensor.ds18b20.addr);
+  ows.write(0xBE); // Read Scratchpad
 
-  for ( i = 0; i < 9; i++) { // we need 9 bytes
+  for (uint8_t i = 0; i < 9; i++)
+  { // we need 9 bytes
     data[i] = ows.read();
   }
 
   int16_t raw = (data[1] << 8) | data[0];
-  if (type_s) {
+  if (type_s)
+  {
     raw = raw << 3; // 9 bit resolution default
-    if (data[7] == 0x10) {
+    if (data[7] == 0x10)
+    {
       raw = (raw & 0xFFF0) + 12 - data[6];
     }
-  } else {
+  }
+  else
+  {
     byte cfg = (data[4] & 0x60);
     // at lower res, the low bits are undefined, so let's zero them
-    if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
-    else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-    else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+    if (cfg == 0x00)
+      raw = raw & ~7; // 9 bit resolution, 93.75 ms
+    else if (cfg == 0x20)
+      raw = raw & ~3; // 10 bit res, 187.5 ms
+    else if (cfg == 0x40)
+      raw = raw & ~1; // 11 bit res, 375 ms
     //// default is 12 bit resolution, 750 ms conversion time
   }
 
   celsius = static_cast<float>(raw) / 16.0;
   celsius += static_cast<float>(d.sensor.ds18b20.offsetTemp) / 10.0;
 
-  AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish()","  Temperature = " + String(celsius), DebugLogger::INFO);
+  message += " temperature=";
+  message += celsius;
+
+  AM2H_Core::debugMessage(CALLER, message, DebugLogger::INFO);
   char error[] = "1";
-  if (celsius<= 128. && celsius >= -55.) {
+  if (celsius <= 128. && celsius >= -55.)
+  {
     error[0] = '0';
-    mqttClient.publish( (topic + "temperature").c_str() , String( celsius ).c_str() );
+    mqttClient.publish((topic + "temperature").c_str(), String(celsius).c_str());
     am2h_core->loopMqtt();
-  } else {
+  }
+  else
+  {
     String error{"Error "};
-    for (int i=0; i<9; ++i){
-      String d = String(data[i],HEX);
-      if (d.length()==1) { d= "0"+d;}
+    for (int i = 0; i < 9; ++i)
+    {
+      String d = String(data[i], HEX);
+      if (d.length() == 1)
+      {
+        d = "0" + d;
+      }
       error += d;
     }
-    AM2H_Core::debugMessage("AM2H_Ds18b20::timerPublish("+String(index)+")", error, DebugLogger::ERROR);
+    AM2H_Core::debugMessage(CALLER, error + "@" + String(index), DebugLogger::ERROR);
   }
 
-  mqttClient.publish( (topic + ERROR_CODE + "_" + String(index)).c_str() , error );
+  mqttClient.publish((topic + ERROR_CODE + "_" + String(index)).c_str(), error);
   am2h_core->loopMqtt();
 }
 
-void AM2H_Ds18b20::config(AM2H_Datastore& d, const MqttTopic& t, const String p){
-  AM2H_Core::debugMessageNl("AM2H_Ds18b20::config()","old config state {"+String(d.config,BIN)+"}", DebugLogger::INFO);
+void AM2H_Ds18b20::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
+{
+  const auto CALLER = F("Ds18b20::cfg()");
+  AM2H_Core::debugMessage(CALLER, F("old config=") + String(d.config, BIN), DebugLogger::INFO);
 
-  if (t.meas_ == "addr") {
-    AM2H_Core::debugMessage("AM2H_Ds18b20::config()"," set addr = 0x", DebugLogger::INFO);
-    for (int i=0; i < 8; ++i){
-      d.sensor.ds18b20.addr[i]=strtol(p.substring(i*2,(i*2)+2).c_str(), nullptr,16);
-      if ( d.sensor.ds18b20.addr[i] <=0xF ) { AM2H_Core::debugMessage("AM2H_Ds18b20::config()","0", DebugLogger::INFO); }
-      AM2H_Core::debugMessage("AM2H_Ds18b20::config()",String(d.sensor.ds18b20.addr[i],HEX), DebugLogger::INFO);
+  if (t.meas_.equalsIgnoreCase("addr"))
+  {
+    String message = F("set addr=0x");
+    for (int i = 0; i < 8; ++i)
+    {
+      d.sensor.ds18b20.addr[i] = strtol(p.substring(i * 2, (i * 2) + 2).c_str(), nullptr, 16);
+      if (d.sensor.ds18b20.addr[i] <= 0xF)
+      {
+        message += "0";
+      }
+      message += String(d.sensor.ds18b20.addr[i], HEX);
     }
+    AM2H_Core::debugMessage(CALLER, message, DebugLogger::INFO);
     d.config |= Config::SET_0;
   }
-  if (t.meas_ == "loc") {
+  if (t.meas_.equalsIgnoreCase("loc"))
+  {
     d.config &= ~Config::SET_1;
-    if (p.length()>0) {
-      AM2H_Helper::parse_location(d.loc,p);
-      AM2H_Core::debugMessage("AM2H_Ds18b20::config()"," set loc = "+String(d.loc), DebugLogger::INFO);
+    if (p.length() > 0)
+    {
+      AM2H_Helper::parse_location(d.loc, p);
+      AM2H_Core::debugMessage(CALLER, F("set loc=") + String(d.loc), DebugLogger::INFO);
       d.config |= Config::SET_1;
     }
   }
-  if (t.meas_ == "offsetTemp") {
-    d.sensor.ds18b20.offsetTemp=p.toInt();
-    AM2H_Core::debugMessage("AM2H_Ds18b20::config()"," set offsetTemp = "+String(d.sensor.ds18b20.offsetTemp), DebugLogger::INFO);
+  if (t.meas_.equalsIgnoreCase("offsetTemp"))
+  {
+    d.sensor.ds18b20.offsetTemp = p.toInt();
+    AM2H_Core::debugMessage(CALLER, F("set offsetTemp=") + String(d.sensor.ds18b20.offsetTemp), DebugLogger::INFO);
     d.config |= Config::SET_2;
   }
-  if ( d.config == Config::CHECK_TO_2 ){
-      // d.plugin = plugin_;
-      d.self = this;
-      AM2H_Core::debugMessageNl("AM2H_Ds18b20::config()","finished, new config state {"+String(d.config,BIN)+"}", DebugLogger::INFO);
-  } else {
-      d.self=nullptr;
+  if (d.config == Config::CHECK_TO_2)
+  {
+    // d.plugin = plugin_;
+    d.self = this;
+    AM2H_Core::debugMessage(CALLER, F("new config=") + String(d.config, BIN), DebugLogger::INFO);
+  }
+  else
+  {
+    d.self = nullptr;
   }
 }
 
+String AM2H_Ds18b20::getHtmlTabContent()
+{
+  AM2H_Core::debugMessage(F("Ds18b20::getH"), F("scanning for DS18xxx devices:"), DebugLogger::INFO);
+  String output{F("<b>18B20 Scanner V1.0</b><br />=====================<br />")};
 
-String AM2H_Ds18b20::getHtmlTabContent() {
-  AM2H_Core::debugMessage("AM2H_Ds18b20::setupPlugin()","scanning for DS18xxx devices:\n", DebugLogger::INFO);
-  String output{"<b>18B20 Scanner V1.0</b><br />=====================<br />"};
-  
   uint8_t i;
   uint8_t addr[8];
   uint8_t type_s{0};
@@ -122,66 +158,83 @@ String AM2H_Ds18b20::getHtmlTabContent() {
   ows.reset_search();
   am2h_core->wait(250);
 
-  while ( ows.search(addr) ) {
+  while (ows.search(addr))
+  {
     output += "ID = ";
-    for( i = 0; i < 8; i++) {
-      if ( addr[i] <=0xF ) { output +="0"; }
+    for (i = 0; i < 8; i++)
+    {
+      if (addr[i] <= 0xF)
+      {
+        output += "0";
+      }
       output += String(addr[i], HEX);
     }
 
-    if (OneWire::crc8(addr, 7) != addr[7]) {
-      output += " CRC is not valid!<br />";
+    if (OneWire::crc8(addr, 7) != addr[7])
+    {
+      output += F(" CRC is not valid!<br />");
       break;
     }
 
     ows.reset();
-    ows.select( addr );
-    ows.write(0x44, 1);        // start conversion, with parasite power on at the end
+    ows.select(addr);
+    ows.write(0x44, 1); // start conversion, with parasite power on at the end
     am2h_core->wait(1000);
     ows.reset();
-    ows.select( addr );
-    ows.write(0xBE);         // Read Scratchpad
+    ows.select(addr);
+    ows.write(0xBE); // Read Scratchpad
 
-    for ( i = 0; i < 9; i++) { // we need 9 bytes
+    for (i = 0; i < 9; i++)
+    { // we need 9 bytes
       data[i] = ows.read();
     }
 
     int16_t raw = (data[1] << 8) | data[0];
 
-    switch (addr[0]) {
-      case 0x10:
-        output +=" Chip = DS18S20";
-        type_s=1;
-        break;
-      case 0x28:
-        output +=" Chip = DS18B20";
-        type_s=0;
-        break;
-      case 0x22:
-        output +=" Chip = DS1822";
-        type_s=0;
-        break;
-      default:
-        output +=" Device is not a DS18x20 family device.<br />";
-        type_s=2;
+    switch (addr[0])
+    {
+    case 0x10:
+      output += " Chip = DS18S20";
+      type_s = 1;
+      break;
+    case 0x28:
+      output += " Chip = DS18B20";
+      type_s = 0;
+      break;
+    case 0x22:
+      output += " Chip = DS1822";
+      type_s = 0;
+      break;
+    default:
+      output += " Device is not a DS18x20 family device.<br />";
+      type_s = 2;
     }
 
-    if (type_s==1) {
+    if (type_s == 1)
+    {
       raw = raw << 3; // 9 bit resolution default
-      if (data[7] == 0x10) {
+      if (data[7] == 0x10)
+      {
         raw = (raw & 0xFFF0) + 12 - data[6];
       }
-    } else if(type_s==0) {
+    }
+    else if (type_s == 0)
+    {
       byte cfg = (data[4] & 0x60);
       // at lower res, the low bits are undefined, so let's zero them
-      if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
-      else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-      else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
+      if (cfg == 0x00)
+        raw = raw & ~7; // 9 bit resolution, 93.75 ms
+      else if (cfg == 0x20)
+        raw = raw & ~3; // 10 bit res, 187.5 ms
+      else if (cfg == 0x40)
+        raw = raw & ~1; // 11 bit res, 375 ms
       //// default is 12 bit resolution, 750 ms conversion time
-    } else {
+    }
+    else
+    {
       break;
     }
     output += " Temp= " + String(celsius = static_cast<float>(raw) / 16.0) + "<br />";
-    }
+  }
   return output;
 }
