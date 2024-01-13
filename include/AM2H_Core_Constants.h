@@ -6,6 +6,7 @@
 constexpr uint8_t LOG_LENGTH{40}; // how many entries?
 constexpr uint8_t LOG_CALLER_LENGTH{16}; // Stringlength of the "caller"
 constexpr uint8_t LOG_MESSAGE_LENGTH{64}; // Stringlength of the "info text"
+constexpr uint16_t LOG_INFO_THRESHOLD{60*1000}; // threshold in ms for logging info messages
 
 // Pin Setup
 constexpr uint8_t CORE_SCL{0}; // I2C SCL must be "0" for ESP8266

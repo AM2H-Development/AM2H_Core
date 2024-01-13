@@ -242,10 +242,16 @@ void const AM2H_Core::debugMessage(const String &caller, const String &message, 
 #ifdef _NOLOGGING_
   return;
 #endif
+
+  if (millis() > LOG_INFO_THRESHOLD && infoOrError == DebugLogger::INFO)
+  {
+    return;
+  }
+
   am2h_core->logbook[am2h_core->logpos].ts = millis();
   am2h_core->logbook[am2h_core->logpos].freeHeap = ESP.getFreeHeap();
 
-  am2h_core->logbook[am2h_core->logpos].error = infoOrError == DebugLogger::ERROR;
+  am2h_core->logbook[am2h_core->logpos].error = infoOrError;
 
   auto c = strncpy(am2h_core->logbook[am2h_core->logpos].caller, caller.c_str(), LOG_CALLER_LENGTH);
   c[LOG_CALLER_LENGTH - 1] = 0;
@@ -408,7 +414,7 @@ void AM2H_Core::handleStatus()
         }
       }
 
-      content += logEntry.error == DebugLogger::ERROR ? "  " : "! ";
+      content += logEntry.error == DebugLogger::INFO ? "  " : "! ";
       content += "[" + String(logEntry.ts / 1000., 3);
       content += "] [H:" + String(logEntry.freeHeap);
       content += "] ";
