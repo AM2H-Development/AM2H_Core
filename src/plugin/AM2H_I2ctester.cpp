@@ -32,21 +32,22 @@ String AM2H_I2ctester::getHtmlTabContent() {
             break;
     }
 
-    String header = "<b>I2C Debugger V1.0</b><br />=====================<br />";
-    header += "Slave Address&nbsp;: " + printHex(slave_addr) + "<br />";
-    header += "Mux Address&nbsp;&nbsp;&nbsp;: " + printHex(mux_addr) + "<br />";
-    header += "Mux Channel&nbsp;&nbsp;&nbsp;: " + String(mux_ch,DEC) + "<br />";
-    header += "---------------------<br />";
-    header += "z = Scan I2C addresses<br />";
-    header += "a = Set slave address as HEX [a address]<br />";
-    header += "m = Set mux address as HEX [a address]<br />";
-    header += "c = Set channel address as DEC [a address]<br />";
-    header += "s = Send data as HEX [s 00 FF ..]<br />";
-    header += "r = Read number of Bytes [r nbrBytes]<br /><br />";
-    header += "<form action=\"#\" method=\"post\">";
-    header += "<label for=\"qry\">&nbsp;Action</label>&nbsp;";
-    header += "<input type=\"text\" id=\"qry\" name=\"qry\" value=\"" + parseParams("qry") + "\" maxlength=\"16\" autofocus>";
-    header += "<input type=\"submit\" value=\"Submit\"></form><br />";
+    String header = F("<b>I2C Debugger V1.0</b><br />"
+                      "=====================<br />"
+                      "Slave Address&nbsp;: ") + printHex(slave_addr);
+    header += F("<br />Mux Address&nbsp;&nbsp;&nbsp;: ") + printHex(mux_addr);
+    header += F("<br />Mux Channel&nbsp;&nbsp;&nbsp;: ") + String(mux_ch,DEC);
+    header += F("<br />---------------------<br />");
+    header += F("z = Scan I2C addresses<br />"
+                "a = Set slave address as HEX [a address]<br />"
+                "m = Set mux address as HEX [a address]<br />"
+                "c = Set channel address as DEC [a address]<br />"
+                "s = Send data as HEX [s 00 FF ..]<br />"
+                "r = Read number of Bytes [r nbrBytes]<br /><br />"
+                "<form action=\"#\" method=\"post\">"
+                "<label for=\"qry\">&nbsp;Action</label>&nbsp;"
+                "<input type=\"text\" id=\"qry\" name=\"qry\" value=\"") + parseParams("qry");
+    header += F("\" maxlength=\"16\" autofocus><input type=\"submit\" value=\"Submit\"></form><br />");
 
     return header + output;
 }
@@ -93,7 +94,7 @@ void AM2H_I2ctester::scan() {
             }
         }
     }
-    output += "Scan completed.<br />";
+    output += F("Scan completed.<br />");
 }
 
 uint8_t AM2H_I2ctester::parseNumber(){
@@ -114,9 +115,9 @@ void AM2H_I2ctester::setSlaveAdress() {
     uint8_t num = AM2H_Helper::parse_hex<uint8_t>(instream);
     if (num > 0 && num < 128) {
         slave_addr = num;
-        output += "Set slave address: " + printHex(slave_addr) + "<br />";
+        output += F("Set slave address: ") + printHex(slave_addr) + "<br />";
     } else {
-        output += "<b>Slave address not set! Only values in the range 0x01 - 0x7F are allowed</b><br />";
+        output += F("<b>Slave address not set! Only values in the range 0x01 - 0x7F are allowed</b><br />");
     }
 }
 
@@ -124,9 +125,9 @@ void AM2H_I2ctester::setMuxAdress() {
     uint8_t num = AM2H_Helper::parse_hex<uint8_t>(instream);
     if (num > 0 && num < 128) {
         mux_addr = num;
-        output += "Set mux address: " + printHex(mux_addr) + "<br />";
+        output += F("Set mux address: ") + printHex(mux_addr) + "<br />";
     } else {
-        output += "<b>Mux address not set! Only values in the range 0x01 - 0x7F are allowed</b><br />";
+        output += F("<b>Mux address not set! Only values in the range 0x01 - 0x7F are allowed</b><br />");
     }
 }
 
@@ -134,9 +135,9 @@ void AM2H_I2ctester::setChAdress() {
     uint8_t num = AM2H_Helper::parse_hex<uint8_t>(instream);
     if (num >= 0 && num < 8) {
         mux_ch = num;
-        output += "Set mux channel: " + String(mux_ch,DEC) + "<br />";
+        output += F("Set mux channel: ") + String(mux_ch,DEC) + "<br />";
     } else {
-        output += "<b>Mux channel not set! Only values in the range 0-7 are allowed</b><br />";
+        output += F("<b>Mux channel not set! Only values in the range 0-7 are allowed</b><br />");
     }
 }
 
@@ -147,7 +148,7 @@ bool AM2H_I2ctester::parseData() {
     uint8_t lower = 0; // nibble to process
     uint8_t c; // character read from serial
 
-    output += "Parsed data: ";
+    output += F("Parsed data: ");
     while(true) {
         c = pop(instream);
         if (isControl(c)) {
@@ -181,7 +182,7 @@ bool AM2H_I2ctester::parseData() {
 
     output += "<br />";
     if (lower == 1) {
-        output += "<b>Data incomplete or malformed! Nothing to process<b><br />";
+        output += F("<b>Data incomplete or malformed! Nothing to process<b><br />");
         return false;
     }
     memcpy(data, tmp_data, tmp_data_length);
@@ -190,11 +191,11 @@ bool AM2H_I2ctester::parseData() {
 }
 
 void AM2H_I2ctester::sendI2C(uint8_t *data, uint8_t len) {
-    output += "Sending data [ ";
+    output += F("Sending data [ ");
     for ( uint8_t i = 0; i < len; i++ ) {
         output += printHex(data[i]) + " ";
     }
-    output += "] to Slave Addr: " + printHex(slave_addr) + " ";
+    output += F("] to Slave Addr: ") + printHex(slave_addr) + " ";
 
     if (mux_addr>0) {
         tcaselect(mux_ch);
@@ -209,11 +210,11 @@ void AM2H_I2ctester::readI2C() {
     uint8_t num = parseNumber();
 
     if (num > 128) {
-        output += "<b>Nothing read! Only values in the range 1-127 are allowed</b><br />";
+        output += F("<b>Nothing read! Only values in the range 1-127 are allowed</b><br />");
         return;
     }
 
-    output += "Reading " + String(num) + " Byte(s) from " + printHex(slave_addr) + "<br />";
+    output += F("Reading ") + String(num) + F(" Byte(s) from ") + printHex(slave_addr) + "<br />";
 
     if (mux_addr>0) {
         tcaselect(mux_ch);
@@ -227,7 +228,7 @@ void AM2H_I2ctester::readI2C() {
     }
 
     for (int i=0; i < num; i++) {
-        output += "Register value: ";
+        output += F("Register value: ");
         output += printHex(buf[i]) + "<br />";
     }
 }

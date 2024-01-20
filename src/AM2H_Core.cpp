@@ -367,24 +367,23 @@ const String AM2H_Core::getRootContent()
   content += F("<h1>AM2H_Core</h1><p>deviceId: <b>") + String(am2h_core->persistentSetupValues_.deviceId) + F("</b><br/>nickname: <b>") + String(am2h_core->volatileSetupValues_.nickname);
   content += F("</b><br/>fwVersion: <b>") + String(VERSION);
   content += F("</b><br/>MAC: <b>") + WiFi.macAddress() + F("</b></p><ul>");
-  content += "<li><a href=\"/api/v1/status\">show status logs</a></li>";
-  content += "<li><a href=\"/api/v1/get\">show device info</a></li>";
-  content += "<li><a href=\"/api/v1/restart\">restart device</a></li>";
-  content += "<li>device settings:<br><br><form action=\"/api/v1/set\" method=\"get\">";
-  content += "<input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\"" + String(DEVICE_ID_LEN) + "\"><label for=\"deviceId\">&nbsp;deviceId</label><br/><br/>";
-  content += "<input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\"" + String(NS_LEN) + "\"><label for=\"ns\">&nbsp;namespace</label><br/><br/>";
-  content += "<input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\"" + String(MQTT_SERVER_LEN) + "\"><label for=\"mqttServer\">&nbsp;MQTT Server (hostname or IP)</label><br/><br/>";
-  content += "<input type=\"text\" id=\"mqttPort\" name=\"mqttPort\"><label for=\"mqttPort\">&nbsp;MQTT port</label><br/><br/>";
-  content += "<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"" + String(SSID_LEN) + "\"><label for=\"ssid\">&nbsp;SSID</label><br/><br/>";
-  content += "<input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"" + String(PW_LEN) + "\"><label for=\"pw\">&nbsp;WLAN pw</label><br/><br/>";
-  content += "<input type=\"submit\" value=\"Submit\"></form></li></ul>";
+  content += F("<li><a href=\"/api/v1/status\">show status logs</a></li>");
+  content += F("<li><a href=\"/api/v1/get\">show device info</a></li>");
+  content += F("<li><a href=\"/api/v1/restart\">restart device</a></li>");
+  content += F("<li>device settings:<br><br><form action=\"/api/v1/set\" method=\"get\">");
+  content += F("<input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\"") + String(DEVICE_ID_LEN);
+  content += F("\"><label for=\"deviceId\">&nbsp;deviceId</label><br/><br/><input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\"") + String(NS_LEN);
+  content += F("\"><label for=\"ns\">&nbsp;namespace</label><br/><br/><input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\"") + String(MQTT_SERVER_LEN);
+  content += F("\"><label for=\"mqttServer\">&nbsp;MQTT Server (hostname or IP)</label><br/><br/><input type=\"text\" id=\"mqttPort\" name=\"mqttPort\"><label for=\"mqttPort\">&nbsp;MQTT port</label><br/><br/>");
+  content += F("<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"") + String(SSID_LEN);
+  content += F("\"><label for=\"ssid\">&nbsp;SSID</label><br/><br/><input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"") + String(PW_LEN);
+  content += F("\"><label for=\"pw\">&nbsp;WLAN pw</label><br/><br/><input type=\"submit\" value=\"Submit\"></form></li></ul><ul>");
   int i = -1;
-  content += "<ul>";
   while (auto p = am2h_core->plugins_[++i])
   {
     content += "<li><a href=\"/api/v1/plugin/" + String(i) + "/\">" + p->getHtmlTabName() + "</a></li>";
   }
-  content += "</ul>";
+  content += F("</ul>");
   content += HTTP_FOOTER;
   return content;
 }
@@ -549,12 +548,11 @@ void AM2H_Core::handleNotFound()
   content += am2h_core->server_.uri();
   content += F(" args=");
   content += am2h_core->server_.args();
-  content += "\n";
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++)
   {
     content += " " + am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + ";";
   }
-  debugMessage(F("handleNotFound()"), content, DebugLogger::ERROR);
+  debugMessage(F("handleNotFound()"), content, DebugLogger::INFO);
   am2h_core->server_.send(404, ENCODING_PLAIN, content);
 }
 
@@ -792,7 +790,7 @@ void AM2H_Core::scan() const
       }
     }
   }
-  AM2H_Core::debugMessage("AM2H_Core::scan()", message, DebugLogger::INFO);
+  AM2H_Core::debugMessage(F("AM2H_Core::scan()"), message, DebugLogger::INFO);
 }
 
 void AM2H_Core::switchWire(uint32_t const addr) const
