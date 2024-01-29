@@ -14,7 +14,7 @@
 #include <OneWire.h>
 #include "bsec.h"
 
-#define VERSION "1.7.1"
+#define VERSION "1.7.2"
 
 void IRAM_ATTR impulseISR();
 
