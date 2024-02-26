@@ -50,7 +50,7 @@ struct LogEntry {
 
 class AM2H_Core {
 public:
-  AM2H_Core(AM2H_Plugin** plugins);
+  explicit AM2H_Core(AM2H_Plugin** plugins);
   AM2H_Core(AM2H_Plugin** plugins, PubSubClient& mqttClient, ESP8266WebServer& server);
 
   void setupCore();
