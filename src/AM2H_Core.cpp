@@ -45,6 +45,7 @@ AM2H_Core::AM2H_Core(AM2H_Plugin **plugins, PubSubClient &mqttClient, ESP8266Web
   timer_.wlanReconnect = 0;
   timer_.sendData = 0;
   am2h_core = this;
+  mqttReconnectCounter = 0;
 }
 
 void AM2H_Core::setupCore()
@@ -160,6 +161,16 @@ void AM2H_Core::checkUpdateRequired()
 {
   const auto CALLER = F("checkUpdateRequired()");
 
+  if (mqttReconnectCounter > MQTT_RECONNECT_REBOOT_LIMIT && connStatus_ != DEV_RESTART_PENDING)
+  {
+    updateRequired_ |= ESP_RESET_REQUIRED;
+  }
+
+  if (connStatus_ == WLAN_AP_PROV && millis() > (WLAN_TIMEOUT * 3 * 1000) && WiFi.softAPgetStationNum() == 0)
+  {
+    updateRequired_ |= ESP_RESET_REQUIRED;
+  }
+
   if (updateRequired_ != NO_UPDATE_REQUIRED)
   {
     if (updateRequired_ & COMMIT_TO_EEPROM_REQUIRED)
@@ -191,12 +202,14 @@ void AM2H_Core::checkUpdateRequired()
       pinMode(CORE_STATUS_LED, INPUT_PULLUP);
     }
   }
+
   if ((timer_.wlanReconnect > 0) && (millis() > timer_.wlanReconnect))
   {
     debugMessage(CALLER, F("Proceed WLAN reconnect! ") + getSSID() + " : " + getPW(), DebugLogger::INFO);
     timer_.wlanReconnect = 0;
     restartWlan(getSSID(), getPW());
   }
+
   if ((timer_.espRestart > 0) && (millis() > timer_.espRestart))
   {
     ESP.restart();
@@ -248,8 +261,9 @@ void const AM2H_Core::debugMessage(const String &caller, const String &message, 
     return;
   }
 
-  if (infoOrError == DebugLogger::ERROR) {
-    am2h_core->thershold=millis()+LOG_INFO_THRESHOLD;
+  if (infoOrError == DebugLogger::ERROR)
+  {
+    am2h_core->thershold = millis() + LOG_INFO_THRESHOLD;
   }
 
   am2h_core->logbook[am2h_core->logpos].ts = millis();
@@ -290,6 +304,7 @@ void AM2H_Core::setupWlan()
 void AM2H_Core::restartWlan(String ssid, String pw)
 {
   connStatus_ = CONN_UNKNOWN;
+  WiFi.reconnect();
   WiFi.mode(WIFI_STA);
   WiFi.persistent(true);
   WiFi.begin(ssid, pw);
@@ -398,7 +413,7 @@ void AM2H_Core::handleRestart()
 
 void AM2H_Core::handleStatus()
 {
-  am2h_core->thershold=millis()+LOG_INFO_THRESHOLD;
+  am2h_core->thershold = millis() + LOG_INFO_THRESHOLD;
   String content = F("{\"statusLog\":\"\n");
 
   auto logpos = am2h_core->logpos;
@@ -638,6 +653,8 @@ void AM2H_Core::mqttReconnect()
   if (timer_.mqttReconnect > millis())
     return;
 
+  ++mqttReconnectCounter;
+
   debugMessage(F("mqttReconnect()"), F("Attempting MQTT connection and unsubscribe topics."), DebugLogger::INFO);
   mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
 
@@ -650,11 +667,12 @@ void AM2H_Core::mqttReconnect()
       debugMessage(F("mqttReconnect()"), "subscribe config topic " + getConfigTopic(), DebugLogger::INFO);
       mqttClient_.subscribe((getConfigTopic() + "#").c_str());
     }
+    mqttReconnectCounter=0;
     connStatus_ = MQTT_CLIENT_CONNECTED;
   }
   else
   {
-    debugMessage(F("mqttReconnect()"), F("failed with error code ") + String(mqttClient_.state()), DebugLogger::ERROR);
+    debugMessage(F("mqttReconnect()"), F("failed with error code ") + String(mqttClient_.state()) + "("+String(mqttReconnectCounter)+")", DebugLogger::ERROR);
     timer_.mqttReconnect = millis() + 5000;
     connStatus_ = WLAN_CONNECTED;
 
@@ -689,6 +707,8 @@ void AM2H_Core::publishDeviceStatus()
   am2h_core->mqttClient_.publish((getStorageTopic() + HEAP_PROP_NAME).c_str(), String(ESP.getFreeHeap()).c_str(), RETAINED);
   loopMqtt();
   am2h_core->mqttClient_.publish((getStorageTopic() + RUN_PROP_NAME).c_str(), String(millis()).c_str(), RETAINED);
+  loopMqtt();
+  am2h_core->mqttClient_.publish((getStorageTopic() + MQTT_RECONNECT_PROP_NAME).c_str(), String(mqttReconnectCounter).c_str(), RETAINED);
   loopMqtt();
 }
 

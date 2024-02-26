@@ -14,7 +14,7 @@
 #include <OneWire.h>
 #include "bsec.h"
 
-#define VERSION "1.7.1"
+#define VERSION "1.7.2"
 
 void IRAM_ATTR impulseISR();
 
@@ -45,7 +45,7 @@ struct LogEntry {
   uint32_t ts{0};
   char caller[LOG_CALLER_LENGTH]="-";
   char message[LOG_MESSAGE_LENGTH]="-";
-  uint16_t freeHeap=0;
+  uint16_t freeHeap{0};
 };
 
 class AM2H_Core {
@@ -79,6 +79,7 @@ private:
   PersistentSetupContainer persistentSetupValues_;
   VolatileSetupContainer volatileSetupValues_;
   Timers timer_;
+  uint16_t mqttReconnectCounter;
 
   void setupEEPROM();
   bool writeEEPROM();
