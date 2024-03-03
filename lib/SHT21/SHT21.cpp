@@ -34,7 +34,7 @@ float SHT21::getTemperature(void){
 
 uint16_t SHT21::readSHT21(uint8_t command){
   uint16_t result;
-  u_int16_t timeout{1000};
+  uint16_t timeout{1000};
 
   Wire.beginTransmission(SHT21_ADDRESS);	
   Wire.write(command);					
