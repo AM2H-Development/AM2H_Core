@@ -61,9 +61,6 @@ void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
         d.config = Config::SET_0;
     }
 
-    // d.sensor.pcf8574.listener[0] = new String{"Test123"};
-
-    // AM2H_Core::debugMessage(F("Pcf8574::cfg()"), "old config=" + String(d.config, BIN), DebugLogger::INFO);
     if (t.meas_.equalsIgnoreCase("addr"))
     {
         d.sensor.pcf8574.addr = AM2H_Helper::parse_hex<uint32_t>(p);
