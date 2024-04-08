@@ -24,6 +24,7 @@ enum DeriveUnit{
 
 class Config {
     public:
+    static constexpr uint16_t IS_ZERO = 0x0000;    
     static constexpr uint16_t SET_0 = 0x0001;
     static constexpr uint16_t CHECK_TO_0 = SET_0;
     static constexpr uint16_t SET_1 = 0x0002;
@@ -112,14 +113,16 @@ union Datastore {
         uint32_t addr;  // I2C address
         uint8_t ioMask; // 1=output, 0=input
         uint8_t reg;    // native io-register state 0=GND, 1=VCC
+        String* publisher[MAX_PUBLISHERS]; // listener for events
+        uint8_t publisherCount; // counter for listeners (max 8)
     } pcf8574;
 };
 
 class AM2H_Datastore {
 public:
     static constexpr uint8_t LOC_MAX_LEN{32};
-    bool initialized{false}; // used to identify the first config run
-    uint16_t config{0}; // array for "Config" state
+    bool initialized{false}; // used to identify the basic config
+    uint16_t config{Config::IS_ZERO}; // array for "Config" state
     char loc[LOC_MAX_LEN];
     // String plugin; // name of the plugin, set after final config
     Datastore sensor;

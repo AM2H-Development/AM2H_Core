@@ -19,6 +19,7 @@ private:
     void processSetStateTopic(AM2H_Datastore &d, const String &p);
     void processSetPortTopic(AM2H_Datastore &d, const String &p);
     void changedPortsPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t &oldReg);
+    void checkPublishers(AM2H_Datastore &d, PubSubClient &mqttClient, const u_int8_t port, const char edge);
 };
 
 #endif

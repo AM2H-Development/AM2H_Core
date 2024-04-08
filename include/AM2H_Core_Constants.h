@@ -102,8 +102,10 @@ constexpr uint8_t PW_LEN{32};
 constexpr uint8_t SERVICE_LEN{8};
 constexpr uint8_t LOC_LEN{32};
 
-// Properties
+// Event publishers
+constexpr uint8_t MAX_PUBLISHERS{8};
 
+// Properties
 String const DEVICE_CFG_TOPIC{"core"};
 String const DEVICE_PROP_NAME{"config"};
 String const STORAGE_PROP_NAME{"storage"};

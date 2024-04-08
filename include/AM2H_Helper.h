@@ -20,6 +20,7 @@ namespace AM2H_Helper {
     void parse_location(char* loc, const String parse );
     bool stringToBool(const String s);
     void formatBinary8(String& str, uint8_t num);
+    uint8_t binToInt(const String &binStr);
 };
 
 #endif
