@@ -32,10 +32,11 @@ The module allows to counting pulses with an interrupt on Pin 4 which is set as 
 
 Output of the voltage regulator is 3.3 V. Depending on the input power supply the AMS1117 voltage regulator could deliver up to 800 mA of power. For further information please refer to the technical datasheet.
 
-#### I&#x00B2;C - Two Wire Interface Pin 7 and 8
+#### I&#x00B2;C - Two Wire Interface Pin 7 and 8 (Pin 4 for external interrupt )
 
 I2C or I&#x00B2;C is short for Inter-Integrated Circuit, a synchronous serial communication protocol developed by Phillips for communication between a fast Microcontroller and relatively slow peripherals (like Memory or Sensors) using just two wires. It is also known as TWI (Two Wire Interface).
 The I2C Bus consists of two wires called the Serial Data (SDA) and the Serial Clock (SCL). Data is transmitted through the SDA line while the SCL line is used to synchronize the devices with the clock signal. **An external 4.7k pull-up resistor for both bus lines (SDA and SCL) are required.**
+In case a Pcf8574 module is installed Pin 4 is used as an interrupt pin for the input signals. A combined usage with the puls counter is not possible.
 
 
 ### RJ45 Connector layout "bottom" (tap down)
@@ -43,7 +44,7 @@ The I2C Bus consists of two wires called the Serial Data (SDA) and the Serial Cl
 
 # Flashing the device
 
-AM2H devices could by flashed using a UART (USB to TTL converter) programmer. It is recommended to power the device with 5V using Pin 1 and 2 of the RJ45 connector. Connect the AM2H device to the FTDI adapter as shown in the table. **To enable flash mode press flash button on the back of the device before connecting to the power supply.** 
+AM2H devices could by flashed using a UART (USB to TTL converter) programmer. It is recommended to power the device with 5V using Pin 1 and 2 of the RJ45 connector. Connect the AM2H device to the FTDI adapter as shown in the table. **To enable flash mode press flash button on the back of the device before connecting to the power supply and keep pressed until the device is connected to the power supply.** 
 
 | PIN number RJ45 | Description | PIN FTDI |
 | ----------- | ----------- | ----------- |
@@ -79,7 +80,7 @@ all HTTP/GET
 ```
 ## MQTT configuration
 
-All MQTT topics are case sensitve and must be send retained
+All MQTT must be send retained except the set topics. Topics are not case sensitive.
 
 ```
 ##namespace##/config/##deviceNumber##/##plugin##/##00..19##/##topic##
@@ -90,8 +91,10 @@ All MQTT topics are case sensitve and must be send retained
 all retained
 
 ```
-akm/config/d_100/-/core/sampleRate => 15
-[akm/config/d_100/-/core/i2cMuxAddr => 0x70]
+akm/config/d_100/-/core/sampleRate => 15 (Sample rate in seconds)
+akm/config/d_100/-/core/i2cMuxAddr => 0x70 (Mux adress only needed if i2cMux is installed)
+akm/config/d_100/-/core/nickname => Ventilation (Nickname not mandadory)
+
 ```
 
 ### Icounter
