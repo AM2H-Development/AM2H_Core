@@ -109,13 +109,13 @@ akm/config/d_100/0/Icounter/loc  => e.g. gasMeter      (location of the sensor f
 ```
 
 Example for gas meter:
-
-zeroLimit = 300       -> after 300 s without any impulse the power will be set zero
+```
+zeroLimit = 300 => after 300 s without any impulse the power will be set zero
 unitsPerMs = 360
 exponentPerMs = 0
 exponentPerTick = -2
 unitsPerTick = 1      
-
+```
 
 ### Bme680 configuration
 
@@ -233,10 +233,10 @@ Mask          0 0 0 0 0 0 1 1
 
 Payload for mask: 3 DEC        
 
-The startup register defines the port status after startup and can be used to set the port status for all ports with at the same time. In case pull-up resistors are used for the input and/or output ports are active on ground the startup mask should be set to 1 [VCC] for the ports. 
+The startup register defines the port status after startup and can be used to set the port status for all ports at the same time. In case pull-up resistors are used for the input and/or output ports are active on ground the startup mask should be set to 1 [VCC] for the ports. 
 ```
 Port          7 6 5 4 3 2 1 0
-Pull-up logic 1 1 1 1 1 1 1 1
+Pull-up       1 1 1 1 1 1 1 1
 Register      1 1 1 1 1 1 1 1
 ```
 
