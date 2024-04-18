@@ -108,6 +108,15 @@ akm/config/d_100/0/Icounter/zeroLimit  => e.g. 100
 akm/config/d_100/0/Icounter/loc  => e.g. gasMeter      (location of the sensor for mqtt publish)
 ```
 
+Example for gas meter:
+
+zeroLimit = 300       -> after 300 s without any impulse the power will be set zero
+unitsPerMs = 360
+exponentPerMs = 0
+exponentPerTick = -2
+unitsPerTick = 1      
+
+
 ### Bme680 configuration
 
 all retained
@@ -201,10 +210,35 @@ all retained
 ```
 akm/config/d_100/0/Pcf8574/addr => 0x20 / 0x0120
 akm/config/d_100/0/Pcf8574/loc => office
-akm/config/d_106/0/Pcf8574/ioMask => 0 [1 = output, 0 = input] 
-akm/config/d_106/0/Pcf8574/reg => 0 [startup register state 0=GND, 1 = VCC]
-akm/config/d_106/0/Pcf8574/setPort => port=[0..7]&state=[0..1] [set state of port to 0=GND, 1 = VCC]
-akm/config/d_106/0/Pcf8574/setState => ioMask=[0..255]&reg=[0..255] [set ioMask (optional) and/or reg (optional) to specific values 0=GND, 1 = VCC]
+akm/config/d_100/0/Pcf8574/ioMask => [0..255] [1 = output, 0 = input] 
+akm/config/d_100/0/Pcf8574/reg => [0..255] [startup register state 0=GND, 1 = VCC]
+akm/config/d_100/0/Pcf8574/onPort[0..7]Falling => akm/config/d_106/0/Pcf8574/setPort>port=4&state=0 [send MQTT payload onPort number 0..7 falling]
+akm/config/d_100/0/Pcf8574/onPort[0..7]Rising => akm/config/d_106/0/Pcf8574/setState>reg=11111111 [send MQTT payload onPort number 0..7 rising]
+```
+
+set payload not retained
 
 ```
-The ioMask defines the state of the output ports (filter for setState and setPort) in decimal. E. g. if you want to set the lower 4 bits as input and the upper 4 bits as output, send .../ioMask with the payload of 240.
+akm/config/d_100/0/Pcf8574/setPort => port=[0..7]&state=[0..1] [set state of port to 0=GND, 1 = VCC]
+akm/config/d_100/0/Pcf8574/setState => ioMask=[0..255]&reg=[0..255] [set ioMask (optional) and/or reg (optional) to specific values 0=GND, 1 = VCC]
+
+```
+
+The ioMask defines the direction of the I/O ports. If the port is used as an output set the mask to 1. If the port is used as an input set the mask to 0. Payload in DEC number. 
+```
+Port          7 6 5 4 3 2 1 0
+Direction     I I I I I I O O
+Mask          0 0 0 0 0 0 1 1
+```
+
+Payload for mask: 3 DEC        
+
+The startup register defines the port status after startup and can be used to set the port status for all ports with at the same time. In case pull-up resistors are used for the input and/or output ports are active on ground the startup mask should be set to 1 [VCC] for the ports. 
+```
+Port          7 6 5 4 3 2 1 0
+Pull-up logic 1 1 1 1 1 1 1 1
+Register      1 1 1 1 1 1 1 1
+```
+
+Payload for register: 255 DEC
+
