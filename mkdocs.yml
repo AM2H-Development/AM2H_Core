@@ -4,9 +4,9 @@ nav:
     - Home: index.md
     - Hardware:
         - Core: hardware.md
-        - SHT21: hardware.md
+        - Plugins: plugins.md
     - About: about.md
     - Tools:
-        - test: hardware.md
+        - test: tools.md
 
 theme: readthedocs
