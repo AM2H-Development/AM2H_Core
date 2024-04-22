@@ -2,7 +2,7 @@ site_name: AM2H_Core
 site_url: https://github.com/AM2H-Development/AM2H_Core
 nav:
     - Home: index.md
-    - Hardware: hardware.md
+    - Hardware:
         - Core: hardware.md
         - SHT21: hardware.md
     - About: about.md
