@@ -5,7 +5,8 @@ nav:
     - Hardware:
         - Core: hardware.md
         - Plugins: plugins.md
-    - About: about.md
+    - About:
+        - About: about.md
     - Tools:
         - test: tools.md
 
