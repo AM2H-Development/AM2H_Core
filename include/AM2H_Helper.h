@@ -39,7 +39,6 @@ namespace AM2H_Helper
   template <class T>
   const T parse_number(const String &string)
   {
-    T number{0};
     uint8_t len = string.length();
     uint8_t type{99};
     String temp_string{""};

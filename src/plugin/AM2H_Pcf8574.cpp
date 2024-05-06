@@ -63,7 +63,7 @@ void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 
     if (t.meas_.equalsIgnoreCase("addr"))
     {
-        d.sensor.pcf8574.addr = AM2H_Helper::parse_hex<uint32_t>(p);
+        d.sensor.pcf8574.addr = AM2H_Helper::parse_number<uint32_t>(p);
         AM2H_Core::debugMessage(CALLER, "set addr=0x" + String(d.sensor.pcf8574.addr, HEX), DebugLogger::INFO);
         d.config |= Config::SET_1;
     }
