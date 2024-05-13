@@ -655,8 +655,8 @@ void AM2H_Core::mqttReconnect()
 
   ++mqttReconnectCounter;
 
-  debugMessage(F("mqttReconnect()"), F("Attempting MQTT connection and unsubscribe topics."), DebugLogger::INFO);
-  mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
+  debugMessage(F("mqttReconnect()"), F("Attempting MQTT connection (and unsubscribe topics.)"), DebugLogger::INFO);
+  // mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
 
   if (mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL))
   {
@@ -669,6 +669,8 @@ void AM2H_Core::mqttReconnect()
     }
     mqttReconnectCounter=0;
     connStatus_ = MQTT_CLIENT_CONNECTED;
+    pinMode(CORE_STATUS_LED, OUTPUT);
+    digitalWrite(CORE_STATUS_LED, HIGH);
   }
   else
   {
