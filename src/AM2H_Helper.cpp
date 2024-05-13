@@ -28,21 +28,27 @@ namespace AM2H_Helper
 
   void formatBinary8(String &str, uint8_t num)
   {
-    str = ".1234567";
+    str = "0b.1234567";
     for (uint8_t i = 0; i < 8; ++i)
     {
-      str.setCharAt(i, ((num >> (7 - i) & 1) == 0) ? '0' : '1');
+      str.setCharAt(i + 2, ((num >> (7 - i) & 1) == 0) ? '0' : '1');
     }
   }
 
+  // len 10
+  // idx 0123456789
+  // str 0b12345678
   uint8_t binToInt(const String &binStr)
   {
+    const uint8_t last_idx = binStr.length() - 1;
+    constexpr uint8_t first_idx = 2;
+
     u_int32_t res{0};
-    for (int i = binStr.length() - 1; i > -1; --i)
+    for (uint8_t i = last_idx; i >= first_idx; --i)
     {
       if (binStr.charAt(i) == '1')
       {
-        res += 1 << i;
+        res += 1 << (last_idx-i);
       }
     }
     return static_cast<u_int8_t>(res & 255);

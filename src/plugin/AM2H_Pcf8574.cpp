@@ -82,7 +82,7 @@ void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
     }
     if (t.meas_.equalsIgnoreCase("ioMask"))
     {
-        d.sensor.pcf8574.ioMask = p.toInt();
+        d.sensor.pcf8574.ioMask = AM2H_Helper::parse_number<uint8_t>(p);
         String ioMask;
         AM2H_Helper::formatBinary8(ioMask, d.sensor.pcf8574.ioMask);
         AM2H_Core::debugMessage(CALLER, "set ioMask=" + ioMask, DebugLogger::INFO);
@@ -90,7 +90,7 @@ void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
     }
     if (t.meas_.equalsIgnoreCase("reg"))
     { // must be native
-        d.sensor.pcf8574.reg = p.toInt();
+        d.sensor.pcf8574.reg = AM2H_Helper::parse_number<uint8_t>(p);
         String reg;
         AM2H_Helper::formatBinary8(reg, d.sensor.pcf8574.reg);
         AM2H_Core::debugMessage(CALLER, "set reg=" + reg, DebugLogger::INFO);
@@ -214,7 +214,7 @@ void AM2H_Pcf8574::processSetStateTopic(AM2H_Datastore &d, const String &p_origi
             }*/
             if (key.equalsIgnoreCase("reg"))
             {
-                pcf8574.reg = AM2H_Helper::binToInt(value) | ~d.sensor.pcf8574.ioMask;
+                pcf8574.reg = AM2H_Helper::parse_number<uint8_t>(value) | ~d.sensor.pcf8574.ioMask;
             }
             AM2H_Core::debugMessage(F("Pcf8574::proState"), F("key:value=") + key + ":" + value, DebugLogger::INFO);
             key = "";
@@ -254,7 +254,7 @@ void AM2H_Pcf8574::processSetPortTopic(AM2H_Datastore &d, const String &p_origin
             isKey = true;
             if (key.equalsIgnoreCase("port"))
             {
-                const long t_port = value.toInt();
+                const long t_port = AM2H_Helper::parse_number<uint8_t>(value);
                 if ((t_port >= 0) && (t_port <= 7))
                 {
                     port = t_port;
@@ -262,11 +262,12 @@ void AM2H_Pcf8574::processSetPortTopic(AM2H_Datastore &d, const String &p_origin
             }
             if (key.equalsIgnoreCase("state"))
             {
-                if (value.equalsIgnoreCase("1"))
+                uint8_t state_tmp = AM2H_Helper::parse_number<uint8_t>(value);
+                if (state_tmp == 1)
                 {
                     state = 1;
                 }
-                if (value.equalsIgnoreCase("0"))
+                if (state_tmp == 0)
                 {
                     state = 0;
                 }
@@ -302,7 +303,7 @@ void AM2H_Pcf8574::changedPortsPublish(AM2H_Datastore &d, PubSubClient &mqttClie
         const auto bitChanged = ((pcf8574.reg ^ oldReg) & (1 << i)) > 0;
         if (bitChanged)
         {
-            AM2H_Core::debugMessage(F("Pcf8574::cpp()"), topic + "port" + i + "=" + (bitSet ? "1" : "0"), DebugLogger::INFO);
+            AM2H_Core::debugMessage(F("Pcf8574::cpp()"), topic + F("port") + i + F("=0b") + (bitSet ? "1" : "0"), DebugLogger::INFO);
             mqttClient.publish((topic + "port" + i).c_str(), bitSet ? "1" : "0");
             am2h_core->loopMqtt();
             checkPublishers(d, mqttClient, i, bitSet ? 'r' : 'f');
