@@ -671,8 +671,7 @@ void AM2H_Core::mqttReconnect()
     }
     mqttReconnectCounter = 0;
     connStatus_ = MQTT_CLIENT_CONNECTED;
-    pinMode(CORE_STATUS_LED, OUTPUT);
-    digitalWrite(CORE_STATUS_LED, HIGH);
+    pinMode(CORE_STATUS_LED, INPUT_PULLUP);
   }
   else
   {
