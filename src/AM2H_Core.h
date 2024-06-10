@@ -14,7 +14,7 @@
 #include <OneWire.h>
 #include "bsec.h"
 
-#define VERSION "1.8.2"
+#define VERSION "1.8.3"
 
 void IRAM_ATTR impulseISR();
 
@@ -56,14 +56,14 @@ public:
   void setupCore();
   void loopCore();
   void wait(uint32_t const del_millis);
-  static MqttTopic parseMqttTopic(char* topic);
+  static MqttTopic parseMqttTopic(const char* topic);
   static void const debugMessage(const String& caller, const String& message, const bool newline, const bool info);
   static void const debugMessage(const String& caller, const String& message, const bool info){debugMessage(caller, message, false, info);};
   static void const debugMessageNl(const String& caller, const String& message, const bool info){debugMessage(caller, message, true, info);};
   static bool const parse_debugMessage (const String message, String& newMessage);
   void loopMqtt();
   void switchWire(uint32_t const addr) const;
-  void i2cReset();
+  // void i2cReset();
 
 private:
   AM2H_Plugin** plugins_;
@@ -104,7 +104,7 @@ private:
   static void handleApiSetRequest();
   static void handlePlugin(const int id);
   void setupMqtt();
-  static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
+  static void mqttCallback(const char* topic, uint8_t* payload, unsigned int length);
   void mqttReconnect();
   void scan() const;
 

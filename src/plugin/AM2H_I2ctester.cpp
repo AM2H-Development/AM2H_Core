@@ -1,178 +1,224 @@
 #include "AM2H_I2ctester.h"
 #include "AM2H_Core.h"
 
-extern AM2H_Core* am2h_core;
+extern AM2H_Core *am2h_core;
 
-void AM2H_I2ctester::timerPublish(AM2H_Datastore& d, PubSubClient& mqttClient, const String topic, const uint8_t index){}
-void AM2H_I2ctester::config(AM2H_Datastore& d, const MqttTopic& t, const String p){}
+void AM2H_I2ctester::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index) {}
+void AM2H_I2ctester::config(AM2H_Datastore &d, const MqttTopic &t, const String p) {}
 
-String AM2H_I2ctester::getHtmlTabContent() {
+String AM2H_I2ctester::getHtmlTabContent()
+{
     instream = parseParams("qry");
-    output ="";
+    output = "";
 
     uint8_t c = pop(instream);
-    switch(c) {
-        case 'z':
-            scan();
-            break;
-        case 'a':
-            setSlaveAdress();
-            break;
-        case 'm':
-            setMuxAdress();
-            break;
-        case 'c':
-            setChAdress();
-            break;
-        case 's':
-            if ( parseData() ) sendI2C(data, data_length);
-            break;
-        case 'r':
-            readI2C();
-            break;
+    switch (c)
+    {
+    case 'z':
+        scan();
+        break;
+    case 'a':
+        setSlaveAdress();
+        break;
+    case 'm':
+        setMuxAdress();
+        break;
+    case 'c':
+        setChAdress();
+        break;
+    case 's':
+        if (parseData())
+            sendI2C(data, data_length);
+        break;
+    case 'r':
+        readI2C();
+        break;
     }
 
     String header = F("<b>I2C Debugger V1.0</b><br />"
                       "=====================<br />"
-                      "Slave Address&nbsp;: ") + printHex(slave_addr);
-    header += F("<br />Mux Address&nbsp;&nbsp;&nbsp;: ") + printHex(mux_addr);
-    header += F("<br />Mux Channel&nbsp;&nbsp;&nbsp;: ") + String(mux_ch,DEC);
+                      "Slave Address&nbsp;: ") +
+                    printHex(slave_addr);
+    header += F("<br />Mux Addr&nbsp;&nbsp;&nbsp;: ") + printHex(mux_addr);
+    header += F("<br />Mux Chan&nbsp;&nbsp;&nbsp;: ") + String(mux_ch, DEC);
     header += F("<br />---------------------<br />");
-    header += F("z = Scan I2C addresses<br />"
-                "a = Set slave address as HEX [a address]<br />"
-                "m = Set mux address as HEX [a address]<br />"
-                "c = Set channel address as DEC [a address]<br />"
+    header += F("z = Scan I2C bus<br />"
+                "a = Set slave addr as HEX [a addr]<br />"
+                "m = Set mux addr as HEX [m addr]<br />"
+                "c = Set channel addr as DEC [c addr]<br />"
                 "s = Send data as HEX [s 00 FF ..]<br />"
-                "r = Read number of Bytes [r nbrBytes]<br /><br />"
+                "r = Read num of bytes [r nB]<br /><br />"
                 "<form action=\"#\" method=\"post\">"
                 "<label for=\"qry\">&nbsp;Action</label>&nbsp;"
-                "<input type=\"text\" id=\"qry\" name=\"qry\" value=\"") + parseParams("qry");
+                "<input type=\"text\" id=\"qry\" name=\"qry\" value=\"") +
+              parseParams("qry");
     header += F("\" maxlength=\"16\" autofocus><input type=\"submit\" value=\"Submit\"></form><br />");
 
     return header + output;
 }
 
-String AM2H_I2ctester::parseParams(const String qry) {
-  for (uint8_t i = 0; i < am2h_core->server_.args(); i++) {
-    if (qry.equalsIgnoreCase(am2h_core->server_.argName(i))) {
-        return am2h_core->server_.arg(i);
+String AM2H_I2ctester::parseParams(const String qry)
+{
+    for (uint8_t i = 0; i < am2h_core->server_.args(); i++)
+    {
+        if (qry.equalsIgnoreCase(am2h_core->server_.argName(i)))
+        {
+            return am2h_core->server_.arg(i);
+        }
     }
-  }
-  return "";
+    return "";
 }
 
-char AM2H_I2ctester::pop(String & instream){
+char AM2H_I2ctester::pop(String &instream)
+{
     char tmp = instream.charAt(0);
-    instream.remove(0,1);
+    instream.remove(0, 1);
     return tmp;
 }
 
-void AM2H_I2ctester::tcaselect(uint8_t i) {
-    if (i > 7) return;
-    uint8_t mux = (mux_addr>0)?mux_addr:TCAADDR;
+void AM2H_I2ctester::tcaselect(uint8_t i)
+{
+    if (i > 7)
+        return;
+    uint8_t mux = (mux_addr > 0) ? mux_addr : TCAADDR;
     Wire.beginTransmission(mux);
     Wire.write(1 << i);
     Wire.endTransmission();
-    output += "Mux Addr: " + printHex(mux) + " Channel: ";
+    output += F("Mux Addr: ") + printHex(mux) + F(" Chan: ");
     output += i;
-    output += "<br />";
+    output += F("<br />");
 }
 
-void AM2H_I2ctester::scan() {
-    for (uint8_t t = 0; t < 8; t++) {
-        uint8_t mux = (mux_addr>0)?mux_addr:TCAADDR;
+void AM2H_I2ctester::scan()
+{
+    for (uint8_t t = 0; t < 8; t++)
+    {
+        uint8_t mux = (mux_addr > 0) ? mux_addr : TCAADDR;
         tcaselect(t);
 
-        for (uint8_t addr = 0; addr <= 127; addr++) {
-            if (addr == mux) continue;
+        for (uint8_t addr = 0; addr <= 127; addr++)
+        {
+            if (addr == mux)
+                continue;
             Wire.beginTransmission(addr);
-            if (Wire.endTransmission() == 0) {
-                output += "Found I2C " + printHex(addr);
+            if (Wire.endTransmission() == 0)
+            {
+                output += F("Found ") + printHex(addr);
                 output += " (";
                 output += String(addr, DEC);
-                output += ")<br />";
+                output += F(")<br />");
             }
         }
     }
-    output += F("Scan completed.<br />");
+    output += F("done.<br />");
 }
 
-uint8_t AM2H_I2ctester::parseNumber(){
+uint8_t AM2H_I2ctester::parseNumber()
+{
     uint8_t c;
     int tmp = 0;
-    while (true) {
+    while (true)
+    {
         c = pop(instream);
-        if(isDigit(c)) {
+        if (isDigit(c))
+        {
             tmp = tmp * 10 + (c - '0');
-        } else if (isControl(c)) {
+        }
+        else if (isControl(c))
+        {
             break;
         }
     }
     return tmp;
 }
 
-void AM2H_I2ctester::setSlaveAdress() {
+void AM2H_I2ctester::setSlaveAdress()
+{
     uint8_t num = AM2H_Helper::parse_hex<uint8_t>(instream);
-    if (num > 0 && num < 128) {
+    if (num > 0 && num < 128)
+    {
         slave_addr = num;
-        output += F("Set slave address: ") + printHex(slave_addr) + "<br />";
-    } else {
-        output += F("<b>Slave address not set! Only values in the range 0x01 - 0x7F are allowed</b><br />");
+        output += F("Set slave addr ") + printHex(slave_addr) + "<br />";
+    }
+    else
+    {
+        output += F("<b>Slave addr not set! Only vals in the range 0x01-0x7F valid</b><br />");
     }
 }
 
-void AM2H_I2ctester::setMuxAdress() {
+void AM2H_I2ctester::setMuxAdress()
+{
     uint8_t num = AM2H_Helper::parse_hex<uint8_t>(instream);
-    if (num > 0 && num < 128) {
+    if (num > 0 && num < 128)
+    {
         mux_addr = num;
-        output += F("Set mux address: ") + printHex(mux_addr) + "<br />";
-    } else {
-        output += F("<b>Mux address not set! Only values in the range 0x01 - 0x7F are allowed</b><br />");
+        output += F("Set mux addr ") + printHex(mux_addr) + "<br />";
+    }
+    else
+    {
+        output += F("<b>Mux addr not set! Only vals in the range 0x01-0x7F valid</b><br />");
     }
 }
 
-void AM2H_I2ctester::setChAdress() {
+void AM2H_I2ctester::setChAdress()
+{
     uint8_t num = AM2H_Helper::parse_hex<uint8_t>(instream);
-    if (num >= 0 && num < 8) {
+    if (num >= 0 && num < 8)
+    {
         mux_ch = num;
-        output += F("Set mux channel: ") + String(mux_ch,DEC) + "<br />";
-    } else {
-        output += F("<b>Mux channel not set! Only values in the range 0-7 are allowed</b><br />");
+        output += F("Set mux chan ") + String(mux_ch, DEC) + "<br />";
+    }
+    else
+    {
+        output += F("<b>Mux chan not set! Only vals in the range 0-7 valid</b><br />");
     }
 }
 
-bool AM2H_I2ctester::parseData() {
-    uint8_t tmp_data[128]; // Data
+bool AM2H_I2ctester::parseData()
+{
+    uint8_t tmp_data[128];       // Data
     uint8_t tmp_data_length = 0; // Length
-    uint8_t pos_data = 0; // data octet
-    uint8_t lower = 0; // nibble to process
-    uint8_t c; // character read from serial
+    uint8_t pos_data = 0;        // data octet
+    uint8_t lower = 0;           // nibble to process
+    uint8_t c;                   // character read from serial
 
-    output += F("Parsed data: ");
-    while(true) {
+    output += F("Parsed ");
+    while (true)
+    {
         c = pop(instream);
-        if (isControl(c)) {
+        if (isControl(c))
+        {
             break;
-        } else if (!isHexadecimalDigit(c)) {
+        }
+        else if (!isHexadecimalDigit(c))
+        {
             continue;
         }
 
-        output += (char) c;
+        output += (char)c;
 
-        if(isLowerCase(c)) {
+        if (isLowerCase(c))
+        {
             c -= 87;
-        } else if(isUpperCase(c)) {
+        }
+        else if (isUpperCase(c))
+        {
             c -= 55;
-        } else if(isDigit(c)){
+        }
+        else if (isDigit(c))
+        {
             c -= 48;
         }
 
-        if(lower == 0) {
+        if (lower == 0)
+        {
             // process first nibble
             c = c << 4;
             pos_data = c;
             lower = 1;
-        } else {
+        }
+        else
+        {
             // process second nibble
             pos_data |= c;
             tmp_data[tmp_data_length++] = pos_data;
@@ -181,8 +227,9 @@ bool AM2H_I2ctester::parseData() {
     }
 
     output += "<br />";
-    if (lower == 1) {
-        output += F("<b>Data incomplete or malformed! Nothing to process<b><br />");
+    if (lower == 1)
+    {
+        output += F("<b>Data incomplete or malformed!<b><br />");
         return false;
     }
     memcpy(data, tmp_data, tmp_data_length);
@@ -190,14 +237,17 @@ bool AM2H_I2ctester::parseData() {
     return true;
 }
 
-void AM2H_I2ctester::sendI2C(uint8_t *data, uint8_t len) {
-    output += F("Sending data [ ");
-    for ( uint8_t i = 0; i < len; i++ ) {
+void AM2H_I2ctester::sendI2C(uint8_t *data, uint8_t len)
+{
+    output += F("Sending [ ");
+    for (uint8_t i = 0; i < len; i++)
+    {
         output += printHex(data[i]) + " ";
     }
-    output += F("] to Slave Addr: ") + printHex(slave_addr) + " ";
+    output += F("] to slave addr ") + printHex(slave_addr) + " ";
 
-    if (mux_addr>0) {
+    if (mux_addr > 0)
+    {
         tcaselect(mux_ch);
     }
 
@@ -206,36 +256,45 @@ void AM2H_I2ctester::sendI2C(uint8_t *data, uint8_t len) {
     Wire.endTransmission();
 }
 
-void AM2H_I2ctester::readI2C() {
+void AM2H_I2ctester::readI2C()
+{
     uint8_t num = parseNumber();
 
-    if (num > 128) {
-        output += F("<b>Nothing read! Only values in the range 1-127 are allowed</b><br />");
+    if (num > 128)
+    {
+        output += F("<b>Nothing read! Only vals in the range 1-127 valid</b><br />");
         return;
     }
 
-    output += F("Reading ") + String(num) + F(" Byte(s) from ") + printHex(slave_addr) + "<br />";
+    output += F("Reading ") + String(num) + F(" byte(s) from ") + printHex(slave_addr) + "<br />";
 
-    if (mux_addr>0) {
+    if (mux_addr > 0)
+    {
         tcaselect(mux_ch);
     }
 
-   Wire.requestFrom(slave_addr, num);
+    Wire.requestFrom(slave_addr, num);
     uint8_t buf[num];
 
-    while (Wire.available()) {
+    while (Wire.available())
+    {
         Wire.readBytes(buf, num);
     }
 
-    for (int i=0; i < num; i++) {
-        output += F("Register value: ");
+    for (int i = 0; i < num; i++)
+    {
+        output += F("Reg val ");
         output += printHex(buf[i]) + "<br />";
     }
 }
 
-String AM2H_I2ctester::printHex(uint8_t const num){
+String AM2H_I2ctester::printHex(uint8_t const num)
+{
     String out{"0x"};
-    if (num<16) { out +="0"; }
+    if (num < 16)
+    {
+        out += "0";
+    }
     out += String(num, HEX);
     return out;
 }

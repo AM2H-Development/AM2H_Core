@@ -12,6 +12,9 @@ ESP8266WebServer server(80);
 
 AM2H_Datastore ds[20];
 
+// RAM:   [======    ]  60.1% (used 49216 bytes from 81920 bytes)
+// Flash: [=====     ]  53.0% (used 403435 bytes from 761840 bytes)
+
 // Interupt service routine
 void impulseISR()
 {
@@ -51,18 +54,18 @@ AM2H_Core::AM2H_Core(AM2H_Plugin **plugins, PubSubClient &mqttClient, ESP8266Web
 void AM2H_Core::setupCore()
 {
   Serial.begin(115200);
-  const auto CALLER = F("setupCore()");
+  const auto CALLER = F("setupCore");
   String const message = "V=" + String(VERSION) + " MAC=" + WiFi.macAddress() + " RES=" + ESP.getResetReason();
   debugMessage(CALLER, message, DebugLogger::INFO);
 
-  Serial.print("AM2H_Core Version = " + String(VERSION) + "\n");
-  Serial.print("Starting up - please wait ");
+  Serial.print(F("AM2H_Core Version = ") + String(VERSION) + "\n");
+  Serial.print(F("Starting up - please wait "));
   for (int i = 3; i > 0; --i)
   {
     Serial.print('.');
     delay(1000);
   }
-  Serial.print("\nrunning!\n");
+  Serial.print(F("\nrunning!\n"));
   setupEEPROM();
   Serial.print("ns: " + String(persistentSetupValues_.ns) + ", deviceId:" + String(persistentSetupValues_.deviceId) + "\n");
 
@@ -159,7 +162,7 @@ void AM2H_Core::checkTimerPublish()
 
 void AM2H_Core::checkUpdateRequired()
 {
-  const auto CALLER = F("checkUpdateRequired()");
+  const auto CALLER = F("checkUpdateRequired");
 
   if (mqttReconnectCounter > MQTT_RECONNECT_REBOOT_LIMIT && connStatus_ != DEV_RESTART_PENDING)
   {
@@ -228,16 +231,16 @@ void AM2H_Core::setupEEPROM()
   if (EEPROM.percentUsed() >= 0)
   {
     EEPROM.get(0, persistentSetupValues_);
-    message += " FlashUse=" + String(EEPROM.percentUsed()) + "%";
+    message += F(" FlashUse=") + String(EEPROM.percentUsed()) + "%";
   }
   else
   {
-    message += " FlashWrite=";
+    message += F(" FlashWrite=");
     message += writeEEPROM();
   }
   message += " ns=" + String(persistentSetupValues_.ns) + ", deviceId=" + String(persistentSetupValues_.deviceId);
 
-  debugMessage(F("setupEEPROM()"), message, DebugLogger::INFO);
+  debugMessage(F("setupEEPROM"), message, DebugLogger::INFO);
 }
 
 bool AM2H_Core::writeEEPROM()
@@ -341,7 +344,7 @@ void AM2H_Core::connectWlan(int timeout)
     message += F(" connected, IP=") + WiFi.localIP().toString();
     connStatus_ = WLAN_CONNECTED;
   }
-  debugMessage(F("connectWLAN()"), message, errOrInfo);
+  debugMessage(F("connectWLAN"), message, errOrInfo);
 }
 
 // ----------
@@ -349,7 +352,7 @@ void AM2H_Core::connectWlan(int timeout)
 // ---------------------------------------------------------------------------------------------
 void AM2H_Core::setupServer()
 {
-  debugMessage(F("setupServer()"), F("setting up server handlers"), DebugLogger::INFO);
+  debugMessage(F("setupServer"), F("setting up handlers"), DebugLogger::INFO);
   server_.on("/", handleRoot);
   server_.on(HTTP_API_V1_SET, handleApiSetRequest);
   server_.on(HTTP_API_V1_GET, handleApiGetRequest);
@@ -367,10 +370,10 @@ inline void AM2H_Core::loopServer()
 
 void AM2H_Core::handleRoot()
 {
-  debugMessage(F("handleRoot()"), String((am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST") + " INDEX", DebugLogger::INFO);
+  debugMessage(F("handleRoot"), String((am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST") + " INDEX", DebugLogger::INFO);
   for (uint8_t i = 0; i < am2h_core->server_.args(); i++)
   {
-    debugMessage(F("handleRoot()/args"), am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i), DebugLogger::INFO);
+    debugMessage(F("handleRoot"), am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i), DebugLogger::INFO);
   }
   am2h_core->server_.send(200, ENCODING_HTML, getRootContent());
 }
@@ -396,7 +399,7 @@ const String AM2H_Core::getRootContent()
   int i = -1;
   while (auto p = am2h_core->plugins_[++i])
   {
-    content += "<li><a href=\"/api/v1/plugin/" + String(i) + "/\">" + p->getHtmlTabName() + "</a></li>";
+    content += F("<li><a href=\"/api/v1/plugin/") + String(i) + F("/\">") + p->getHtmlTabName() + F("</a></li>");
   }
   content += F("</ul>");
   content += HTTP_FOOTER;
@@ -405,8 +408,8 @@ const String AM2H_Core::getRootContent()
 
 void AM2H_Core::handleRestart()
 {
-  debugMessage(F("handleRestart()"), F("Restart-request received"), DebugLogger::INFO);
-  const String content = "{\"message\":\"restart in 2 s!\"}";
+  debugMessage(F("handleRestart"), F("Restart-request received"), DebugLogger::INFO);
+  const String content = F("{\"message\":\"restart in 2 s!\"}");
   am2h_core->updateRequired_ |= ESP_RESET_REQUIRED;
   am2h_core->server_.send(200, ENCODING_JSON, content);
 }
@@ -424,11 +427,11 @@ void AM2H_Core::handleStatus()
     if (logEntry.ts > 0)
     {
       uint8_t len = LOG_CALLER_LENGTH - 1;
-      for (uint8_t i = 0; i < LOG_CALLER_LENGTH; ++i)
+      for (uint8_t j = 0; j < LOG_CALLER_LENGTH; ++j)
       {
-        if (logEntry.caller[i] == 0)
+        if (logEntry.caller[j] == 0)
         {
-          len = i;
+          len = j;
           break;
         }
       }
@@ -438,7 +441,7 @@ void AM2H_Core::handleStatus()
       content += "] [H:" + String(logEntry.freeHeap);
       content += "] ";
       content += logEntry.caller;
-      for (int i = len; i < LOG_CALLER_LENGTH; ++i)
+      for (uint8_t j = len; j < LOG_CALLER_LENGTH; ++j)
       {
         content += " ";
       }
@@ -531,7 +534,7 @@ void AM2H_Core::handleApiSetRequest()
       am2h_core->setNamespace(v);
     }
   }
-  debugMessage(F("handleApiSetRequest()"), content, DebugLogger::INFO);
+  debugMessage(F("handleApiSetRequest"), content, DebugLogger::INFO);
   am2h_core->server_.send(200, ENCODING_PLAIN, content);
 }
 
@@ -552,7 +555,7 @@ void AM2H_Core::handleNotFound()
       id += d;
     }
     int id_int = id.toInt();
-    debugMessage(F("handleNotFound()"), "plugin router-> id=" + id, DebugLogger::INFO);
+    debugMessage(F("handleNotFound"), F("plugin router-> id=") + id, DebugLogger::INFO);
     handlePlugin(id_int);
     return;
   }
@@ -567,7 +570,7 @@ void AM2H_Core::handleNotFound()
   {
     content += " " + am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i) + ";";
   }
-  debugMessage(F("handleNotFound()"), content, DebugLogger::INFO);
+  debugMessage(F("handleNotFound"), content, DebugLogger::INFO);
   am2h_core->server_.send(404, ENCODING_PLAIN, content);
 }
 
@@ -577,7 +580,7 @@ void AM2H_Core::handleNotFound()
 
 void AM2H_Core::setupMqtt()
 {
-  debugMessage(F("setupMqtt()"), String(getMQTTServer()) + ":" + String(getMQTTPort()), DebugLogger::INFO);
+  debugMessage(F("setupMqtt"), String(getMQTTServer()) + ":" + String(getMQTTPort()), DebugLogger::INFO);
 
   mqttClient_.setServer(getMQTTServer(), getMQTTPort());
   mqttClient_.setCallback(AM2H_Core::mqttCallback);
@@ -598,10 +601,10 @@ void AM2H_Core::loopMqtt()
   }
 }
 
-void AM2H_Core::mqttCallback(char *topic, uint8_t *payload, unsigned int length)
+void AM2H_Core::mqttCallback(const char *topic, uint8_t *payload, unsigned int length)
 {
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
-  debugMessage(F("mqttCallback()"), "ns=" + tp.ns_ + " dev=" + tp.dev_ + " loc=" + tp.loc_ + " srv=" + tp.srv_ + " id=" + String(tp.id_) + " meas=" + tp.meas_ +"|", DebugLogger::INFO);
+  debugMessage(F("mqttCallback"), "ns=" + tp.ns_ + " dev=" + tp.dev_ + " loc=" + tp.loc_ + " srv=" + tp.srv_ + " id=" + String(tp.id_) + " meas=" + tp.meas_ + "|", DebugLogger::INFO);
 
   String payloadString;
   for (unsigned int i = 0; i < length; i++)
@@ -611,24 +614,23 @@ void AM2H_Core::mqttCallback(char *topic, uint8_t *payload, unsigned int length)
 
   if (tp.srv_ == DEVICE_CFG_TOPIC && tp.id_ == 0xFF)
   {
-    // debugMessage("AM2H_Core::mqttCallback()", " config: " + payloadString + "\n");
     if (tp.meas_.equalsIgnoreCase("sampleRate"))
     {
       am2h_core->volatileSetupValues_.sampleRate = payloadString.toInt();
       am2h_core->mqttClient_.publish(getStatusTopic().c_str(), ONLINE_PROP_VAL, RETAINED);
       am2h_core->loopMqtt();
-      debugMessage(F("mqttCallback()"), F("set sampleRate=") + String(am2h_core->volatileSetupValues_.sampleRate), DebugLogger::INFO);
+      debugMessage(F("mqttCallback"), F("set sampleRate=") + String(am2h_core->volatileSetupValues_.sampleRate), DebugLogger::INFO);
     }
     if (tp.meas_.equalsIgnoreCase("i2cMuxAddr"))
     {
       am2h_core->volatileSetupValues_.i2cMuxAddr = AM2H_Helper::parse_hex<uint8_t>(payloadString);
-      debugMessage(F("mqttCallback()"), F("set i2cMuxAddr=") + String(am2h_core->volatileSetupValues_.i2cMuxAddr), DebugLogger::INFO);
+      debugMessage(F("mqttCallback"), F("set i2cMuxAddr=") + String(am2h_core->volatileSetupValues_.i2cMuxAddr), DebugLogger::INFO);
       // am2h_core->scan();
     }
     if (tp.meas_.equalsIgnoreCase("nickname"))
     {
       am2h_core->volatileSetupValues_.nickname = payloadString;
-      debugMessage(F("mqttCallback()"), F("set nickname=") + String(am2h_core->volatileSetupValues_.nickname), DebugLogger::INFO);
+      debugMessage(F("mqttCallback"), F("set nickname=") + String(am2h_core->volatileSetupValues_.nickname), DebugLogger::INFO);
     }
   }
   else
@@ -655,26 +657,26 @@ void AM2H_Core::mqttReconnect()
 
   ++mqttReconnectCounter;
 
-  debugMessage(F("mqttReconnect()"), F("Attempting MQTT connection (and unsubscribe topics.)"), DebugLogger::INFO);
+  debugMessage(F("mqttReconnect"), F("Attempting MQTT con. and unsubscribe topics"), DebugLogger::INFO);
   // mqttClient_.unsubscribe((getConfigTopic() + "#").c_str());
 
   if (mqttClient_.connect(getDeviceId().c_str(), getStatusTopic().c_str(), 2, RETAINED, OFFLINE_PROP_VAL))
   {
-    debugMessage(F("mqttReconnect()"), "connected, publish Status to " + getStatusTopic(), DebugLogger::INFO);
+    debugMessage(F("mqttReconnect"), F("ok, publish Status to ") + getStatusTopic(), DebugLogger::INFO);
     publishConfigDeviceStatus();
     if (!(updateRequired_ & MQTT_UPDATE_REQUIRED))
     {
-      debugMessage(F("mqttReconnect()"), "subscribe config topic " + getConfigTopic(), DebugLogger::INFO);
+      debugMessage(F("mqttReconnect"), F("subscribe config topic ") + getConfigTopic(), DebugLogger::INFO);
       mqttClient_.subscribe((getConfigTopic() + "#").c_str());
     }
-    mqttReconnectCounter=0;
+    mqttReconnectCounter = 0;
     connStatus_ = MQTT_CLIENT_CONNECTED;
     pinMode(CORE_STATUS_LED, OUTPUT);
     digitalWrite(CORE_STATUS_LED, HIGH);
   }
   else
   {
-    debugMessage(F("mqttReconnect()"), F("failed with error code ") + String(mqttClient_.state()) + "("+String(mqttReconnectCounter)+")", DebugLogger::ERROR);
+    debugMessage(F("mqttReconnect"), F("failed with error ") + String(mqttClient_.state()) + "(" + String(mqttReconnectCounter) + ")", DebugLogger::ERROR);
     timer_.mqttReconnect = millis() + 5000;
     connStatus_ = WLAN_CONNECTED;
 
@@ -693,13 +695,13 @@ void AM2H_Core::mqttReconnect()
 
 void AM2H_Core::subscribe(const char *topic)
 {
-  debugMessage(F("subscribe()"), F("subscribe ") + String(topic), DebugLogger::INFO);
+  debugMessage(F("subscribe "), F("subscribe ")+ String(topic), DebugLogger::INFO);
   mqttClient_.subscribe(topic);
   mqttClient_.loop();
 }
 void AM2H_Core::unsubscribe(const char *topic)
 {
-  debugMessage(F("unsubscribe()"), F("unsubscribe ") + String(topic), DebugLogger::INFO);
+  debugMessage(F("unsubscribe "), F("unsubscribe ") + String(topic), DebugLogger::INFO);
   mqttClient_.unsubscribe(topic);
   mqttClient_.loop();
 }
@@ -762,7 +764,7 @@ const uint32_t AM2H_Core::getLastImpulseMillis() const
   return lastImpulseMillis_G;
 }
 
-MqttTopic AM2H_Core::parseMqttTopic(char *topic)
+MqttTopic AM2H_Core::parseMqttTopic(const char *topic)
 {
   int i{0};
   String part[6];
@@ -812,7 +814,7 @@ void AM2H_Core::scan() const
       }
     }
   }
-  AM2H_Core::debugMessage(F("AM2H_Core::scan()"), message, DebugLogger::INFO);
+  AM2H_Core::debugMessage(F("AM2H_Core::scan"), message, DebugLogger::INFO);
 }
 
 void AM2H_Core::switchWire(uint32_t const addr) const
@@ -829,9 +831,10 @@ void AM2H_Core::switchWire(uint32_t const addr) const
   Wire.endTransmission();
 }
 
+/*
 void AM2H_Core::i2cReset()
 {
-  /*
+
   AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","start", DebugLogger::ERROR);
 
   pinMode(CORE_SDA, INPUT_PULLUP); // Make SDA (data) and SCL (clock) pins Inputs with pullup.
@@ -875,5 +878,5 @@ void AM2H_Core::i2cReset()
   pinMode(CORE_SDA, INPUT); // and reset pins as tri-state inputs which is the default state on reset
   pinMode(CORE_SCL, INPUT);
   AM2H_Core::debugMessageNl("AM2H_Core::i2cReset()","end", DebugLogger::ERROR);
-  */
-}
+
+}*/

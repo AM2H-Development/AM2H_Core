@@ -13,9 +13,9 @@ public:
     void interruptPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index) override;
 
 private:
-    double calculatePower(AM2H_Datastore &d, const uint32_t interval);
-    double calculateCounter(AM2H_Datastore &d);
-    double calculateLast(AM2H_Datastore &d);
+    double calculatePower(const AM2H_Datastore &d, const uint32_t interval);
+    double calculateCounter(const AM2H_Datastore &d);
+    double calculateLast(const AM2H_Datastore &d);
 };
 
 #endif

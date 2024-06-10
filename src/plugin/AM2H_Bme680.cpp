@@ -1,7 +1,5 @@
 #include "AM2H_Bme680.h"
 #include "AM2H_Core.h"
-// #include "include/AM2H_Helper.h"
-// #include "libs/BSEC_Software_Library/src/bsec.h"
 
 extern AM2H_Core *am2h_core;
 
@@ -14,8 +12,8 @@ void AM2H_Bme680::loopPlugin(AM2H_Datastore &d, const uint8_t index)
 
 void AM2H_Bme680::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index)
 {
-    const auto CALLER = F("Bme680::tp()");
-    AM2H_Core::debugMessage(CALLER, "publishing to " + topic, DebugLogger::INFO);
+    const auto CALLER = F("Bme::tp");
+    AM2H_Core::debugMessage(CALLER, F("pub to ") + topic, DebugLogger::INFO);
     Bsec &bme680 = *d.sensor.bme680.bme680;
 
     mqttClient.publish((topic + ERROR_CODE + "_" + String(index)).c_str(), String(bme680.bme680Status).c_str());
@@ -55,28 +53,24 @@ void AM2H_Bme680::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, cons
         {
             mqttClient.publish((topic + "staticIaq").c_str(), String(bme680.staticIaq).c_str());
             am2h_core->loopMqtt();
-        }
 
-        if (bme680.staticIaqAccuracy >= 1)
-        {
             uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE]{0};
             bme680.getState(bsecState);
-            AM2H_Core::debugMessage(CALLER, "saving IAQ", DebugLogger::INFO);
+            AM2H_Core::debugMessage(CALLER, F("saving IAQ"), DebugLogger::INFO);
             mqttClient.publish(d.sensor.bme680.iaqConfigTopic, bsecState, BSEC_MAX_STATE_BLOB_SIZE, true);
             am2h_core->loopMqtt();
         }
     }
     else
     {
-        AM2H_Core::debugMessage(CALLER, "Error=" + String(bme680.bme680Status) + "@" + String(index), DebugLogger::ERROR);
-        am2h_core->i2cReset();
+        AM2H_Core::debugMessage(CALLER, F("Error=") + String(bme680.bme680Status) + "@" + String(index), DebugLogger::ERROR);
     }
 }
 
 void AM2H_Bme680::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 {
-    const auto CALLER = F("Bme680::cfg()");
-    String message = F("old config=") + String(d.config, BIN);
+    const auto CALLER = F("Bme::cfg");
+    String message = F("old cfg=") + String(d.config, BIN);
     if (!d.initialized)
     {
         d.initialized = true;
@@ -120,7 +114,7 @@ void AM2H_Bme680::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
     if (t.meas_.equalsIgnoreCase("offsetHumidity"))
     {
         d.sensor.bme680.offsetHumidity = p.toInt();
-        message +=  F(" set offsetHumidity=") + String(d.sensor.bme680.offsetHumidity);
+        message += F(" set offsetHumidity=") + String(d.sensor.bme680.offsetHumidity);
         d.config |= Config::SET_3;
     }
     if (t.meas_.equalsIgnoreCase("offsetPressure"))
@@ -154,25 +148,25 @@ void AM2H_Bme680::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
     {
         d.self = nullptr;
     }
-        AM2H_Core::debugMessage(CALLER, message, DebugLogger::INFO);
+    AM2H_Core::debugMessage(CALLER, message, DebugLogger::INFO);
 }
 
 void AM2H_Bme680::postConfig(AM2H_Datastore &d)
 {
-    const auto CALLER = F("Bme680::pCfg()");
+    const auto CALLER = F("Bme::postCfg");
 
     Bsec &bme680 = *d.sensor.bme680.bme680;
 
     am2h_core->switchWire(d.sensor.bme680.addr);
     bme680.begin(d.sensor.bme680.addr, Wire);
-    AM2H_Core::debugMessage(CALLER, F("begin() BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
+    AM2H_Core::debugMessage(CALLER, F("begin BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
     bme680.setConfig(BSEC_CONFIG_IAQ);
-    AM2H_Core::debugMessage(CALLER, F("setConfig() BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
+    AM2H_Core::debugMessage(CALLER, F("setConfig BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
 
     if (d.sensor.bme680.iaqStateSave != nullptr)
     {
         bme680.setState(d.sensor.bme680.iaqStateSave);
-        AM2H_Core::debugMessage(CALLER, F("setState() BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
+        AM2H_Core::debugMessage(CALLER, F("setState BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
         delete[] d.sensor.bme680.iaqStateSave;
         d.sensor.bme680.iaqStateSave = nullptr;
     }
@@ -185,7 +179,7 @@ void AM2H_Bme680::postConfig(AM2H_Datastore &d)
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY};
     bme680.updateSubscription(sensorList, SENSORS, BSEC_SAMPLE_RATE_LP);
-    AM2H_Core::debugMessage(CALLER, F("updateSubscription() BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
+    AM2H_Core::debugMessage(CALLER, F("updateSubscription BSEC=") + String(bme680.status) + F(" BME=") + String(bme680.bme680Status), DebugLogger::INFO);
 }
 
 void AM2H_Bme680::set_iaq(AM2H_Datastore &d, const String p)

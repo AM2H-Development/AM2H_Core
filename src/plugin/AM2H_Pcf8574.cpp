@@ -1,7 +1,5 @@
 #include "AM2H_Pcf8574.h"
 #include "AM2H_Core.h"
-// #include "include/AM2H_Helper.h"
-// #include <Wire.h>
 
 static_assert(PCF8574_MIN_RATE_MS > PCF8574_WAIT_READ_MS, "PCF8574_MIN_RATE_MS must be bigger than PCF8574_WAIT_READ_MS");
 
@@ -23,9 +21,9 @@ void AM2H_Pcf8574::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, con
     String reg;
     AM2H_Helper::formatBinary8(reg, pcf8574.reg);
 
-    String config = F("ioMask=") + ioMask + F("&reg=") + reg;
-    AM2H_Core::debugMessage("Pcf8574::tp()", F("state=") + config + "@" + topic, DebugLogger::INFO);
-    mqttClient.publish((topic + "state").c_str(), config.c_str());
+    String state = F("ioMask=") + ioMask + F("&reg=") + reg;
+    AM2H_Core::debugMessage(F("Pcf::tp"), F("state=") + state + "@" + topic, DebugLogger::INFO);
+    mqttClient.publish((topic + F("state")).c_str(), state.c_str());
     am2h_core->loopMqtt();
 }
 
@@ -33,7 +31,7 @@ void AM2H_Pcf8574::interruptPublish(AM2H_Datastore &d, PubSubClient &mqttClient,
 {
     const auto &pcf8574 = d.sensor.pcf8574;
 
-    AM2H_Core::debugMessage(F("Pcf8574::ip()"), F("irq received"), DebugLogger::INFO);
+    AM2H_Core::debugMessage(F("Pcf::ip"), F("irq received"), DebugLogger::INFO);
     delay(PCF8574_WAIT_READ_MS);
 
     auto oldReg = pcf8574.reg;
@@ -53,7 +51,7 @@ void AM2H_Pcf8574::interruptPublish(AM2H_Datastore &d, PubSubClient &mqttClient,
 
 void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 {
-    const auto CALLER = F("Pcf8574::cfg()");
+    const auto CALLER = F("Pcf::cfg");
 
     if (d.config == Config::IS_ZERO)
     {
@@ -72,7 +70,7 @@ void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
         if (p.length() > 0)
         {
             AM2H_Helper::parse_location(d.loc, p);
-            AM2H_Core::debugMessage(CALLER, "set loc=" + String(d.loc), DebugLogger::INFO);
+            AM2H_Core::debugMessage(CALLER, F("set loc=") + String(d.loc), DebugLogger::INFO);
             d.config |= Config::SET_2;
         }
         else
@@ -132,16 +130,16 @@ void AM2H_Pcf8574::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
         readReg(d);
         String reg;
         AM2H_Helper::formatBinary8(reg, d.sensor.pcf8574.reg);
-        AM2H_Core::debugMessage(CALLER, "setPort reg = " + reg, DebugLogger::INFO);
+        AM2H_Core::debugMessage(CALLER, F("setPort reg = ") + reg, DebugLogger::INFO);
         auto &mqttClient = am2h_core->getMqttClient();
         const auto dataTopic = am2h_core->getDataTopic(d.loc, getSrv(), String(t.id_));
         changedPortsPublish(d, mqttClient, dataTopic, oldReg);
         timerPublish(d, mqttClient, dataTopic, t.id_);
         return;
     }
+
     auto meas = t.meas_;
     meas.toLowerCase();
-
     if (meas.startsWith(F("onport")) && d.sensor.pcf8574.publisherCount < MAX_PUBLISHERS) // onPort1Rising | onPort1Falling
     {
         auto port = (uint8_t)meas.charAt(6) - 0x30;
@@ -168,11 +166,11 @@ void AM2H_Pcf8574::updateReg(AM2H_Datastore &d)
     // 1100 0000 ~0011 1111
     // 1100 0111
     uint8_t out = d.sensor.pcf8574.reg | ~d.sensor.pcf8574.ioMask;
-    AM2H_Core::debugMessage(F("Pcf8574::uReg"), F("sending ") + String(out), DebugLogger::INFO);
+    AM2H_Core::debugMessage(F("Pcf::updReg"), F("sending ") + String(out), DebugLogger::INFO);
     Wire.write(d.sensor.pcf8574.reg | ~d.sensor.pcf8574.ioMask);
     if (Wire.endTransmission() != 0)
     {
-        AM2H_Core::debugMessage(F("Pcf8574::uReg"), F("error while transmitting"), DebugLogger::ERROR);
+        AM2H_Core::debugMessage(F("Pcf::updReg"), F("error"), DebugLogger::ERROR);
         return;
     };
 }
@@ -184,7 +182,7 @@ void AM2H_Pcf8574::readReg(AM2H_Datastore &d)
     num_bytes = Wire.requestFrom(static_cast<uint8_t>(d.sensor.pcf8574.addr), (uint8_t)1);
     if (num_bytes != 1)
     {
-        AM2H_Core::debugMessage(F("Pcf8574::rReg"), F("error while receiving"), DebugLogger::ERROR);
+        AM2H_Core::debugMessage(F("Pcf::rdReg"), F("error"), DebugLogger::ERROR);
         return;
     }
     d.sensor.pcf8574.reg = Wire.read();
@@ -208,15 +206,11 @@ void AM2H_Pcf8574::processSetStateTopic(AM2H_Datastore &d, const String &p_origi
         if (c == '&')
         {
             isKey = true;
-            /*if (key.equalsIgnoreCase("ioMask----")) // depreciated
-            {
-                // pcf8574.ioMask = value.toInt(); 
-            }*/
             if (key.equalsIgnoreCase("reg"))
             {
                 pcf8574.reg = AM2H_Helper::parse_number<uint8_t>(value) | ~d.sensor.pcf8574.ioMask;
             }
-            AM2H_Core::debugMessage(F("Pcf8574::proState"), F("key:value=") + key + ":" + value, DebugLogger::INFO);
+            AM2H_Core::debugMessage(F("Pcf::pst"), F("k:v=") + key + ":" + value, DebugLogger::INFO);
             key = "";
             value = "";
             continue;
@@ -234,7 +228,6 @@ void AM2H_Pcf8574::processSetStateTopic(AM2H_Datastore &d, const String &p_origi
 
 void AM2H_Pcf8574::processSetPortTopic(AM2H_Datastore &d, const String &p_origin)
 {
-    // auto& pcf8574=d.sensor.pcf8574;
     String p = p_origin + "&";
     String key{};
     String value{};
@@ -272,7 +265,7 @@ void AM2H_Pcf8574::processSetPortTopic(AM2H_Datastore &d, const String &p_origin
                     state = 0;
                 }
             }
-            AM2H_Core::debugMessage(F("Pcf8574::proSet"), F("key:value=") + key + ":" + value, DebugLogger::INFO);
+            AM2H_Core::debugMessage(F("Pcf::pspt"), F("k:v=") + key + ":" + value, DebugLogger::INFO);
             key = "";
             value = "";
             continue;
@@ -303,7 +296,7 @@ void AM2H_Pcf8574::changedPortsPublish(AM2H_Datastore &d, PubSubClient &mqttClie
         const auto bitChanged = ((pcf8574.reg ^ oldReg) & (1 << i)) > 0;
         if (bitChanged)
         {
-            AM2H_Core::debugMessage(F("Pcf8574::cpp()"), topic + F("port") + i + F("=0b") + (bitSet ? "1" : "0"), DebugLogger::INFO);
+            AM2H_Core::debugMessage(F("Pcf::cpp"), topic + F("port") + i + F("=0b") + (bitSet ? "1" : "0"), DebugLogger::INFO);
             mqttClient.publish((topic + "port" + i).c_str(), bitSet ? "1" : "0");
             am2h_core->loopMqtt();
             checkPublishers(d, mqttClient, i, bitSet ? 'r' : 'f');
@@ -329,12 +322,12 @@ void AM2H_Pcf8574::checkPublishers(AM2H_Datastore &d, PubSubClient &mqttClient, 
             }
             if (pos == 0)
             {
-                AM2H_Core::debugMessage(F("Pcf8574::cps()"), d.sensor.pcf8574.publisher[i]->substring(2) + " payload not found", DebugLogger::INFO);
+                AM2H_Core::debugMessage(F("Pcf::cps"), d.sensor.pcf8574.publisher[i]->substring(2) + " no payload", DebugLogger::INFO);
                 return;
             }
             auto message = d.sensor.pcf8574.publisher[i]->substring(2, pos);
             auto payload = d.sensor.pcf8574.publisher[i]->substring(pos + 1);
-            AM2H_Core::debugMessage(F("Pcf8574::cps()"), message+" > "+payload, DebugLogger::INFO);
+            AM2H_Core::debugMessage(F("Pcf::cps"), message + " > " + payload, DebugLogger::INFO);
             mqttClient.publish(message.c_str(), payload.c_str());
             am2h_core->loopMqtt();
         }

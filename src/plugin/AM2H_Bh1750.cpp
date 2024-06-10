@@ -8,14 +8,14 @@ extern AM2H_Core *am2h_core;
 
 void AM2H_Bh1750::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index)
 {
-    const auto CALLER = F("Bh1750::tp()");
+    const auto CALLER = F("Bh1::tp");
     float level = -5.0;
     if (lightMeter.measurementReady())
     {
         am2h_core->switchWire(d.sensor.bh1750.addr);
         level = lightMeter.readLightLevel();
     }
-    AM2H_Core::debugMessage(CALLER, "publish " + topic + "illuminance=" + String(level), DebugLogger::INFO);
+    AM2H_Core::debugMessage(CALLER, F("publish ") + topic + F("illuminance=") + String(level), DebugLogger::INFO);
     char error[] = "1";
     if (level > -5.)
     {
@@ -25,8 +25,7 @@ void AM2H_Bh1750::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, cons
     }
     else
     {
-        AM2H_Core::debugMessage(CALLER, "Error=" + String(error) + "@" + String(index), DebugLogger::ERROR);
-        am2h_core->i2cReset();
+        AM2H_Core::debugMessage(CALLER, F("Error=") + String(error) + "@" + String(index), DebugLogger::ERROR);
     }
 
     mqttClient.publish((topic + ERROR_CODE + "_" + String(index)).c_str(), error);
@@ -35,8 +34,8 @@ void AM2H_Bh1750::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, cons
 
 void AM2H_Bh1750::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 {
-    const auto CALLER = F("Bh1750::cfg()");
-    AM2H_Core::debugMessage(F("Bh1750::cfg()"), F("old config=") + String(d.config, BIN), DebugLogger::INFO);
+    const auto CALLER = F("Bh1::cfg");
+    AM2H_Core::debugMessage(CALLER, F("old cfg=") + String(d.config, BIN), DebugLogger::INFO);
 
     if (t.meas_.equalsIgnoreCase("addr"))
     {
@@ -79,16 +78,16 @@ void AM2H_Bh1750::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 
 void AM2H_Bh1750::postConfig(AM2H_Datastore &d)
 {
-    const auto CALLER = F("Bh1750::pCfg()");
+    const auto CALLER = F("Bh1::postCfg");
     const uint8_t addr = static_cast<uint8_t>(d.sensor.bh1750.addr);
     am2h_core->switchWire(d.sensor.bh1750.addr);
     if (lightMeter.begin(BH1750::CONTINUOUS_HIGH_RES_MODE, addr))
     {
-        AM2H_Core::debugMessage(CALLER, F("BH1750 init, sensitivity=") + String(d.sensor.bh1750.sensitivityAdjust), DebugLogger::INFO);
+        AM2H_Core::debugMessage(CALLER, F("init, sensitivity=") + String(d.sensor.bh1750.sensitivityAdjust), DebugLogger::INFO);
     }
     else
     {
-        AM2H_Core::debugMessage(CALLER, F("Error initialising BH1750"), DebugLogger::ERROR);
+        AM2H_Core::debugMessage(CALLER, F("Init error"), DebugLogger::ERROR);
     }
     lightMeter.setMTreg(d.sensor.bh1750.sensitivityAdjust);
 }

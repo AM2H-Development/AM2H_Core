@@ -8,7 +8,7 @@
 class AM2H_Bh1750 : public AM2H_Plugin
 {
 public:
-    AM2H_Bh1750(const char *plugin, const char *srv) : AM2H_Plugin(plugin, srv), lightMeter(0x23){};
+    AM2H_Bh1750(const char *plugin, const char *srv) : AM2H_Plugin(plugin, srv){};
     void config(AM2H_Datastore &d, const MqttTopic &t, const String p) override;
     void timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index) override;
 

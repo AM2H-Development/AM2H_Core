@@ -1,7 +1,5 @@
 #include "AM2H_Ds18b20.h"
 #include "AM2H_Core.h"
-// #include "include/AM2H_Helper.h"
-// #include "libs/OneWire/OneWire.h"
 
 extern AM2H_Core *am2h_core;
 
@@ -11,8 +9,8 @@ void AM2H_Ds18b20::setupPlugin()
 
 void AM2H_Ds18b20::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index)
 {
-  const auto CALLER = F("Ds18b20::tp()");
-  String message = F("publishing to ") + topic + F(" addr=");
+  const auto CALLER = F("Ds1::tp");
+  String message = F("pub to ") + topic + F(" addr=");
 
   byte type_s = (d.sensor.ds18b20.addr[0] == 0x10) ? 1 : 0;
   byte data[12];
@@ -65,7 +63,7 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, con
   celsius = static_cast<float>(raw) / 16.0;
   celsius += static_cast<float>(d.sensor.ds18b20.offsetTemp) / 10.0;
 
-  message += " temperature=";
+  message += F(" temp=");
   message += celsius;
 
   AM2H_Core::debugMessage(CALLER, message, DebugLogger::INFO);
@@ -73,22 +71,22 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, con
   if (celsius <= 128. && celsius >= -55.)
   {
     error[0] = '0';
-    mqttClient.publish((topic + "temperature").c_str(), String(celsius).c_str());
+    mqttClient.publish((topic + F("temperature")).c_str(), String(celsius).c_str());
     am2h_core->loopMqtt();
   }
   else
   {
-    String error{"Error "};
+    String error_message{"Error "};
     for (int i = 0; i < 9; ++i)
     {
-      String d = String(data[i], HEX);
-      if (d.length() == 1)
+      String digits = String(data[i], HEX);
+      if (digits.length() == 1)
       {
-        d = "0" + d;
+        digits = "0" + digits;
       }
-      error += d;
+      error_message += digits;
     }
-    AM2H_Core::debugMessage(CALLER, error + "@" + String(index), DebugLogger::ERROR);
+    AM2H_Core::debugMessage(CALLER, error_message + "@" + String(index), DebugLogger::ERROR);
   }
 
   mqttClient.publish((topic + ERROR_CODE + "_" + String(index)).c_str(), error);
@@ -97,8 +95,8 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, con
 
 void AM2H_Ds18b20::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 {
-  const auto CALLER = F("Ds18b20::cfg()");
-  AM2H_Core::debugMessage(CALLER, F("old config=") + String(d.config, BIN), DebugLogger::INFO);
+  const auto CALLER = F("Ds1::cfg");
+  AM2H_Core::debugMessage(CALLER, F("old cfg=") + String(d.config, BIN), DebugLogger::INFO);
 
   if (t.meas_.equalsIgnoreCase("addr"))
   {
@@ -145,14 +143,13 @@ void AM2H_Ds18b20::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
 
 String AM2H_Ds18b20::getHtmlTabContent()
 {
-  AM2H_Core::debugMessage(F("Ds18b20::getH"), F("scanning for DS18xxx devices:"), DebugLogger::INFO);
+  AM2H_Core::debugMessage(F("Ds1::getHtml"), F("scanning DS18 devices:"), DebugLogger::INFO);
   String output{F("<b>18B20 Scanner V1.0</b><br />=====================<br />")};
 
   uint8_t i;
   uint8_t addr[8];
   uint8_t type_s{0};
   uint8_t data[12];
-  float celsius;
 
   ows.reset();
   ows.reset_search();
@@ -172,7 +169,7 @@ String AM2H_Ds18b20::getHtmlTabContent()
 
     if (OneWire::crc8(addr, 7) != addr[7])
     {
-      output += F(" CRC is not valid!<br />");
+      output += F(" CRC not valid!<br />");
       break;
     }
 
@@ -194,19 +191,19 @@ String AM2H_Ds18b20::getHtmlTabContent()
     switch (addr[0])
     {
     case 0x10:
-      output += " Chip = DS18S20";
+      output += F(" DS18S20");
       type_s = 1;
       break;
     case 0x28:
-      output += " Chip = DS18B20";
+      output += F(" DS18B20");
       type_s = 0;
       break;
     case 0x22:
-      output += " Chip = DS1822";
+      output += F(" DS1822");
       type_s = 0;
       break;
     default:
-      output += " Device is not a DS18x20 family device.<br />";
+      output += F(" not a DS18x20 device.<br />");
       type_s = 2;
     }
 
@@ -234,7 +231,7 @@ String AM2H_Ds18b20::getHtmlTabContent()
     {
       break;
     }
-    output += " Temp= " + String(celsius = static_cast<float>(raw) / 16.0) + "<br />";
+    output += " Temp= " + String(static_cast<float>(raw) / 16.0) + "<br />";
   }
   return output;
 }
