@@ -1,4 +1,5 @@
 #include "AM2H_Core.h"
+#include <ESP8266httpUpdate.h>
 // #define _SERIALDEBUG_  // enable serial debugging
 // #define _NOLOGGING_ // disable logging
 
@@ -655,6 +656,10 @@ void AM2H_Core::mqttCallback(const char *topic, uint8_t *payload, unsigned int l
       am2h_core->volatileSetupValues_.nickname = payloadString;
       debugMessage(F("mqttCallback"), F("set nickname=") + String(am2h_core->volatileSetupValues_.nickname), DebugLogger::INFO);
     }
+    if (tp.meas_.equalsIgnoreCase("ota") && payloadString.startsWith("http://"))
+    {
+      am2h_core->performOta(payloadString);
+    }
   }
   else
   {
@@ -766,6 +771,38 @@ const String AM2H_Core::getFullStorageTopic(const String id, const String srv, c
 const String AM2H_Core::getDataTopic(const String loc, const String srv, const String id)
 {
   return am2h_core->getNamespace() + "/" + loc + "/" + srv + "/";
+}
+
+void AM2H_Core::performOta(const String& url)
+{
+  const auto CALLER = F("OTA");
+  debugMessage(CALLER, F("starting from ") + url, DebugLogger::INFO);
+
+  mqttClient_.publish(getStatusTopic().c_str(), "ota", RETAINED);
+  mqttClient_.loop();
+  mqttClient_.disconnect();
+
+  ESPhttpUpdate.setLedPin(CORE_STATUS_LED, LOW);
+  ESPhttpUpdate.rebootOnUpdate(true);
+
+  WiFiClient httpClient;
+  t_httpUpdate_return result = ESPhttpUpdate.update(httpClient, url);
+
+  switch (result)
+  {
+    case HTTP_UPDATE_OK:
+      // rebootOnUpdate=true → device reboots automatically, never reached
+      break;
+    case HTTP_UPDATE_NO_UPDATES:
+      debugMessage(CALLER, F("server returned no update"), DebugLogger::INFO);
+      connStatus_ = WLAN_CONNECTED;
+      break;
+    case HTTP_UPDATE_FAILED:
+    default:
+      debugMessage(CALLER, F("failed: ") + ESPhttpUpdate.getLastErrorString(), DebugLogger::ERROR);
+      connStatus_ = WLAN_CONNECTED;
+      break;
+  }
 }
 
 const bool AM2H_Core::isIntAvailable() const
