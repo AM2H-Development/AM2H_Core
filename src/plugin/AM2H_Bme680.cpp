@@ -76,7 +76,7 @@ void AM2H_Bme680::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
         d.initialized = true;
 
         String tempTopic = am2h_core->getFullStorageTopic(String(t.id_), t.srv_, "setIAQ");
-        d.sensor.bme680.iaqConfigTopic = new char[tempTopic.length()];
+        d.sensor.bme680.iaqConfigTopic = new char[tempTopic.length() + 1];
         size_t i = 0;
         for (auto c : tempTopic)
         {
@@ -119,7 +119,7 @@ void AM2H_Bme680::config(AM2H_Datastore &d, const MqttTopic &t, const String p)
     }
     if (t.meas_.equalsIgnoreCase("offsetPressure"))
     {
-        d.sensor.bme680.offsetHumidity = p.toInt();
+        d.sensor.bme680.offsetPressure = p.toInt();
         message += F(" set offsetPressure=") + String(d.sensor.bme680.offsetPressure);
         d.config |= Config::SET_4;
     }
