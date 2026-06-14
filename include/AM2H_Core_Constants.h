@@ -74,6 +74,7 @@ constexpr uint8_t ESP_RESET_REQUIRED{0b10000000};
 // MQTT Updates
 int constexpr WLAN_TIMEOUT{20}; // Wlan timeout in s
 uint8_t constexpr MQTT_RECONNECT_REBOOT_LIMIT{30};
+uint32_t constexpr MQTT_ZOMBIE_TIMEOUT_MS{90000}; // 90s without broker activity → force reconnect
 // #define ENCODING_HTML "text/html; charset=UTF-8"
 
 // HTTP Api

@@ -606,13 +606,26 @@ void AM2H_Core::loopMqtt()
     }
     else
     {
-      mqttClient_.loop();
+      if (!mqttClient_.loop())
+      {
+        debugMessage(F("loopMqtt"), F("loop() failed, forcing reconnect"), DebugLogger::ERROR);
+        mqttClient_.disconnect();
+        connStatus_ = WLAN_CONNECTED;
+      }
+      else if (millis() - timer_.mqttActivity > MQTT_ZOMBIE_TIMEOUT_MS)
+      {
+        debugMessage(F("loopMqtt"), F("zombie connection detected, forcing reconnect"), DebugLogger::ERROR);
+        ++mqttReconnectCounter;
+        mqttClient_.disconnect();
+        connStatus_ = WLAN_CONNECTED;
+      }
     }
   }
 }
 
 void AM2H_Core::mqttCallback(const char *topic, uint8_t *payload, unsigned int length)
 {
+  am2h_core->timer_.mqttActivity = millis();
   MqttTopic tp = AM2H_Core::parseMqttTopic(topic);
   debugMessage(F("mqttCallback"), "ns=" + tp.ns_ + " dev=" + tp.dev_ + " loc=" + tp.loc_ + " srv=" + tp.srv_ + " id=" + String(tp.id_) + " meas=" + tp.meas_ + "|", DebugLogger::INFO);
 
@@ -680,6 +693,7 @@ void AM2H_Core::mqttReconnect()
       mqttClient_.subscribe((getConfigTopic() + "#").c_str());
     }
     mqttReconnectCounter = 0;
+    timer_.mqttActivity = millis();
     connStatus_ = MQTT_CLIENT_CONNECTED;
     pinMode(CORE_STATUS_LED, INPUT_PULLUP);
   }
