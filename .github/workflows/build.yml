@@ -3,8 +3,12 @@ name: PlatformIO Build
 on:
   push:
     branches: [ main, master, develop, "claude/**" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ main, master ]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -27,11 +31,33 @@ jobs:
       - name: Install PlatformIO
         run: pip install platformio
 
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep '#define VERSION' src/AM2H_Core.h | sed 's/.*"\(.*\)"/\1/')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: Build
         run: platformio run
 
-      - name: Upload firmware
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-esp01
+          name: firmware-esp01-v${{ steps.version.outputs.version }}
           path: .pio/build/esp01/firmware.bin
+          retention-days: 90
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: AM2H_Core v${{ steps.version.outputs.version }}
+          files: .pio/build/esp01/firmware.bin
+          body: |
+            ## Firmware v${{ steps.version.outputs.version }}
+
+            ### Flashen mit dem Browser (kein Software-Install nötig)
+            1. ESP-01 in den Flash-Modus versetzen (GPIO0 auf GND beim Reset)
+            2. USB-Serial Adapter anschließen
+            3. [esp.huhn.me](https://esp.huhn.me) im Chrome/Edge öffnen
+            4. `firmware.bin` bei Adresse `0x0` hochladen → **Flash**
