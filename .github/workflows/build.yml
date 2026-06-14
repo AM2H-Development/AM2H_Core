@@ -2,7 +2,7 @@ name: PlatformIO Build
 
 on:
   push:
-    branches: [ main, master, develop, "claude/**" ]
+    branches: [ main, master, develop ]
     tags: [ "v*" ]
   pull_request:
     branches: [ main, master ]
@@ -34,8 +34,8 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          VERSION=$(grep '#define VERSION' src/AM2H_Core.h | sed 's/.*"\(.*\)"/\1/')
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          VERSION=$(grep '#define VERSION' src/AM2H_Core.h | sed 's/.*"\(.*\)"/\1/' | tr -d '/"<>|*?\r\n\\')
+          echo "version=${VERSION:-unknown}" >> $GITHUB_OUTPUT
 
       - name: Build
         run: platformio run
