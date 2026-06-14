@@ -25,11 +25,23 @@ void AM2H_Ds18b20::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, con
     message += String(d.sensor.ds18b20.addr[i], HEX);
   }
 
-  ows.reset();
+  if (!ows.reset())
+  {
+    AM2H_Core::debugMessage(CALLER, F("no presence on reset, skipping"), DebugLogger::ERROR);
+    mqttClient.publish((topic + ERROR_CODE + "_" + String(index)).c_str(), "1");
+    am2h_core->loopMqtt();
+    return;
+  }
   ows.select(d.sensor.ds18b20.addr);
   ows.write(0x44, 1); // start conversion, with parasite power on at the end
   am2h_core->wait(1000);
-  ows.reset();
+  if (!ows.reset())
+  {
+    AM2H_Core::debugMessage(CALLER, F("no presence after conversion, skipping"), DebugLogger::ERROR);
+    mqttClient.publish((topic + ERROR_CODE + "_" + String(index)).c_str(), "1");
+    am2h_core->loopMqtt();
+    return;
+  }
   ows.select(d.sensor.ds18b20.addr);
   ows.write(0xBE); // Read Scratchpad
 
