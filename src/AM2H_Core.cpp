@@ -126,17 +126,20 @@ void AM2H_Core::loopPlugins()
 
 void AM2H_Core::checkIntPublish()
 {
-  if (isIntAvailable())
+  if (!intAvailable_G) return;
+  if (millis() - lastImpulseMillis_G < ICOUNTER_MIN_IMPULSE_TIME_MS) return;
+
+  noInterrupts();
+  intAvailable_G = false;
+  interrupts();
+
+  ++impulsesTotal_G;
+  for (int i = 0; i < 20; ++i)
   {
-    ++impulsesTotal_G;
-    for (int i = 0; i < 20; ++i)
+    if (auto p = ds[i].self)
     {
-      if (auto p = ds[i].self)
-      {
-        p->interruptPublish(ds[i], mqttClient_, getDataTopic(ds[i].loc, ds[i].self->getSrv(), String(i)), i);
-      }
+      p->interruptPublish(ds[i], mqttClient_, getDataTopic(ds[i].loc, ds[i].self->getSrv(), String(i)), i);
     }
-    intAvailable_G = false;
   }
 }
 
@@ -179,14 +182,14 @@ void AM2H_Core::checkUpdateRequired()
     if (updateRequired_ & COMMIT_TO_EEPROM_REQUIRED)
     {
       debugMessage(CALLER, F("COMMIT_TO_EEPROM_REQUIRED"), DebugLogger::INFO);
-      updateRequired_ ^= COMMIT_TO_EEPROM_REQUIRED;
+      updateRequired_ &= ~COMMIT_TO_EEPROM_REQUIRED;
       writeEEPROM();
     }
     if (updateRequired_ & WLAN_RESET_REQUIRED)
     {
       debugMessage(CALLER, F("WLAN_RESET_REQUIRED"), DebugLogger::INFO);
       timer_.wlanReconnect = millis() + 1000;
-      updateRequired_ ^= WLAN_RESET_REQUIRED;
+      updateRequired_ &= ~WLAN_RESET_REQUIRED;
     }
     if (updateRequired_ & MQTT_RESET_REQUIRED && (connStatus_ >= WLAN_CONNECTED))
     {
@@ -194,13 +197,13 @@ void AM2H_Core::checkUpdateRequired()
       mqttClient_.disconnect();
       mqttClient_.setServer(getMQTTServer(), getMQTTPort());
       connStatus_ = WLAN_CONNECTED;
-      updateRequired_ ^= MQTT_RESET_REQUIRED;
+      updateRequired_ &= ~MQTT_RESET_REQUIRED;
     }
     if (updateRequired_ & ESP_RESET_REQUIRED)
     {
       debugMessage(CALLER, F("ESP_RESET_REQUIRED"), DebugLogger::INFO);
       timer_.espRestart = millis() + 2000;
-      updateRequired_ ^= ESP_RESET_REQUIRED;
+      updateRequired_ &= ~ESP_RESET_REQUIRED;
       connStatus_ = DEV_RESTART_PENDING;
       pinMode(CORE_STATUS_LED, INPUT_PULLUP);
     }
@@ -258,6 +261,8 @@ void const AM2H_Core::debugMessage(const String &caller, const String &message, 
 #ifdef _NOLOGGING_
   return;
 #endif
+
+  if (!am2h_core) return;
 
   if (millis() > am2h_core->thershold && infoOrError == DebugLogger::INFO)
   {
@@ -371,39 +376,49 @@ inline void AM2H_Core::loopServer()
 void AM2H_Core::handleRoot()
 {
   debugMessage(F("handleRoot"), String((am2h_core->server_.method() == HTTP_GET) ? "GET" : "POST") + " INDEX", DebugLogger::INFO);
-  for (uint8_t i = 0; i < am2h_core->server_.args(); i++)
-  {
-    debugMessage(F("handleRoot"), am2h_core->server_.argName(i) + ": " + am2h_core->server_.arg(i), DebugLogger::INFO);
-  }
-  am2h_core->server_.send(200, ENCODING_HTML, getRootContent());
-}
-
-const String AM2H_Core::getRootContent()
-{
-  String content;
-  content += HTTP_HEADER;
-  content += F("<h1>AM2H_Core</h1><p>deviceId: <b>") + String(am2h_core->persistentSetupValues_.deviceId) + F("</b><br/>nickname: <b>") + String(am2h_core->volatileSetupValues_.nickname);
-  content += F("</b><br/>fwVersion: <b>") + String(VERSION);
-  content += F("</b><br/>MAC: <b>") + WiFi.macAddress() + F("</b></p><ul>");
-  content += F("<li><a href=\"/api/v1/status\">show status logs</a></li>");
-  content += F("<li><a href=\"/api/v1/get\">show device info</a></li>");
-  content += F("<li><a href=\"/api/v1/restart\">restart device</a></li>");
-  content += F("<li>device settings:<br><br><form action=\"/api/v1/set\" method=\"get\">");
-  content += F("<input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\"") + String(DEVICE_ID_LEN);
-  content += F("\"><label for=\"deviceId\">&nbsp;deviceId</label><br/><br/><input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\"") + String(NS_LEN);
-  content += F("\"><label for=\"ns\">&nbsp;namespace</label><br/><br/><input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\"") + String(MQTT_SERVER_LEN);
-  content += F("\"><label for=\"mqttServer\">&nbsp;MQTT Server (hostname or IP)</label><br/><br/><input type=\"text\" id=\"mqttPort\" name=\"mqttPort\"><label for=\"mqttPort\">&nbsp;MQTT port</label><br/><br/>");
-  content += F("<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\"") + String(SSID_LEN);
-  content += F("\"><label for=\"ssid\">&nbsp;SSID</label><br/><br/><input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\"") + String(PW_LEN);
-  content += F("\"><label for=\"pw\">&nbsp;WLAN pw</label><br/><br/><input type=\"submit\" value=\"Submit\"></form></li></ul><ul>");
+  am2h_core->server_.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  am2h_core->server_.send(200, ENCODING_HTML, "");
+  am2h_core->server_.sendContent(HTTP_HEADER);
+  am2h_core->server_.sendContent(F("<h1>AM2H_Core</h1><p>deviceId: <b>"));
+  am2h_core->server_.sendContent(am2h_core->persistentSetupValues_.deviceId);
+  am2h_core->server_.sendContent(F("</b><br/>nickname: <b>"));
+  am2h_core->server_.sendContent(am2h_core->volatileSetupValues_.nickname);
+  am2h_core->server_.sendContent(F("</b><br/>fwVersion: <b>" VERSION "</b><br/>MAC: <b>"));
+  am2h_core->server_.sendContent(WiFi.macAddress());
+  am2h_core->server_.sendContent(F("</b></p><ul>"
+    "<li><a href=\"/api/v1/status\">show status logs</a></li>"
+    "<li><a href=\"/api/v1/get\">show device info</a></li>"
+    "<li><a href=\"/api/v1/restart\">restart device</a></li>"
+    "<li>device settings:<br><br><form action=\"/api/v1/set\" method=\"get\">"
+    "<input type=\"text\" id=\"deviceId\" name=\"deviceId\" maxlength=\""));
+  am2h_core->server_.sendContent(String(DEVICE_ID_LEN));
+  am2h_core->server_.sendContent(F("\"><label for=\"deviceId\">&nbsp;deviceId</label><br/><br/>"
+    "<input type=\"text\" id=\"ns\" name=\"ns\" maxlength=\""));
+  am2h_core->server_.sendContent(String(NS_LEN));
+  am2h_core->server_.sendContent(F("\"><label for=\"ns\">&nbsp;namespace</label><br/><br/>"
+    "<input type=\"text\" id=\"mqttServer\" name=\"mqttServer\" maxlength=\""));
+  am2h_core->server_.sendContent(String(MQTT_SERVER_LEN));
+  am2h_core->server_.sendContent(F("\"><label for=\"mqttServer\">&nbsp;MQTT Server (hostname or IP)</label><br/><br/>"
+    "<input type=\"text\" id=\"mqttPort\" name=\"mqttPort\">"
+    "<label for=\"mqttPort\">&nbsp;MQTT port</label><br/><br/>"
+    "<input type=\"text\" id=\"ssid\" name=\"ssid\" maxlength=\""));
+  am2h_core->server_.sendContent(String(SSID_LEN));
+  am2h_core->server_.sendContent(F("\"><label for=\"ssid\">&nbsp;SSID</label><br/><br/>"
+    "<input type=\"password\" id=\"pw\" name=\"pw\" maxlength=\""));
+  am2h_core->server_.sendContent(String(PW_LEN));
+  am2h_core->server_.sendContent(F("\"><label for=\"pw\">&nbsp;WLAN pw</label><br/><br/>"
+    "<input type=\"submit\" value=\"Submit\"></form></li></ul><ul>"));
   int i = -1;
   while (auto p = am2h_core->plugins_[++i])
   {
-    content += F("<li><a href=\"/api/v1/plugin/") + String(i) + F("/\">") + p->getHtmlTabName() + F("</a></li>");
+    am2h_core->server_.sendContent(F("<li><a href=\"/api/v1/plugin/"));
+    am2h_core->server_.sendContent(String(i));
+    am2h_core->server_.sendContent(F("/\">"));
+    am2h_core->server_.sendContent(p->getHtmlTabName());
+    am2h_core->server_.sendContent(F("</a></li>"));
   }
-  content += F("</ul>");
-  content += HTTP_FOOTER;
-  return content;
+  am2h_core->server_.sendContent(F("</ul>"));
+  am2h_core->server_.sendContent(HTTP_FOOTER);
 }
 
 void AM2H_Core::handleRestart()
@@ -417,45 +432,35 @@ void AM2H_Core::handleRestart()
 void AM2H_Core::handleStatus()
 {
   am2h_core->thershold = millis() + LOG_INFO_THRESHOLD;
-  String content = F("{\"statusLog\":\"\n");
+  am2h_core->server_.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  am2h_core->server_.send(200, ENCODING_JSON, "");
+  am2h_core->server_.sendContent(F("{\"statusLog\":\"\n"));
 
   auto logpos = am2h_core->logpos;
-
   for (size_t i = 0; i < LOG_LENGTH; ++i)
   {
     auto logEntry = am2h_core->logbook[logpos++];
     if (logEntry.ts > 0)
     {
-      uint8_t len = LOG_CALLER_LENGTH - 1;
-      for (uint8_t j = 0; j < LOG_CALLER_LENGTH; ++j)
-      {
-        if (logEntry.caller[j] == 0)
-        {
-          len = j;
-          break;
-        }
-      }
-
-      content += logEntry.error == DebugLogger::INFO ? "  " : "! ";
-      content += "[" + String(logEntry.ts / 1000., 3);
-      content += "] [H:" + String(logEntry.freeHeap);
-      content += "] ";
-      content += logEntry.caller;
-      for (uint8_t j = len; j < LOG_CALLER_LENGTH; ++j)
-      {
-        content += " ";
-      }
-      content += "-> ";
-      content += logEntry.message;
-      content += "\n";
+      uint8_t callerLen = strnlen(logEntry.caller, LOG_CALLER_LENGTH);
+      String entry;
+      entry.reserve(LOG_CALLER_LENGTH + LOG_MESSAGE_LENGTH + 32);
+      entry += logEntry.error == DebugLogger::INFO ? "  " : "! ";
+      entry += '[';
+      entry += String(logEntry.ts / 1000., 3);
+      entry += F("] [H:");
+      entry += String(logEntry.freeHeap);
+      entry += F("] ");
+      entry += logEntry.caller;
+      for (uint8_t j = callerLen; j < LOG_CALLER_LENGTH; ++j) entry += ' ';
+      entry += F("-> ");
+      entry += logEntry.message;
+      entry += '\n';
+      am2h_core->server_.sendContent(entry);
     }
-    if (logpos == LOG_LENGTH)
-    {
-      logpos = 0;
-    }
+    if (logpos == LOG_LENGTH) logpos = 0;
   }
-  content += "\"}";
-  am2h_core->server_.send(200, ENCODING_JSON, content);
+  am2h_core->server_.sendContent(F("\"}"));
 }
 
 void AM2H_Core::handlePlugin(const int id)

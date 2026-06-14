@@ -1,7 +1,7 @@
 #include "AM2H_Icounter.h"
 #include "AM2H_Core.h"
 
-extern unsigned long lastImpulseMillis_G;
+extern volatile uint32_t lastImpulseMillis_G;
 extern AM2H_Core *am2h_core;
 
 void AM2H_Icounter::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index)
@@ -22,24 +22,26 @@ void AM2H_Icounter::timerPublish(AM2H_Datastore &d, PubSubClient &mqttClient, co
 
 void AM2H_Icounter::interruptPublish(AM2H_Datastore &d, PubSubClient &mqttClient, const String topic, const uint8_t index)
 {
-    const uint32_t del = ICOUNTER_MIN_IMPULSE_TIME_MS - (millis() - lastImpulseMillis_G);
-    AM2H_Core::debugMessage(F("Ico::ip"), F("delay=") + String(del) + F(" state=") + String(digitalRead(CORE_ISR_PIN)), DebugLogger::INFO);
-    if (del <= ICOUNTER_MIN_IMPULSE_TIME_MS)
+    // Spike check: checkIntPublish already waited ICOUNTER_MIN_IMPULSE_TIME_MS
+    if (digitalRead(CORE_ISR_PIN) != 0)
     {
-        delay(del);
+        AM2H_Core::debugMessage(F("Ico::ip"), F("skipped, spike detected"), DebugLogger::ERROR);
+        return;
     }
-    if (digitalRead(CORE_ISR_PIN) == 1)
+
+    // Non-blocking rate limit: minimum interval between counted pulses
+    const uint32_t interval = lastImpulseMillis_G - d.sensor.icounter.millis;
+    if (interval < ICOUNTER_MIN_IMPULSE_RATE_MS)
     {
-        AM2H_Core::debugMessage(F("Ico::ip"), F("skipped, ISR_PIN not high"), DebugLogger::ERROR);
+        AM2H_Core::debugMessage(F("Ico::ip"), F("skipped, rate limit interval=") + String(interval), DebugLogger::INFO);
         return;
     }
 
     ++d.sensor.icounter.absCnt;
-    const uint32_t interval = lastImpulseMillis_G - d.sensor.icounter.millis;
     d.sensor.icounter.millis = lastImpulseMillis_G;
 
     d.sensor.icounter.lastTimestamps[d.sensor.icounter.lastTimestampsPointer++] = lastImpulseMillis_G;
-    if (d.sensor.icounter.lastTimestampsPointer > COUNTER_MAX_BUFFER)
+    if (d.sensor.icounter.lastTimestampsPointer >= COUNTER_MAX_BUFFER)
     {
         d.sensor.icounter.lastTimestampsPointer = 0;
     }
@@ -51,12 +53,6 @@ void AM2H_Icounter::interruptPublish(AM2H_Datastore &d, PubSubClient &mqttClient
     am2h_core->loopMqtt();
     mqttClient.publish(d.sensor.icounter.absCntTopic, String(d.sensor.icounter.absCnt).c_str(), RETAINED);
     am2h_core->loopMqtt();
-
-    const uint32_t del2 = ICOUNTER_MIN_IMPULSE_RATE_MS - (millis() - lastImpulseMillis_G);
-    if (del2 <= ICOUNTER_MIN_IMPULSE_RATE_MS)
-    {
-        delay(del2);
-    }
 }
 
 double AM2H_Icounter::calculateLast(const AM2H_Datastore &d)
@@ -103,7 +99,7 @@ void AM2H_Icounter::config(AM2H_Datastore &d, const MqttTopic &t, const String p
         }
 
         String tempTopic = am2h_core->getFullStorageTopic(String(t.id_), t.srv_, "absCnt");
-        d.sensor.icounter.absCntTopic = new char[tempTopic.length()];
+        d.sensor.icounter.absCntTopic = new char[tempTopic.length() + 1];
         size_t i = 0;
         for (auto c : tempTopic)
         {

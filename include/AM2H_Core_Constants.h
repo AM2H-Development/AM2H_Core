@@ -63,7 +63,7 @@ constexpr uint8_t MQTT_CLIENT_CONNECTED{0x04};
 constexpr uint8_t DEV_CONFIGURED{0x05};
 
 // API Updates
-constexpr uint8_t NO_UPDATE_REQUIRED{0b00000001};
+constexpr uint8_t NO_UPDATE_REQUIRED{0x00};
 constexpr uint8_t COMMIT_TO_EEPROM_REQUIRED{0b00000010};
 constexpr uint8_t WLAN_RESET_REQUIRED{0b00000100};
 constexpr uint8_t MQTT_RESET_REQUIRED{0b00001000};
