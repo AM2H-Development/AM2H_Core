@@ -11,7 +11,7 @@ on:
       create_release:
         description: 'GitHub Release erstellen'
         type: boolean
-        default: false
+        default: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
