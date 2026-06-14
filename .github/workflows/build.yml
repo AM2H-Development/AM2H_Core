@@ -29,3 +29,9 @@ jobs:
 
       - name: Build
         run: platformio run
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp01
+          path: .pio/build/esp01/firmware.bin
