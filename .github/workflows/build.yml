@@ -6,6 +6,12 @@ on:
     tags: [ "v*" ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'GitHub Release erstellen'
+        type: boolean
+        default: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -48,9 +54,10 @@ jobs:
           retention-days: 90
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.create_release)
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.version.outputs.version }}
           name: AM2H_Core v${{ steps.version.outputs.version }}
           files: .pio/build/esp01/firmware.bin
           body: |
