@@ -21,11 +21,23 @@ Die Firmware wird bei jedem Push automatisch per GitHub Actions gebaut (Platform
 3. Unter **Artifacts** → `firmware-esp01-vX.Y.Z.zip` herunterladen
 4. ZIP entpacken → `firmware.bin`
 
-**Option B – Stabiler Release:**
+**Option B – Stabiler Release (empfohlen, kein Ablaufdatum):**
 1. [Releases](https://github.com/AM2H-Development/AM2H_Core/releases) öffnen
 2. `firmware.bin` beim gewünschten Release herunterladen
 
-Releases werden durch Push eines Git-Tags (`v*`) automatisch erstellt.
+### Neuen Release erstellen
+
+Die Versionsnummer wird aus `src/AM2H_Core.h` (`#define VERSION`) gelesen.
+Ein Release entsteht vollautomatisch sobald ein Tag mit `v`-Prefix gepusht wird:
+
+```bash
+# Versionsnummer in src/AM2H_Core.h anpassen, committen & pushen, dann:
+git tag v1.9.0
+git push origin v1.9.0
+```
+
+GitHub Actions baut daraufhin die Firmware und legt sie als Release-Asset ab —
+inklusive Flash-Anleitung im Release-Text.
 
 ---
 
