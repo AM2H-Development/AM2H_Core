@@ -96,6 +96,7 @@ void AM2H_Core::wait(uint32_t const del_millis)
   uint32_t now = millis();
   do
   {
+    yield();
     loopMqtt();
     loopPlugins();
     checkTimerPublish();
@@ -120,6 +121,7 @@ void AM2H_Core::loopPlugins()
     if (auto p = ds[datastoreIndex].self)
     {
       p->loopPlugin(ds[datastoreIndex], datastoreIndex);
+      yield();
     }
   }
 }
@@ -331,7 +333,8 @@ void AM2H_Core::connectWlan(int timeout)
   {
     digitalWrite(CORE_STATUS_LED, onOffLed);
     onOffLed = !onOffLed;
-    delay(500);
+    uint32_t t0 = millis();
+    while (millis() - t0 < 500) { yield(); }
     timeout--;
   }
   digitalWrite(CORE_STATUS_LED, LOW);
@@ -589,6 +592,8 @@ void AM2H_Core::setupMqtt()
 
   mqttClient_.setServer(getMQTTServer(), getMQTTPort());
   mqttClient_.setCallback(AM2H_Core::mqttCallback);
+  mqttClient_.setKeepAlive(10);
+  mqttClient_.setSocketTimeout(5);
 }
 
 void AM2H_Core::loopMqtt()
@@ -683,16 +688,7 @@ void AM2H_Core::mqttReconnect()
     debugMessage(F("mqttReconnect"), F("failed with error ") + String(mqttClient_.state()) + "(" + String(mqttReconnectCounter) + ")", DebugLogger::ERROR);
     timer_.mqttReconnect = millis() + 5000;
     connStatus_ = WLAN_CONNECTED;
-
     pinMode(CORE_STATUS_LED, OUTPUT);
-    digitalWrite(CORE_STATUS_LED, LOW);
-    delay(150);
-    digitalWrite(CORE_STATUS_LED, HIGH);
-    delay(150);
-    digitalWrite(CORE_STATUS_LED, LOW);
-    delay(150);
-    digitalWrite(CORE_STATUS_LED, HIGH);
-    delay(150);
     digitalWrite(CORE_STATUS_LED, LOW);
   }
 }
