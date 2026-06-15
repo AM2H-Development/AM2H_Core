@@ -2,10 +2,10 @@ name: PlatformIO Build
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master, develop, "2.0.0-alpha" ]
     tags: [ "v*" ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, "2.0.0-alpha" ]
   workflow_dispatch:
     inputs:
       create_release:
@@ -63,8 +63,17 @@ jobs:
           body: |
             ## Firmware v${{ steps.version.outputs.version }}
 
-            ### Flashen mit dem Browser (kein Software-Install nötig)
+            ### Erstmaliges Flashen (manuell, einmalig pro Device)
+            > **Hinweis:** Ab v2.0.0 wird ein anderes Flash-Layout verwendet (512K OTA-Partition).
+            > Bestehende Devices mit v1.x müssen **einmalig manuell** geflasht werden,
+            > danach funktionieren OTA-Updates automatisch.
+
             1. ESP-01 in den Flash-Modus versetzen (GPIO0 auf GND beim Reset)
             2. USB-Serial Adapter anschließen
             3. [esp.huhn.me](https://esp.huhn.me) im Chrome/Edge öffnen
             4. `firmware.bin` bei Adresse `0x0` hochladen → **Flash**
+
+            ### OTA-Update (nach einmaligem manuellem Flash)
+            ```
+            mosquitto_pub -t "<ns>/<device>/config/ota" -m "http://<server>:8080/firmware.bin"
+            ```

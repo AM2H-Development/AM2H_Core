@@ -14,7 +14,7 @@
 #include <OneWire.h>
 #include "bsec.h"
 
-#define VERSION "1.9.2"
+#define VERSION "2.0.0-alpha"
 
 void IRAM_ATTR impulseISR();
 
@@ -106,6 +106,7 @@ private:
   void setupMqtt();
   static void mqttCallback(const char* topic, uint8_t* payload, unsigned int length);
   void mqttReconnect();
+  void performOta(const String& url);
   void scan() const;
 
 public:
